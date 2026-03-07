@@ -12,17 +12,25 @@ public class UserDTO {
 
     int id;
     String username, password, fullName, role;
+    boolean status;
 
     public UserDTO() {
     }
 
-    public UserDTO(int id, String username, String password, String fullName, String role) {
+    public UserDTO(int id, String username, String password, String fullName, String role, boolean status) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.fullName = fullName;
         this.role = role;
+        this.status = status;
     }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+
 
     public int getId() {
         return id;
@@ -62,6 +70,10 @@ public class UserDTO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public boolean isStatus() {
+        return status;
     }
 
 }

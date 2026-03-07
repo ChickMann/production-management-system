@@ -51,7 +51,7 @@ public class UserController extends HttpServlet {
                 DoLogin(request);
                 break;
             case "removeUser":
-                DoLogin(request);
+                RemoveUser(request);
                 break;
             case "updateUser":
                 DoLogin(request);
@@ -70,10 +70,14 @@ public class UserController extends HttpServlet {
             UserDAO udao = new UserDAO();
             UserDTO user = udao.Login(username, password);
             ArrayList<UserDTO> eList = udao.EmployeeList();
+
             if (user != null) {
                 url = "BangDieuKien.jsp";
                 session.setAttribute("user", user);
                 request.setAttribute("eList", eList);
+                if (!user.isStatus()) {
+                    url = "Banned.jsp";
+                }
             } else {
                 url = "login.jsp";
                 request.setAttribute("message", "Incorrect User ID or Password");
@@ -96,7 +100,22 @@ public class UserController extends HttpServlet {
 
     }
 
-    private void RemoveUser() {
+    private void RemoveUser(HttpServletRequest request) {
+
+        String id = request.getParameter("id");
+        UserDAO udao = new UserDAO();
+
+        if (!id.isEmpty()) {
+            boolean check = udao.SoftDelete(id);
+            if (check) {
+                request.setAttribute("msg", "Deleted!");
+            } else {
+                request.setAttribute("msg", "Error, can not delete: " + id);
+            }
+        }
+        ArrayList<UserDTO> eList = udao.EmployeeList();
+        request.setAttribute("eList", eList);
+        url = "BangDieuKien.jsp";
 
     }
 

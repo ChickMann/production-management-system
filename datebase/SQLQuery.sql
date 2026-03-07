@@ -12,11 +12,7 @@ GO
 USE FactoryERP;
 GO
 
--- ==============================================================================
--- PHẦN 1: XÓA BẢNG CŨ NẾU CÓ (CHỐNG LỖI KHI CHẠY LẠI NHIỀU LẦN)
--- ==============================================================================
--- Bôi đen chạy phần này nếu bạn muốn reset lại toàn bộ Database từ đầu
-/*
+
 DROP TABLE IF EXISTS Production_Log;
 DROP TABLE IF EXISTS Purchase_Order;
 DROP TABLE IF EXISTS Work_Order;
@@ -25,13 +21,21 @@ DROP TABLE IF EXISTS Routing_Step;
 DROP TABLE IF EXISTS Routing;
 DROP TABLE IF EXISTS BOM;
 DROP TABLE IF EXISTS Item;
-*/
+
 
 -- ==============================================================================
 -- PHẦN 2: TẠO 8 BẢNG CỐT LÕI (CHUẨN SQL SERVER - ĐÃ BỎ CỘT VERSION)
 -- ==============================================================================
 
 -- 1. Bảng Item (Danh mục vật tư & thành phẩm)
+CREATE TABLE [User] (
+    user_id INT IDENTITY(1,1) PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(50) NOT NULL,
+    full_name NVARCHAR(100),
+    role VARCHAR(20) 
+);
+
 CREATE TABLE Item (
     item_id INT IDENTITY(1,1) PRIMARY KEY, 
     item_code VARCHAR(50) UNIQUE NOT NULL,  
@@ -142,3 +146,19 @@ INSERT INTO Routing_Step (routing_id, step_order, operation_name, machine_id, es
 INSERT INTO Inventory (item_id, quantity_on_hand, quantity_reserved) VALUES
 (4, 100, 0), -- Gỗ thô: Đang có sẵn 100 khối
 (5, 50, 0);  -- Ốc vít: Đang có sẵn 50 hộp
+
+INSERT INTO [User] (username, password, full_name, role)
+VALUES 
+    -- 1 Tài khoản Admin
+    ('admin', 'Admin@123', N'Quản Trị Viên Hệ Thống', 'admin'),
+    
+    -- 9 Tài khoản Employee
+    ('tuanna', 'Emp@123', N'Nguyễn Anh Tuấn', 'employee'),
+    ('lantt', 'Emp@123', N'Trần Thị Lan', 'employee'),
+    ('hunglq', 'Emp@123', N'Lê Quốc Hùng', 'employee'),
+    ('maipn', 'Emp@123', N'Phạm Ngọc Mai', 'employee'),
+    ('vieth', 'Emp@123', N'Hoàng Việt', 'employee'),
+    ('dungdt', 'Emp@123', N'Đỗ Thùy Dung', 'employee'),
+    ('kienvt', 'Emp@123', N'Võ Trung Kiên', 'employee'),
+    ('thaonp', 'Emp@123', N'Ngô Phương Thảo', 'employee'),
+    ('longbd', 'Emp@123', N'Bùi Đức Long', 'employee');

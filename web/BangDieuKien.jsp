@@ -24,10 +24,12 @@
                                     <th>Username</th>
                                     <th>Password</th>
                                     <th>Full name</th>
-                                    <th>Actions</th> </tr>
+                                    <th>Actions</th> 
+                                </tr>
                             </thead>
                             <tbody>
                                 <c:forEach items="${eList}" var="e">
+
                                     <tr>
                                         <td>${e.id}</td>
                                         <td>${e.username}</td>
@@ -35,18 +37,25 @@
                                         <td>${e.fullName}</td>
                                         <td>
                                             <a href="MainController?action=updateUser&id=${e.id}">Update</a> |
-                                            <a href="MainController?action=removeUser&id=${e.id}">Remove</a>
+                                            <form action="MainController" method="post">
+                                                <input type="hidden" name="action" value="removeUser"/>
+                                                <input type="hidden" name="id" value="${e.id+1}"/>
+                                                <input type="submit" value="Remove"/>
+                                            </form>
                                         </td>
                                     </tr>
                                 </c:forEach>
                             </tbody>
                         </table>
                     </c:otherwise>
-                </c:choose>
+                </c:choose> <c:if test="${not empty msg}">
+                    <p style="color: blue;"><b>${msg}</b></p>
+                        </c:if>
+
                 <br/>
                 <a href="MainController?action=addUser">Add employee</a> <br/><br/>
             </c:if>
-            
+
             <a href="MainController?action=logout">Logout</a>
         </c:if>
     </body>
