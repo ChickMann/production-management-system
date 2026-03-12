@@ -1,144 +1,201 @@
-﻿-- ==============================================================================
--- PHẦN 0: KHỞI TẠO DATABASE
--- ==============================================================================
--- 1. Tạo Database mới (Nếu máy chưa có thì nó tự tạo)
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'FactoryERP')
-BEGIN
-    CREATE DATABASE FactoryERP;
-END
+﻿-- Khởi tạo và sử dụng Database mới
+USE master;
 GO
 
--- 2. Lệnh cực kỳ quan trọng: Bắt hệ thống phải chui vào đúng cái Database vừa tạo để làm việc
-USE FactoryERP;
+-- Xóa database nếu đã tồn tại
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'FACTORYERD')
+    DROP DATABASE FactoryERD;
 GO
 
--- ==============================================================================
--- PHẦN 1: XÓA BẢNG CŨ NẾU CÓ (CHỐNG LỖI KHI CHẠY LẠI NHIỀU LẦN)
--- ==============================================================================
--- Bôi đen chạy phần này nếu bạn muốn reset lại toàn bộ Database từ đầu
-/*
-DROP TABLE IF EXISTS Production_Log;
-DROP TABLE IF EXISTS Purchase_Order;
-DROP TABLE IF EXISTS Work_Order;
-DROP TABLE IF EXISTS Inventory;
-DROP TABLE IF EXISTS Routing_Step;
-DROP TABLE IF EXISTS Routing;
-DROP TABLE IF EXISTS BOM;
-DROP TABLE IF EXISTS Item;
-*/
+CREATE DATABASE FactoryERD;
+GO
 
--- ==============================================================================
--- PHẦN 2: TẠO 8 BẢNG CỐT LÕI (CHUẨN SQL SERVER - ĐÃ BỎ CỘT VERSION)
--- ==============================================================================
+USE FactoryERD;
+GO
 
--- 1. Bảng Item (Danh mục vật tư & thành phẩm)
+-- ==========================================
+-- PHẦN 1: CÁC BẢNG DANH MỤC ĐỘC LẬP (Không chứa khóa ngoại)
+-- ==========================================
+
+-- 1. Bảng Phân quyền đăng nhập
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY IDENTITY(1,1),
+    username VARCHAR(50) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) CHECK (role IN ('Sep', 'CongNhan'))
+);
+
+-- 2. Bảng Quản lý Vật phẩm (Sản phẩm & Vật tư)
 CREATE TABLE Item (
-    item_id INT IDENTITY(1,1) PRIMARY KEY, 
-    item_code VARCHAR(50) UNIQUE NOT NULL,  
-    name NVARCHAR(255) NOT NULL,             
-    type VARCHAR(20) NOT NULL,              -- MATERIAL, SUB, FINISHED
-    standard_cost DECIMAL(15, 2) DEFAULT 0  
+    item_id INT PRIMARY KEY IDENTITY(1,1),
+    item_name NVARCHAR(100) NOT NULL,
+    item_type VARCHAR(20) CHECK (item_type IN ('SanPham', 'VatTu')),
+    stock_quantity INT DEFAULT 0
 );
 
--- 2. Bảng BOM (Công thức cấu tạo)
-CREATE TABLE BOM (
-    bom_id INT IDENTITY(1,1) PRIMARY KEY,
-    parent_item_id INT NOT NULL,            
-    child_item_id INT NOT NULL,             
-    quantity FLOAT NOT NULL,                
-    FOREIGN KEY (parent_item_id) REFERENCES Item(item_id),
-    FOREIGN KEY (child_item_id) REFERENCES Item(item_id)
+-- 12. Bảng Nhà cung cấp
+CREATE TABLE Supplier (
+    supplier_id INT PRIMARY KEY IDENTITY(1,1),
+    supplier_name NVARCHAR(100) NOT NULL,
+    contact_phone VARCHAR(15)
 );
 
--- 3. Bảng Routing (Hồ sơ quy trình sản xuất)
+-- 7. Bảng Khách hàng
+CREATE TABLE Customer (
+    customer_id INT PRIMARY KEY IDENTITY(1,1),
+    customer_name NVARCHAR(100) NOT NULL,
+    phone VARCHAR(15),
+    email VARCHAR(50)
+);
+
+-- 11. Bảng Danh sách lỗi
+CREATE TABLE Defect_Reason (
+    defect_id INT PRIMARY KEY IDENTITY(1,1),
+    reason_name NVARCHAR(255) NOT NULL
+);
+
+-- 4. Bảng Quy trình tổng
 CREATE TABLE Routing (
-    routing_id INT IDENTITY(1,1) PRIMARY KEY,
-    item_id INT NOT NULL,                   
-    FOREIGN KEY (item_id) REFERENCES Item(item_id)
+    routing_id INT PRIMARY KEY IDENTITY(1,1),
+    routing_name NVARCHAR(100) NOT NULL
 );
 
--- 4. Bảng Routing_Step (Các công đoạn chi tiết)
+-- ==========================================
+-- PHẦN 2: CÁC BẢNG CÓ PHỤ THUỘC (Chứa khóa ngoại)
+-- ==========================================
+
+-- 5. Bảng Công đoạn chi tiết (Phụ thuộc Routing)
 CREATE TABLE Routing_Step (
-    routing_step_id INT IDENTITY(1,1) PRIMARY KEY,
-    routing_id INT NOT NULL,                
-    step_order INT NOT NULL,                
-    operation_name NVARCHAR(100) NOT NULL,   
-    machine_id VARCHAR(50),                 
-    estimated_time_minutes INT DEFAULT 0,   
+    step_id INT PRIMARY KEY IDENTITY(1,1),
+    routing_id INT,
+    step_name NVARCHAR(100) NOT NULL,
+    estimated_time INT, -- tính theo phút
+    is_inspected BIT DEFAULT 0, -- 0: Chưa kiểm tra, 1: Đã kiểm tra (Tick OK)
     FOREIGN KEY (routing_id) REFERENCES Routing(routing_id)
 );
 
--- 5. Bảng Inventory (Quản lý tồn kho)
-CREATE TABLE Inventory (
-    inventory_id INT IDENTITY(1,1) PRIMARY KEY,
-    item_id INT NOT NULL UNIQUE,            
-    quantity_on_hand FLOAT DEFAULT 0,       
-    quantity_reserved FLOAT DEFAULT 0,      
-    FOREIGN KEY (item_id) REFERENCES Item(item_id)
-);
-
--- 6. Bảng Work_Order (Lệnh sản xuất)
-CREATE TABLE Work_Order (
-    work_order_id INT IDENTITY(1,1) PRIMARY KEY,
-    wo_code VARCHAR(50) UNIQUE NOT NULL,    
-    item_id INT NOT NULL,                   
-    target_quantity INT NOT NULL,           
-    status VARCHAR(20) DEFAULT 'NEW',       -- NEW, RUNNING, COMPLETED
-    start_date DATETIME,                    
-    FOREIGN KEY (item_id) REFERENCES Item(item_id)
-);
-
--- 7. Bảng Production_Log (Nhật ký báo cáo tiến độ)
-CREATE TABLE Production_Log (
-    production_log_id INT IDENTITY(1,1) PRIMARY KEY,
-    work_order_id INT NOT NULL,             
-    routing_step_id INT NOT NULL,           
-    pass_qty INT DEFAULT 0,                 
-    fail_qty INT DEFAULT 0,                 
-    fail_reason NVARCHAR(MAX),              -- Lý do hỏng (hỗ trợ tiếng Việt) 
-    log_date DATETIME DEFAULT GETDATE(),    
-    FOREIGN KEY (work_order_id) REFERENCES Work_Order(work_order_id),
-    FOREIGN KEY (routing_step_id) REFERENCES Routing_Step(routing_step_id)
-);
-
--- 8. Bảng Purchase_Order (Đơn cảnh báo mua vật tư)
+-- 9. Bảng Đề nghị mua vật tư (Phụ thuộc Item, Supplier)
 CREATE TABLE Purchase_Order (
-    purchase_order_id INT IDENTITY(1,1) PRIMARY KEY,
-    item_id INT NOT NULL,                   
-    missing_quantity FLOAT NOT NULL,        
-    status VARCHAR(20) DEFAULT 'PENDING',   -- PENDING, ORDERED
-    created_at DATETIME DEFAULT GETDATE(),  
-    FOREIGN KEY (item_id) REFERENCES Item(item_id)
+    po_id INT PRIMARY KEY IDENTITY(1,1),
+    item_id INT,
+    supplier_id INT,
+    required_quantity INT,
+    alert_date DATE DEFAULT GETDATE(),
+    status VARCHAR(20) DEFAULT 'Pending',
+    FOREIGN KEY (item_id) REFERENCES Item(item_id),
+    FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id)
+);
+
+-- 3. Bảng Công thức sản phẩm - BOM (Phụ thuộc Item)
+CREATE TABLE BOM (
+    bom_id INT PRIMARY KEY IDENTITY(1,1),
+    product_item_id INT, -- ID của Bàn, Ghế
+    material_item_id INT, -- ID của Gỗ, Ốc vít
+    quantity_required INT, -- Số lượng vật tư cần dùng
+    FOREIGN KEY (product_item_id) REFERENCES Item(item_id),
+    FOREIGN KEY (material_item_id) REFERENCES Item(item_id)
+);
+
+-- 8. Lệnh sản xuất (Phụ thuộc Item, Routing)
+CREATE TABLE Work_Order (
+    wo_id INT PRIMARY KEY IDENTITY(1,1),
+    product_item_id INT,
+    routing_id INT,
+    order_quantity INT,
+    status VARCHAR(20) DEFAULT 'New', -- New, InProgress, Done
+    FOREIGN KEY (product_item_id) REFERENCES Item(item_id),
+    FOREIGN KEY (routing_id) REFERENCES Routing(routing_id)
+);
+
+-- 6. Nhật ký xưởng (Phụ thuộc Work_Order, Routing_Step, Users, Defect_Reason)
+CREATE TABLE Production_Log (
+    log_id INT PRIMARY KEY IDENTITY(1,1),
+    wo_id INT,
+    step_id INT,
+    worker_user_id INT,
+    produced_quantity INT,
+    defect_id INT NULL, -- Có thể NULL nếu không có lỗi
+    log_date DATE DEFAULT GETDATE(),
+    FOREIGN KEY (wo_id) REFERENCES Work_Order(wo_id),
+    FOREIGN KEY (step_id) REFERENCES Routing_Step(step_id),
+    FOREIGN KEY (worker_user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (defect_id) REFERENCES Defect_Reason(defect_id)
+);
+
+-- 10. Bảng Hóa đơn chốt đơn (Phụ thuộc Work_Order, Customer)
+CREATE TABLE Bill (
+    bill_id INT PRIMARY KEY IDENTITY(1,1),
+    wo_id INT,
+    customer_id INT,
+    total_amount DECIMAL(18,2),
+    bill_date DATE DEFAULT GETDATE(),
+    FOREIGN KEY (wo_id) REFERENCES Work_Order(wo_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
 );
 
 -- ==============================================================================
--- PHẦN 3: BƠM DỮ LIỆU GIẢ (MOCK DATA) ĐỂ CẢ TEAM TEST CODE
+-- PHẦN 3: CHÈN DỮ LIỆU CÁC BẢNG DANH MỤC (Không khóa ngoại)
 -- ==============================================================================
 
--- 1. Nạp 5 món hàng vào Item (Dùng N'' để lưu tiếng Việt có dấu)
-INSERT INTO Item (item_code, name, type, standard_cost) VALUES
-('SP-BAN-01', N'Bàn Gỗ Cao Cấp', 'FINISHED', 500000),     -- ID = 1
-('SUB-MAT-01', N'Mặt bàn cắt sẵn', 'SUB', 200000),        -- ID = 2
-('SUB-CHAN-01', N'Chân bàn vát góc', 'SUB', 50000),       -- ID = 3
-('MAT-GO-01', N'Khối gỗ thô (m3)', 'MATERIAL', 100000),   -- ID = 4
-('MAT-OC-01', N'Ốc vít chịu lực (hộp)', 'MATERIAL', 20000); -- ID = 5
+-- Thêm Users 👤
+INSERT INTO Users (username, password_hash, role) 
+VALUES ('admin', '123456', 'Sep'), 
+       ('congnhan1', '123456', 'CongNhan'),
+       ('congnhan2', '123456', 'CongNhan');
 
--- 2. Nạp Công thức ráp Cái Bàn (BOM)
-INSERT INTO BOM (parent_item_id, child_item_id, quantity) VALUES
-(1, 2, 1),   -- 1 Bàn cần 1 Mặt bàn
-(1, 3, 4),   -- 1 Bàn cần 4 Chân bàn
-(3, 4, 0.5), -- 1 Chân bàn cần 0.5 khối gỗ
-(3, 5, 0.1); -- 1 Chân bàn cần 0.1 hộp ốc vít
+-- Thêm Item (2 Sản phẩm, 2 Vật tư) 📦
+INSERT INTO Item (item_name, item_type, stock_quantity) 
+VALUES ('Bàn gỗ', 'SanPham', 10), 
+       ('Ghế gỗ', 'SanPham', 20),
+       ('Gỗ công nghiệp', 'VatTu', 100), 
+       ('Ốc vít', 'VatTu', 500);
 
--- 3. Nạp Quy trình làm Cái Bàn (Routing)
-INSERT INTO Routing (item_id) VALUES (1); -- Khai báo quy trình cho Bàn (ID = 1)
+-- Thêm Nhà cung cấp 🏭
+INSERT INTO Supplier (supplier_name, contact_phone) 
+VALUES ('Gỗ An Cường', '0901234567'), 
+       ('Kim Khí Hòa Phát', '0987654321');
 
--- 4. Nạp 2 công đoạn (Cắt ráp & Sơn) vào Routing_Step
-INSERT INTO Routing_Step (routing_id, step_order, operation_name, machine_id, estimated_time_minutes) VALUES
-(1, 1, N'Lắp ráp phần mộc', 'TO-MOC', 30),
-(1, 2, N'Phun sơn bóng', 'P-SON', 45);
+-- Thêm Khách hàng 🤝
+INSERT INTO Customer (customer_name, phone, email) 
+VALUES ('Nguyễn Văn A', '0911111111', 'a@gmail.com');
 
--- 5. Nạp Tồn kho ban đầu (Inventory)
-INSERT INTO Inventory (item_id, quantity_on_hand, quantity_reserved) VALUES
-(4, 100, 0), -- Gỗ thô: Đang có sẵn 100 khối
-(5, 50, 0);  -- Ốc vít: Đang có sẵn 50 hộp
+-- Thêm Danh sách lỗi ⚠️
+INSERT INTO Defect_Reason (reason_name) 
+VALUES ('Trầy xước bề mặt'), 
+       ('Nứt gỗ'), 
+       ('Thiếu ốc vít');
+
+-- Thêm Quy trình tổng ⚙️
+INSERT INTO Routing (routing_name) 
+VALUES ('Quy trình sản xuất Bàn'), 
+       ('Quy trình sản xuất Ghế');
+
+-- ==========================================
+-- 2. CHÈN DỮ LIỆU CÁC BẢNG GIAO DỊCH (Có khóa ngoại)
+-- ==========================================
+
+-- Thêm Công đoạn chi tiết (Cho Quy trình Bàn: ID 1) ⏱️
+INSERT INTO Routing_Step (routing_id, step_name, estimated_time, is_inspected) 
+VALUES (1, 'Cắt gỗ', 30, 0), 
+       (1, 'Lắp ráp Bàn', 45, 1);
+
+-- Thêm BOM (Công thức làm 1 Bàn gỗ: Cần 2 Gỗ công nghiệp, 20 Ốc vít) 📜
+INSERT INTO BOM (product_item_id, material_item_id, quantity_required) 
+VALUES (1, 3, 2), -- 1 Bàn cần 2 Gỗ
+       (1, 4, 20); -- 1 Bàn cần 20 Ốc vít
+
+-- Thêm Cảnh báo mua hàng (Mua thêm 50 Gỗ từ An Cường) 🛒
+INSERT INTO Purchase_Order (item_id, supplier_id, required_quantity, status) 
+VALUES (3, 1, 50, 'Pending');
+
+-- Thêm Lệnh sản xuất (Sản xuất 5 Bàn gỗ, đang chạy) 📋
+INSERT INTO Work_Order (product_item_id, routing_id, order_quantity, status) 
+VALUES (1, 1, 5, 'InProgress');
+
+-- Thêm Nhật ký xưởng (Công nhân 1 làm xong bước Cắt gỗ cho Lệnh SX 1, không lỗi) 📝
+INSERT INTO Production_Log (wo_id, step_id, worker_user_id, produced_quantity, defect_id) 
+VALUES (1, 1, 2, 5, NULL);
+
+-- Thêm Hóa đơn (Chốt đơn Lệnh SX 1 cho Khách hàng 1) 💳
+INSERT INTO Bill (wo_id, customer_id, total_amount) 
+VALUES (1, 1, 2500000.00);
