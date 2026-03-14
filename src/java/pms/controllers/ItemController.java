@@ -70,7 +70,6 @@ public class ItemController extends HttpServlet {
                 request.setAttribute("msg", "Error, can not delete: " + id);
             }
         }
-
         url = "BangDieuKien.jsp";
 
     }
@@ -100,7 +99,7 @@ public class ItemController extends HttpServlet {
         }
 
         ItemDTO i = new ItemDTO(id, itemCode, name, type, standartCost);
-        if (!error.isEmpty()) {
+        if (error.isEmpty()) {
             if (idao.Add(i)) {
                 msg = "Add thanh cong";
             } else {
@@ -145,11 +144,11 @@ public class ItemController extends HttpServlet {
             }
 
             i = new ItemDTO(id, itemCode, name, type, standartCost);
-            if (!error.isEmpty()) {
+            if (error.isEmpty()) {
                 if (idao.Update(i)) {
-                    msg = "Add thanh cong";
+                    msg = "update thanh cong";
                 } else {
-                    error = "Add that bai";
+                    error = "update that bai";
                 }
             }
 

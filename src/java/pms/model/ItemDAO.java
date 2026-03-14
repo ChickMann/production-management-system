@@ -64,13 +64,12 @@ public class ItemDAO {
         int result = 0;
         try {
             Connection con = DBUtils.getConnection();
-            String sql = "INSERT into Item values(?,?,?,?,?,?)";
+            String sql = "INSERT into Item values(?,?,?,?)";
             PreparedStatement ps = con.prepareStatement(sql);
-             ps.setInt(1, i.getItemID());
-            ps.setString(2, i.getItemCode());
-            ps.setString(3, i.getName());
-            ps.setString(4, i.getType());
-            ps.setDouble(5, i.getStandardCost());
+            ps.setString(1, i.getItemCode());
+            ps.setString(2, i.getName());
+            ps.setString(3, i.getType());
+            ps.setDouble(4, i.getStandardCost());
             result = ps.executeUpdate();
         } catch (Exception e) {
         }
@@ -82,9 +81,9 @@ public class ItemDAO {
         try {
             Connection con = DBUtils.getConnection();
             String sql = "Update Item SET"
-                    + " item_code = ?"
-                    + " name = ?"
-                    + " type = ?"
+                    + " item_code = ?,"
+                    + " name = ?,"
+                    + " type = ?,"
                     + " standard_cost = ?"
                     + " Where item_id = ?";
             PreparedStatement ps = con.prepareStatement(sql);

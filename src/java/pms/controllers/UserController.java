@@ -72,7 +72,7 @@ public class UserController extends HttpServlet {
 
             UserDAO udao = new UserDAO();
             UserDTO user = udao.Login(username, password);
-            ArrayList<UserDTO> eList = udao.EmployeeList();
+            ArrayList<UserDTO> eList = udao.EmployeeList("employee");
 
             if (user != null) {
                 url = "BangDieuKien.jsp";
@@ -87,7 +87,7 @@ public class UserController extends HttpServlet {
             }
         } else {
             UserDAO udao = new UserDAO();
-            ArrayList<UserDTO> eList = udao.EmployeeList();
+            ArrayList<UserDTO> eList = udao.EmployeeList("employee");
             url = "BangDieuKien.jsp";
             request.setAttribute("eList", eList);
         }
@@ -116,7 +116,7 @@ public class UserController extends HttpServlet {
                 request.setAttribute("msg", "Error, can not delete: " + id);
             }
         }
-        ArrayList<UserDTO> eList = udao.EmployeeList();
+        ArrayList<UserDTO> eList = udao.EmployeeList("employee");
         request.setAttribute("eList", eList);
         url = "BangDieuKien.jsp";
 
@@ -130,35 +130,29 @@ public class UserController extends HttpServlet {
         String action = request.getParameter("action");
         request.setAttribute("mode", "add");
         if (action.equals("saveAddUser")) {
-            String s_id = request.getParameter("id");
             String username = request.getParameter("username");
-            String password = request.getParameter("fullName");
+            String password = request.getParameter("password");
+            String fullName = request.getParameter("fullName");
             String role = request.getParameter("role");
-            int id = 0;
-            try {
-                id = Integer.parseInt(s_id);
-            } catch (Exception e) {
-               
-            }
 
-            UserDTO u = new UserDTO(id, username, password, username, role, true);
+            UserDTO u = new UserDTO(0, username, password, fullName, role, true);
             if (error.isEmpty()) {
                 if (udao.Add(u)) {
                     msg = "Add thanh cong";
                 } else {
                     error = "Add that bai";
+                    udao.ReseedSQL();
                 }
             }
 
             request.setAttribute("user", u);
             request.setAttribute("msg", msg);
             request.setAttribute("error", error);
-        } else {
-            int index = udao.GetNextID();
+        }
+        int index = udao.GetCurrentID();
 
-            if (index > 0) {
-                request.setAttribute("index", index);
-            }
+        if (index > 0) {
+            request.setAttribute("index", index);
         }
 
         url = "user-form.jsp";
@@ -172,26 +166,29 @@ public class UserController extends HttpServlet {
 
         String action = request.getParameter("action");
         String s_id = request.getParameter("id");
-
-        UserDTO u = udao.SearchByID(s_id);
+        int id = 0;
+        try {
+            id = Integer.parseInt(s_id);
+        } catch (Exception e) {
+            error += "id phai la so nguyen duong";
+        }
+        UserDTO u = udao.SearchByID(id + 1);
         request.setAttribute("mode", "update");
         if (action.equals("saveUpdateUser")) {
             String username = request.getParameter("username");
-            String password = request.getParameter("fullName");
+            String password = request.getParameter("password");
+            String fullName = request.getParameter("fullName");
             String role = request.getParameter("role");
-            int id = 0;
-            try {
-                id = Integer.parseInt(s_id);
-            } catch (Exception e) {
-                error += "id phai la so nguyen duong";
-            }
-
-            u = new UserDTO(id, username, password, username, role, true);
-            if (!error.isEmpty()) {
+            System.err.println(id);
+            System.err.println(password);
+            System.err.println(fullName);
+            System.err.println(role);
+            u = new UserDTO(id, username, password, fullName, role, true);
+            if (error.isEmpty()) {
                 if (udao.Update(u)) {
-                    msg = "Add thanh cong";
+                    msg = "update thanh cong";
                 } else {
-                    error = "Add that bai";
+                    error = "update that bai";
                 }
             }
 

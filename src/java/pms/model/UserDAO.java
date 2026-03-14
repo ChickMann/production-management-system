@@ -41,8 +41,9 @@ public class UserDAO {
         return SearchByColumn("username", username);
     }
 
-    public UserDTO SearchByID(String id) {
-        return SearchByColumn("user_id", id);
+    public UserDTO SearchByID(int id) {
+        String s_id = id + "";
+        return SearchByColumn("user_id", s_id);
     }
 
     public UserDTO Login(String username, String password) {
@@ -53,13 +54,13 @@ public class UserDAO {
         return null;
     }
 
-    public ArrayList<UserDTO> EmployeeList() {
+    public ArrayList<UserDTO> EmployeeList(String role) {
         ArrayList<UserDTO> eList = new ArrayList<>();
         try {
             Connection con = DBUtils.getConnection();
             String sql = "SELECT * FROM [User] WHERE status = 1 AND role = ?";
             PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, "employee");
+            ps.setString(1, role);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 eList.add(new UserDTO(rs.getInt("user_id") - 1,
@@ -95,14 +96,13 @@ public class UserDAO {
         int result = 0;
         try {
             Connection con = DBUtils.getConnection();
-            String sql = "INSERT into [User] values(?,?,?,?,?,?)";
+            String sql = "INSERT INTO [User] VALUES(?,?,?,?,?)";
             PreparedStatement ps = con.prepareStatement(sql);
-            ps.setInt(1, u.getId());
-            ps.setString(2, u.getUsername());
-            ps.setString(3, u.getPassword());
-            ps.setString(4, u.getFullName());
-            ps.setString(5, u.getRole());
-            ps.setBoolean(6, true);
+            ps.setString(1, u.getUsername());
+            ps.setString(2, u.getPassword());
+            ps.setString(3, u.getFullName());
+            ps.setString(4, u.getRole());
+            ps.setBoolean(5, true);
             result = ps.executeUpdate();
         } catch (Exception e) {
         }
@@ -110,17 +110,15 @@ public class UserDAO {
     }
 
     public boolean Update(UserDTO u) {
-        int result = 0;
-        try {
-            Connection con = DBUtils.getConnection();
-            String sql = "Update [User] SET"
-                    + " username = ?"
-                    + " password = ?"
-                    + " full_name = ?"
-                    + " role = ?"
-                    + " status = ?"
-                    + " Where user_id = ?";
-            PreparedStatement ps = con.prepareStatement(sql);
+        String sql = "UPDATE [User] SET "
+                + " username = ?, "
+                + " password = ?, "
+                + " full_name = ?, "
+                + " role = ?, "
+                + " status = ? "
+                + " WHERE user_id = ?";
+
+        try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
@@ -128,24 +126,39 @@ public class UserDAO {
             ps.setString(4, u.getRole());
             ps.setBoolean(5, true);
             ps.setInt(6, u.getId());
-            result = ps.executeUpdate();
+
+            return ps.executeUpdate() > 0;
+
         } catch (Exception e) {
+            e.printStackTrace();
         }
-        return result > 0;
+        return false;
     }
-    
-    public int GetNextID(){
+
+    public int GetCurrentID() {
         try {
             Connection con = DBUtils.getConnection();
             String sql = "SELECT TOP 1 user_id FROM [User] ORDER BY user_id DESC";
             PreparedStatement ps = con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-            if(rs.next()){
-               
-                return Integer.parseInt(rs.getString("user_id"))+1;
+            if (rs.next()) {
+
+                return Integer.parseInt(rs.getString("user_id"));
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return -1;
+    }
+
+    public void ReseedSQL() {
+        try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('[User]', RESEED, "
+                + GetCurrentID() + ")")) {
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
