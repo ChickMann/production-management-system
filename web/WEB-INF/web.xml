@@ -8,6 +8,14 @@
         <servlet-name>UserController</servlet-name>
         <servlet-class>pms.controllers.UserController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ItemController</servlet-name>
+        <servlet-class>pms.controllers.ItemController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>BomController</servlet-name>
+        <servlet-class>pms.controllers.BomController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>MainController</servlet-name>
         <url-pattern>/MainController</url-pattern>
@@ -15,6 +23,14 @@
     <servlet-mapping>
         <servlet-name>UserController</servlet-name>
         <url-pattern>/UserController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ItemController</servlet-name>
+        <url-pattern>/ItemController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BomController</servlet-name>
+        <url-pattern>/BomController</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

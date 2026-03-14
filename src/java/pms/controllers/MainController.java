@@ -34,9 +34,13 @@ public class MainController extends HttpServlet {
         
         String url = "login.jsp";
         String action = request.getParameter("action");
-        
-        if(action.equals("login")|| action.equals("logout") || action.contains("User")){
+        if(action.contains("User")){
             url = "UserController";
+        }else if(action.contains("Item")){
+            url = "ItemController";
+        } else if(action.contains("Bom"))
+        {
+            url = "BomController";
         }
         
         request.getRequestDispatcher(url).forward(request, response);

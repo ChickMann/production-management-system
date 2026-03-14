@@ -39,22 +39,25 @@ public class UserController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
+        System.err.println(action);
 
         switch (action) {
-            case "login":
+            case "loginUser":
                 DoLogin(request);
                 break;
-            case "logout":
+            case "logoutUser":
                 DoLogout(request);
                 break;
             case "addUser":
-                DoLogin(request);
+            case "saveAddUser":
+                AddUser(request);
                 break;
             case "removeUser":
                 RemoveUser(request);
                 break;
             case "updateUser":
-                DoLogin(request);
+            case "saveUpdateUser":
+                UpdateUser(request);
                 break;
         }
 
@@ -119,12 +122,86 @@ public class UserController extends HttpServlet {
 
     }
 
-    private void AddUser() {
+    private void AddUser(HttpServletRequest request) {
+        String msg = "";
+        String error = "";
 
+        UserDAO udao = new UserDAO();
+        String action = request.getParameter("action");
+        request.setAttribute("mode", "add");
+        if (action.equals("saveAddUser")) {
+            String s_id = request.getParameter("id");
+            String username = request.getParameter("username");
+            String password = request.getParameter("fullName");
+            String role = request.getParameter("role");
+            int id = 0;
+            try {
+                id = Integer.parseInt(s_id);
+            } catch (Exception e) {
+               
+            }
+
+            UserDTO u = new UserDTO(id, username, password, username, role, true);
+            if (error.isEmpty()) {
+                if (udao.Add(u)) {
+                    msg = "Add thanh cong";
+                } else {
+                    error = "Add that bai";
+                }
+            }
+
+            request.setAttribute("user", u);
+            request.setAttribute("msg", msg);
+            request.setAttribute("error", error);
+        } else {
+            int index = udao.GetNextID();
+
+            if (index > 0) {
+                request.setAttribute("index", index);
+            }
+        }
+
+        url = "user-form.jsp";
     }
 
-    private void UpdateUser() {
+    private void UpdateUser(HttpServletRequest request) {
+        String msg = "";
+        String error = "";
 
+        UserDAO udao = new UserDAO();
+
+        String action = request.getParameter("action");
+        String s_id = request.getParameter("id");
+
+        UserDTO u = udao.SearchByID(s_id);
+        request.setAttribute("mode", "update");
+        if (action.equals("saveUpdateUser")) {
+            String username = request.getParameter("username");
+            String password = request.getParameter("fullName");
+            String role = request.getParameter("role");
+            int id = 0;
+            try {
+                id = Integer.parseInt(s_id);
+            } catch (Exception e) {
+                error += "id phai la so nguyen duong";
+            }
+
+            u = new UserDTO(id, username, password, username, role, true);
+            if (!error.isEmpty()) {
+                if (udao.Update(u)) {
+                    msg = "Add thanh cong";
+                } else {
+                    error = "Add that bai";
+                }
+            }
+
+            request.setAttribute("msg", msg);
+            request.setAttribute("error", error);
+        }
+
+        request.setAttribute("u", u);
+
+        url = "user-form.jsp";
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

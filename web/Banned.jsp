@@ -15,7 +15,7 @@
     <c:if test="${not empty user}">
         <h1>Hello ${user.fullName}</h1><br/>
         <h2>Your Account is banned!</h2>
-          <a href="MainController?action=logout">Logout</a>
+          <a href="MainController?action=logoutUser">Logout</a>
     </c:if>
 
 </body>

@@ -23,4 +23,10 @@ public class DBUtils implements Serializable {
         conn = DriverManager.getConnection(url, DB_USER_NAME, DB_PASSWORD);
         return conn;
     }
+    public static void main(String[] args) {
+        try {
+            System.out.println(getConnection());
+        } catch (Exception e) {
+        }
+    }
 }

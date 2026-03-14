@@ -7,9 +7,10 @@
         <title>Quản lý nhân viên</title>
     </head>
     <body>
+        
         <c:if test="${not empty user}">
             <h1>Hello ${user.fullName}</h1><br/>
-
+             <a href="MainController?action=addUser">Add</a>
             <c:if test="${user.role eq 'admin'}">
                 <c:choose>
                     <c:when test="${empty eList}"> 
@@ -56,7 +57,8 @@
                 <a href="MainController?action=addUser">Add employee</a> <br/><br/>
             </c:if>
 
-            <a href="MainController?action=logout">Logout</a>
+            <a href="MainController?action=logoutUser">Logout</a>
         </c:if>
+            
     </body>
 </html>

@@ -13,7 +13,7 @@
     </head>
     <body>
         <form action="MainController" method="post">
-            <input type="hidden" name="action" value="login"/>
+            <input type="hidden" name="action" value="loginUser"/>
             Username: <input type="text" name="txtUsername" required /><br/>
             Password: <input type="password" name="txtPassword" required/> <br/>
             <input type="submit" value="Login"/> <br/>
