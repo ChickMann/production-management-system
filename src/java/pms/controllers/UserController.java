@@ -94,9 +94,7 @@ public class UserController extends HttpServlet {
                     ArrayList<UserDTO> eList = udao.EmployeeList("employee");
                     request.setAttribute("eList", eList);
                 }
-                // Always load these if we want both to see them, 
-                // but requirement says "employee has right to edit item and bom"
-                // I'll load them for everybody to be safe, but restrict actions in JSP
+              
                 ArrayList<ItemDTO> itemList = idao.ItemList();
                 java.util.ArrayList<BomDTO> bomList = bdao.BomList();
                 request.setAttribute("itemList", itemList);

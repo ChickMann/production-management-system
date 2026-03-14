@@ -23,5 +23,6 @@
         </form>
             <p style="color: green">${msg}</p><br/>
             <p style="color: red">${error}</p>
+            <a href="MainController?action=loginUser">Back to Dashboard</a>
     </body>
 </html>

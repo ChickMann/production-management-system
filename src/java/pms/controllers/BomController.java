@@ -6,6 +6,7 @@ package pms.controllers;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +53,9 @@ public class BomController extends HttpServlet {
             case "saveUpdateBom":
                 UpdateBom(request);
                 break;
+            case "searchBom":
+                SearchBom(request);
+                break;
         }
 
         request.getRequestDispatcher(url).forward(request, response);
@@ -71,7 +75,7 @@ public class BomController extends HttpServlet {
         }
         java.util.ArrayList<BomDTO> bomList = bdao.BomList();
         request.setAttribute("bomList", bomList);
-        url = "BangDieuKien.jsp";
+        url = "SearchBom.jsp";
     }
 
     private void AddBom(HttpServletRequest request) {
@@ -164,6 +168,7 @@ public class BomController extends HttpServlet {
                     msg = "Cập nhật thành công";
                 } else {
                     error = "Cập nhật thất bại";
+                    bdao.ReseedSQL();
                 }
             }
             request.setAttribute("msg", msg);
@@ -172,6 +177,21 @@ public class BomController extends HttpServlet {
 
         request.setAttribute("bom", b);
         url = "bom-form.jsp";
+    }
+
+    private void SearchBom(HttpServletRequest request) {
+        String keyword = request.getParameter("keyword");
+        BomDAO bdao = new BomDAO();
+        ArrayList<BomDTO> bomList = new ArrayList<>();
+        if (keyword.trim().length() > 0) {
+            bomList = bdao.FilterByID(keyword);
+        } else {
+            bomList = bdao.BomList();
+        }
+
+        request.setAttribute("bomList", bomList);
+        request.setAttribute("keyword", keyword);
+        url = "SearchBom.jsp";
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

@@ -19,11 +19,12 @@
             Item Code: <input type="text" name="itemCode" value="${item.itemCode}" required/><br/>
             Name: <input type="text" name="name" value="${item.name}" required/><br/>
             Type: <input type="text" name="type" value="${item.type}" required/><br/>
-            Standard Cost: <input type="number" step="0.01" name="standardCost" value="${item.standardCost}" required/><br/>
+            Standard Cost: <input type="number" step="0.01" min="0" name="standardCost" value="${item.standardCost}" required/><br/>
             <input type="submit" value="${mode == 'update' ? 'Update' : 'Add'}"/><br/>
         </form>
         <p style="color: green">${msg}</p><br/>
         <p style="color: red">${error}</p>
         <a href="MainController?action=loginUser">Back to Dashboard</a>
+        
     </body>
 </html>

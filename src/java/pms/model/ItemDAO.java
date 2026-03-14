@@ -15,10 +15,11 @@ import pms.utils.DBUtils;
  * @author BAO
  */
 public class ItemDAO {
+
     private ItemDTO SearchByColumn(String column, String value) {
         try {
             Connection con = DBUtils.getConnection();
-            String sql = "SELECT * FROM item WHERE " + column + " = ?";
+            String sql = "SELECT * FROM item WHERE status =1 And " + column + " = ?";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setString(1, value);
             ResultSet rs = ps.executeQuery();
@@ -35,6 +36,28 @@ public class ItemDAO {
         return null;
     }
 
+    private ArrayList<ItemDTO> FilterByColumn(String column, String value) {
+        ArrayList<ItemDTO> iList = new ArrayList<>();
+        try {
+            Connection con = DBUtils.getConnection();
+            String sql = "SELECT * FROM item WHERE status =1 And " + column + " LIKE ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, "%" + value + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                iList.add(new ItemDTO(rs.getInt("item_id"),
+                        rs.getString("item_code"),
+                        rs.getString("name"),
+                        rs.getString("type"),
+                        rs.getDouble("standard_cost"))
+                );
+            }
+            return iList;
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
     public ItemDTO SearchByCode(String code) {
         return SearchByColumn("item_code", code);
     }
@@ -43,8 +66,11 @@ public class ItemDAO {
         return SearchByColumn("item_id", id);
     }
 
-  
+    public ArrayList<ItemDTO> FilterByName(String name) {
+        return FilterByColumn("name", name);
+    }
 
+   
 
     public Boolean SoftDelete(String id) {
         int result = 0;
@@ -98,6 +124,7 @@ public class ItemDAO {
         }
         return result > 0;
     }
+
     public int GetCurrentID() {
         try {
             Connection con = DBUtils.getConnection();
@@ -130,5 +157,16 @@ public class ItemDAO {
         } catch (Exception e) {
         }
         return list;
+    }
+    
+      public void ReseedSQL() {
+        try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('item', RESEED, "
+                + GetCurrentID() + ")")) {
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

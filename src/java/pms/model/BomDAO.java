@@ -7,6 +7,7 @@ package pms.model;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import pms.utils.DBUtils;
 
 /**
@@ -18,7 +19,7 @@ public class BomDAO {
     private BomDTO SearchByColumn(String column, String value) {
         try {
             Connection con = DBUtils.getConnection();
-            String sql = "SELECT * FROM BOM WHERE " + column + " = ?";
+            String sql = "SELECT * FROM BOM WHERE status =1 And " + column + " = ?";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setString(1, value);
             ResultSet rs = ps.executeQuery();
@@ -34,6 +35,31 @@ public class BomDAO {
         return null;
     }
 
+    private ArrayList<BomDTO> FilterByColumn(String column, String value) {
+        ArrayList<BomDTO> bList = new ArrayList<>();
+        try {
+            Connection con = DBUtils.getConnection();
+            String sql = "SELECT * FROM BOM WHERE status =1 And " + column + " LIKE ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, "%" + value + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                bList.add(new BomDTO(rs.getInt("bom_id"),
+                        rs.getInt("parent_item_id"),
+                        rs.getInt("child_item_id"),
+                        rs.getFloat("quantity"))
+                );
+            }
+            return bList;
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+
+    public ArrayList<BomDTO> FilterByID(String id) {
+        return FilterByColumn("bom_id", id);
+    }
 
     public BomDTO SearchByID(String id) {
         return SearchByColumn("bom_id", id);
@@ -105,7 +131,7 @@ public class BomDAO {
         return 1;
     }
 
-    public java.util.ArrayList<BomDTO> BomList() {
+    public ArrayList<BomDTO> BomList() {
         java.util.ArrayList<BomDTO> list = new java.util.ArrayList<>();
         try {
             Connection con = DBUtils.getConnection();
@@ -122,5 +148,16 @@ public class BomDAO {
         } catch (Exception e) {
         }
         return list;
+    }
+    
+    public void ReseedSQL() {
+        try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('BOM', RESEED, "
+                + GetCurrentID() + ")")) {
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

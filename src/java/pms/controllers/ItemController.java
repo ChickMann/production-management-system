@@ -54,6 +54,9 @@ public class ItemController extends HttpServlet {
             case "saveUpdateItem":
                 UpdateItem(request);
                 break;
+            case "searchItem":
+                SearchItem(request);
+                break;
         }
 
         request.getRequestDispatcher(url).forward(request, response);
@@ -73,7 +76,7 @@ public class ItemController extends HttpServlet {
         }
         ArrayList<ItemDTO> itemList = idao.ItemList();
         request.setAttribute("itemList", itemList);
-        url = "BangDieuKien.jsp";
+        url = "SearchItem.jsp";
     }
 
     private void AddItem(HttpServletRequest request) {
@@ -84,11 +87,6 @@ public class ItemController extends HttpServlet {
         String action = request.getParameter("action");
         request.setAttribute("mode", "add");
 
-        if (action.equals("saveAddAddItem")) { // Wait, MainController might send "saveAddItem" or "saveAddAddItem"? 
-            // Looking at MainController: contains("Item") -> ItemController.
-            // UserController uses saveAddUser. So ItemController should use saveAddItem.
-        }
-        
         if (action.equals("saveAddItem")) {
             String itemCode = request.getParameter("itemCode");
             String name = request.getParameter("name");
@@ -126,7 +124,7 @@ public class ItemController extends HttpServlet {
         ItemDAO idao = new ItemDAO();
         String action = request.getParameter("action");
         String s_id = request.getParameter("id");
-        
+
         ItemDTO i = idao.SearchByID(s_id);
         request.setAttribute("mode", "update");
 
@@ -149,6 +147,7 @@ public class ItemController extends HttpServlet {
                     msg = "Cập nhật thành công";
                 } else {
                     error = "Cập nhật thất bại";
+                    idao.ReseedSQL();
                 }
             }
             request.setAttribute("msg", msg);
@@ -157,6 +156,21 @@ public class ItemController extends HttpServlet {
 
         request.setAttribute("item", i);
         url = "item-form.jsp";
+    }
+
+    private void SearchItem(HttpServletRequest request) {
+        String keyword = request.getParameter("keyword");
+        ItemDAO idao = new ItemDAO();
+        ArrayList<ItemDTO> itemList = new ArrayList<>();
+        if (keyword.trim().length() > 0) {
+            itemList = idao.FilterByName(keyword);
+        }else {
+            itemList = idao.ItemList();
+        }
+
+        request.setAttribute("itemList", itemList);
+        request.setAttribute("keyword", keyword);
+        url = "SearchItem.jsp";
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
