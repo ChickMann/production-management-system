@@ -42,12 +42,14 @@ public class BomController extends HttpServlet {
 
         switch (action) {
             case "addBom":
+            case "saveAddBom":
                 AddBom(request);
                 break;
-            case "deleteBom":
+            case "removeBom":
                 RemoveBom(request);
                 break;
             case "updateBom":
+            case "saveUpdateBom":
                 UpdateBom(request);
                 break;
         }
@@ -56,11 +58,10 @@ public class BomController extends HttpServlet {
     }
 
     private void RemoveBom(HttpServletRequest request) {
-
         String id = request.getParameter("id");
         BomDAO bdao = new BomDAO();
 
-        if (!id.isEmpty()) {
+        if (id != null && !id.isEmpty()) {
             boolean check = bdao.SoftDelete(id);
             if (check) {
                 request.setAttribute("msg", "Deleted!");
@@ -68,9 +69,9 @@ public class BomController extends HttpServlet {
                 request.setAttribute("msg", "Error, can not delete: " + id);
             }
         }
-
+        java.util.ArrayList<BomDTO> bomList = bdao.BomList();
+        request.setAttribute("bomList", bomList);
         url = "BangDieuKien.jsp";
-
     }
 
     private void AddBom(HttpServletRequest request) {
@@ -78,50 +79,47 @@ public class BomController extends HttpServlet {
         String error = "";
 
         BomDAO bdao = new BomDAO();
+        String action = request.getParameter("action");
+        request.setAttribute("mode", "add");
 
-        String s_id = request.getParameter("id");
-        String s_parentItemId = request.getParameter("parentItemId");
-        String s_childItemId = request.getParameter("childItemId");
-        String s_quantity = request.getParameter("quantity");
-        float quantity = 0;
-        try {
-            quantity = Float.parseFloat(s_quantity);
-        } catch (Exception e) {
-            error += "cost phai la so thap phan";
-        }
-        int id = 0;
-        try {
-            id = Integer.parseInt(s_id);
-        } catch (Exception e) {
-            error += "id phai la so nguyen duong";
-        }
-
-        int parentItemId = 0;
-        try {
-            parentItemId = Integer.parseInt(s_parentItemId);
-        } catch (Exception e) {
-            error += "parentItemId phai la so nguyen duong";
-        }
-        int childItemId = 0;
-        try {
-            childItemId = Integer.parseInt(s_childItemId);
-        } catch (Exception e) {
-            error += "childItemId phai la so nguyen duong";
-        }
-
-        BomDTO b = new BomDTO(id, parentItemId, childItemId, quantity);
-        if (!error.isEmpty()) {
-            if (bdao.Add(b)) {
-                msg = "Add thanh cong";
-            } else {
-                error = "Add that bai";
+        if (action.equals("saveAddBom")) {
+            String s_parentItemId = request.getParameter("parentItemId");
+            String s_childItemId = request.getParameter("childItemId");
+            String s_quantity = request.getParameter("quantity");
+            float quantity = 0;
+            try {
+                quantity = Float.parseFloat(s_quantity);
+            } catch (Exception e) {
+                error += "quantity phải là số; ";
             }
+            int parentItemId = 0;
+            try {
+                parentItemId = Integer.parseInt(s_parentItemId);
+            } catch (Exception e) {
+                error += "parentItemId phải là số nguyên; ";
+            }
+            int childItemId = 0;
+            try {
+                childItemId = Integer.parseInt(s_childItemId);
+            } catch (Exception e) {
+                error += "childItemId phải là số nguyên; ";
+            }
+
+            BomDTO b = new BomDTO(0, parentItemId, childItemId, quantity);
+            if (error.isEmpty()) {
+                if (bdao.Add(b)) {
+                    msg = "Thêm thành công";
+                } else {
+                    error = "Thêm thất bại";
+                }
+            }
+            request.setAttribute("bom", b);
+            request.setAttribute("msg", msg);
+            request.setAttribute("error", error);
         }
 
-        request.setAttribute("bom", b);
-        request.setAttribute("msg", msg);
-        request.setAttribute("error", error);
-
+        int index = bdao.GetCurrentID();
+        request.setAttribute("index", index);
         url = "bom-form.jsp";
     }
 
@@ -130,58 +128,49 @@ public class BomController extends HttpServlet {
         String error = "";
 
         BomDAO bdao = new BomDAO();
-
         String action = request.getParameter("action");
         String s_id = request.getParameter("id");
 
         BomDTO b = bdao.SearchByID(s_id);
-        
+        request.setAttribute("mode", "update");
 
         if (action.equals("saveUpdateBom")) {
             String s_parentItemId = request.getParameter("parentItemId");
             String s_childItemId = request.getParameter("childItemId");
             String s_quantity = request.getParameter("quantity");
-             float quantity = 0;
-        try {
-            quantity = Float.parseFloat(s_quantity);
-        } catch (Exception e) {
-            error += "cost phai la so thap phan";
-        }
-        int id = 0;
-        try {
-            id = Integer.parseInt(s_id);
-        } catch (Exception e) {
-            error += "id phai la so nguyen duong";
-        }
+            float quantity = 0;
+            try {
+                quantity = Float.parseFloat(s_quantity);
+            } catch (Exception e) {
+                error += "quantity phải là số; ";
+            }
+            int parentItemId = 0;
+            try {
+                parentItemId = Integer.parseInt(s_parentItemId);
+            } catch (Exception e) {
+                error += "parentItemId phải là số nguyên; ";
+            }
+            int childItemId = 0;
+            try {
+                childItemId = Integer.parseInt(s_childItemId);
+            } catch (Exception e) {
+                error += "childItemId phải là số nguyên; ";
+            }
+            int id = Integer.parseInt(s_id);
 
-        int parentItemId = 0;
-        try {
-            parentItemId = Integer.parseInt(s_parentItemId);
-        } catch (Exception e) {
-            error += "parentItemId phai la so nguyen duong";
-        }
-        int childItemId = 0;
-        try {
-            childItemId = Integer.parseInt(s_childItemId);
-        } catch (Exception e) {
-            error += "childItemId phai la so nguyen duong";
-        }
-
-         b = new BomDTO(id, parentItemId, childItemId, quantity);
-            if (!error.isEmpty()) {
+            b = new BomDTO(id, parentItemId, childItemId, quantity);
+            if (error.isEmpty()) {
                 if (bdao.Update(b)) {
-                    msg = "Add thanh cong";
+                    msg = "Cập nhật thành công";
                 } else {
-                    error = "Add that bai";
+                    error = "Cập nhật thất bại";
                 }
             }
-
             request.setAttribute("msg", msg);
             request.setAttribute("error", error);
         }
 
         request.setAttribute("bom", b);
-
         url = "bom-form.jsp";
     }
 

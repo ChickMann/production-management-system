@@ -98,4 +98,37 @@ public class ItemDAO {
         }
         return result > 0;
     }
+    public int GetCurrentID() {
+        try {
+            Connection con = DBUtils.getConnection();
+            String sql = "SELECT MAX(item_id) as max_id FROM item";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("max_id") + 1;
+            }
+        } catch (Exception e) {
+        }
+        return 1;
+    }
+
+    public ArrayList<ItemDTO> ItemList() {
+        ArrayList<ItemDTO> list = new ArrayList<>();
+        try {
+            Connection con = DBUtils.getConnection();
+            String sql = "SELECT * FROM item WHERE status = 1";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new ItemDTO(rs.getInt("item_id"),
+                        rs.getString("item_code"),
+                        rs.getString("name"),
+                        rs.getString("type"),
+                        rs.getDouble("standard_cost")
+                ));
+            }
+        } catch (Exception e) {
+        }
+        return list;
+    }
 }

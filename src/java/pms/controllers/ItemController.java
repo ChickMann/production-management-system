@@ -44,12 +44,14 @@ public class ItemController extends HttpServlet {
 
         switch (action) {
             case "addItem":
+            case "saveAddItem":
                 AddItem(request);
                 break;
-            case "deleteItem":
+            case "removeItem":
                 RemoveItem(request);
                 break;
             case "updateItem":
+            case "saveUpdateItem":
                 UpdateItem(request);
                 break;
         }
@@ -58,11 +60,10 @@ public class ItemController extends HttpServlet {
     }
 
     private void RemoveItem(HttpServletRequest request) {
-
         String id = request.getParameter("id");
         ItemDAO idao = new ItemDAO();
 
-        if (!id.isEmpty()) {
+        if (id != null && !id.isEmpty()) {
             boolean check = idao.SoftDelete(id);
             if (check) {
                 request.setAttribute("msg", "Deleted!");
@@ -70,8 +71,9 @@ public class ItemController extends HttpServlet {
                 request.setAttribute("msg", "Error, can not delete: " + id);
             }
         }
+        ArrayList<ItemDTO> itemList = idao.ItemList();
+        request.setAttribute("itemList", itemList);
         url = "BangDieuKien.jsp";
-
     }
 
     private void AddItem(HttpServletRequest request) {
@@ -79,38 +81,41 @@ public class ItemController extends HttpServlet {
         String error = "";
 
         ItemDAO idao = new ItemDAO();
+        String action = request.getParameter("action");
+        request.setAttribute("mode", "add");
 
-        String s_id = request.getParameter("itemID");
-        String itemCode = request.getParameter("itemCode");
-        String name = request.getParameter("name");
-        String type = request.getParameter("type");
-        String s_standartCost = request.getParameter("standardCost");
-        double standartCost = 0;
-        try {
-            standartCost = Double.parseDouble(s_standartCost);
-        } catch (Exception e) {
-            error += "cost phai la so thap phan";
+        if (action.equals("saveAddAddItem")) { // Wait, MainController might send "saveAddItem" or "saveAddAddItem"? 
+            // Looking at MainController: contains("Item") -> ItemController.
+            // UserController uses saveAddUser. So ItemController should use saveAddItem.
         }
-        int id = 0;
-        try {
-            id = Integer.parseInt(s_id);
-        } catch (Exception e) {
-            error += "id phai la so nguyen duong";
-        }
-
-        ItemDTO i = new ItemDTO(id, itemCode, name, type, standartCost);
-        if (error.isEmpty()) {
-            if (idao.Add(i)) {
-                msg = "Add thanh cong";
-            } else {
-                error = "Add that bai";
+        
+        if (action.equals("saveAddItem")) {
+            String itemCode = request.getParameter("itemCode");
+            String name = request.getParameter("name");
+            String type = request.getParameter("type");
+            String s_standardCost = request.getParameter("standardCost");
+            double standardCost = 0;
+            try {
+                standardCost = Double.parseDouble(s_standardCost);
+            } catch (Exception e) {
+                error += "standard cost phải là số; ";
             }
+
+            ItemDTO i = new ItemDTO(0, itemCode, name, type, standardCost);
+            if (error.isEmpty()) {
+                if (idao.Add(i)) {
+                    msg = "Thêm thành công";
+                } else {
+                    error = "Thêm thất bại";
+                }
+            }
+            request.setAttribute("item", i);
+            request.setAttribute("msg", msg);
+            request.setAttribute("error", error);
         }
 
-        request.setAttribute("item", i);
-        request.setAttribute("msg", msg);
-        request.setAttribute("error", error);
-
+        int index = idao.GetCurrentID();
+        request.setAttribute("index", index);
         url = "item-form.jsp";
     }
 
@@ -119,45 +124,38 @@ public class ItemController extends HttpServlet {
         String error = "";
 
         ItemDAO idao = new ItemDAO();
-
         String action = request.getParameter("action");
         String s_id = request.getParameter("id");
-
+        
         ItemDTO i = idao.SearchByID(s_id);
+        request.setAttribute("mode", "update");
 
         if (action.equals("saveUpdateItem")) {
             String itemCode = request.getParameter("itemCode");
             String name = request.getParameter("name");
             String type = request.getParameter("type");
-            String s_standartCost = request.getParameter("standardCost");
-            double standartCost = 0;
+            String s_standardCost = request.getParameter("standardCost");
+            double standardCost = 0;
             try {
-                standartCost = Double.parseDouble(s_standartCost);
+                standardCost = Double.parseDouble(s_standardCost);
             } catch (Exception e) {
-                error += "cost phai la so thap phan";
+                error += "standard cost phải là số; ";
             }
-            int id = 0;
-            try {
-                id = Integer.parseInt(s_id);
-            } catch (Exception e) {
-                error += "id phai la so nguyen duong";
-            }
+            int id = Integer.parseInt(s_id);
 
-            i = new ItemDTO(id, itemCode, name, type, standartCost);
+            i = new ItemDTO(id, itemCode, name, type, standardCost);
             if (error.isEmpty()) {
                 if (idao.Update(i)) {
-                    msg = "update thanh cong";
+                    msg = "Cập nhật thành công";
                 } else {
-                    error = "update that bai";
+                    error = "Cập nhật thất bại";
                 }
             }
-
             request.setAttribute("msg", msg);
             request.setAttribute("error", error);
         }
 
         request.setAttribute("item", i);
-
         url = "item-form.jsp";
     }
 

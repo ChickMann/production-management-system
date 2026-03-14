@@ -14,6 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import pms.model.UserDAO;
 import pms.model.UserDTO;
+import pms.model.ItemDAO;
+import pms.model.ItemDTO;
+import pms.model.BomDAO;
+import pms.model.BomDTO;
 
 /**
  *
@@ -66,32 +70,42 @@ public class UserController extends HttpServlet {
 
     private void DoLogin(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        if (session.getAttribute("user") == null) {
+        UserDTO user = (UserDTO) session.getAttribute("user");
+        
+        UserDAO udao = new UserDAO();
+        ItemDAO idao = new ItemDAO();
+        BomDAO bdao = new BomDAO();
+
+        if (user == null) {
             String username = request.getParameter("txtUsername");
             String password = request.getParameter("txtPassword");
-
-            UserDAO udao = new UserDAO();
-            UserDTO user = udao.Login(username, password);
-            ArrayList<UserDTO> eList = udao.EmployeeList("employee");
-
+            user = udao.Login(username, password);
             if (user != null) {
-                url = "BangDieuKien.jsp";
                 session.setAttribute("user", user);
-                request.setAttribute("eList", eList);
-                if (!user.isStatus()) {
-                    url = "Banned.jsp";
-                }
-            } else {
-                url = "login.jsp";
-                request.setAttribute("message", "Incorrect User ID or Password");
             }
-        } else {
-            UserDAO udao = new UserDAO();
-            ArrayList<UserDTO> eList = udao.EmployeeList("employee");
-            url = "BangDieuKien.jsp";
-            request.setAttribute("eList", eList);
         }
 
+        if (user != null) {
+            if (!user.isStatus()) {
+                url = "Banned.jsp";
+            } else {
+                url = "BangDieuKien.jsp";
+                if (user.getRole().equals("admin")) {
+                    ArrayList<UserDTO> eList = udao.EmployeeList("employee");
+                    request.setAttribute("eList", eList);
+                }
+                // Always load these if we want both to see them, 
+                // but requirement says "employee has right to edit item and bom"
+                // I'll load them for everybody to be safe, but restrict actions in JSP
+                ArrayList<ItemDTO> itemList = idao.ItemList();
+                java.util.ArrayList<BomDTO> bomList = bdao.BomList();
+                request.setAttribute("itemList", itemList);
+                request.setAttribute("bomList", bomList);
+            }
+        } else {
+            url = "login.jsp";
+            request.setAttribute("message", "Incorrect User ID or Password");
+        }
     }
 
     private void DoLogout(HttpServletRequest request) {
