@@ -17,22 +17,23 @@ import pms.utils.DBUtils;
 public class UserDAO {
 
     private UserDTO SearchByColumn(String column, String value) {
-        try {
-            Connection con = DBUtils.getConnection();
-            String sql = "SELECT * FROM [User] WHERE " + column + " = ?";
-            PreparedStatement ps = con.prepareStatement(sql);
+        String sql = "SELECT * FROM [User] WHERE " + column + " = ?";
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, value);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return new UserDTO(rs.getInt("user_id"),
-                        rs.getString("username"),
-                        rs.getString("password"),
-                        rs.getString("full_name"),
-                        rs.getString("role"),
-                        rs.getBoolean("status")
-                );
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new UserDTO(rs.getInt("user_id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("full_name"),
+                            rs.getString("role"),
+                            rs.getBoolean("status")
+                    );
+                }
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -56,34 +57,33 @@ public class UserDAO {
 
     public ArrayList<UserDTO> EmployeeList(String role) {
         ArrayList<UserDTO> eList = new ArrayList<>();
-        try {
-            Connection con = DBUtils.getConnection();
-            String sql = "SELECT * FROM [User] WHERE status = 1 AND role = ?";
-            PreparedStatement ps = con.prepareStatement(sql);
+        String sql = "SELECT * FROM [User] WHERE status = 1 AND role = ?";
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, role);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                eList.add(new UserDTO(rs.getInt("user_id") - 1,
-                        rs.getString("username"),
-                        rs.getString("password"),
-                        rs.getString("full_name"),
-                        rs.getString("role"),
-                        rs.getBoolean("status"))
-                );
-
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    eList.add(new UserDTO(rs.getInt("user_id") - 1,
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("full_name"),
+                            rs.getString("role"),
+                            rs.getBoolean("status"))
+                    );
+                }
             }
             return eList;
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
 
     public Boolean SoftDelete(String id) {
         int result = 0;
-        try {
-            Connection conn = DBUtils.getConnection();
-            String sql = "UPDATE [User] SET status=0 WHERE user_id =?";
-            PreparedStatement ps = conn.prepareStatement(sql);
+        String sql = "UPDATE [User] SET status=0 WHERE user_id =?";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             result = ps.executeUpdate();
         } catch (Exception e) {
@@ -94,10 +94,9 @@ public class UserDAO {
 
     public boolean Add(UserDTO u) {
         int result = 0;
-        try {
-            Connection con = DBUtils.getConnection();
-            String sql = "INSERT INTO [User] VALUES(?,?,?,?,?)";
-            PreparedStatement ps = con.prepareStatement(sql);
+        String sql = "INSERT INTO [User] VALUES(?,?,?,?,?)";
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
             ps.setString(3, u.getFullName());
@@ -105,6 +104,7 @@ public class UserDAO {
             ps.setBoolean(5, true);
             result = ps.executeUpdate();
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return result > 0;
     }
@@ -136,13 +136,11 @@ public class UserDAO {
     }
 
     public int GetCurrentID() {
-        try {
-            Connection con = DBUtils.getConnection();
-            String sql = "SELECT TOP 1 user_id FROM [User] ORDER BY user_id DESC";
-            PreparedStatement ps = con.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        String sql = "SELECT TOP 1 user_id FROM [User] ORDER BY user_id DESC";
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
-
                 return Integer.parseInt(rs.getString("user_id"));
             }
         } catch (Exception e) {
