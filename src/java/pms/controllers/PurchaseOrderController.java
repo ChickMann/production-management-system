@@ -77,13 +77,14 @@ public class PurchaseOrderController extends HttpServlet {
                 String status = request.getParameter("status");
 
                 PurchaseOrderDTO po = new PurchaseOrderDTO(0, itemId, supplierId, requiredQuantity, alertDate, status);
-                
+              if (error.isEmpty()) {
                 if (pdao.Add(po)) {
-                    msg = "Thêm thành công";
+                    msg = "add thành công";
                 } else {
-                    error = "Thêm thất bại";
+                    error = "add thất bại";
+                    pdao.ReseedSQL();
                 }
-                request.setAttribute("po", po);
+            }    request.setAttribute("po", po);
             } catch (Exception e) {
                 error = "Vui lòng nhập đúng định dạng dữ liệu (ID và Số lượng là số, Ngày là yyyy-mm-dd)";
             }
@@ -91,6 +92,11 @@ public class PurchaseOrderController extends HttpServlet {
             request.setAttribute("error", error);
         }
 
+        int index = pdao.GetCurrentID();
+        if (index > 0) {
+            request.setAttribute("index", index + 1);
+        }
+        
         url = "po-form.jsp";
     }
 

@@ -73,15 +73,37 @@ public class SupplierDAO {
     }
 
     public boolean Delete(int id) {
-        int result = 0;
         String sql = "DELETE FROM Supplier WHERE supplier_id = ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
-            result = ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return result > 0;
+        return false;
+    }
+
+    public int GetCurrentID() {
+        String sql = "SELECT TOP 1 supplier_id FROM Supplier ORDER BY supplier_id DESC";
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("supplier_id");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public void ReseedSQL() {
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('Supplier', RESEED, " + GetCurrentID() + ")")) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

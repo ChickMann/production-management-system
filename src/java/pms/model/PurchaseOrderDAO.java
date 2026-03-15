@@ -90,15 +90,37 @@ public class PurchaseOrderDAO {
     }
 
     public boolean Delete(int id) {
-        int result = 0;
         String sql = "DELETE FROM Purchase_Order WHERE po_id = ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
-            result = ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return result > 0;
+        return false;
+    }
+
+    public int GetCurrentID() {
+        String sql = "SELECT TOP 1 po_id FROM Purchase_Order ORDER BY po_id DESC";
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("po_id");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public void ReseedSQL() {
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('Purchase_Order', RESEED, " + GetCurrentID() + ")")) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

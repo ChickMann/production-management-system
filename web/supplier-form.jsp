@@ -10,8 +10,8 @@
         <form action="MainController" method="post">
             <input type="hidden" name="action" value="${mode == 'update' ? 'saveUpdateSupplier' : 'saveAddSupplier'}"/> <br/>
             
-            <c:if test="${mode == 'update'}">
-                Supplier ID: <input type="text" name="id" value="${supplier.supplierId}" readonly /><br/>
+            <c:if test="${mode == 'update' or mode == 'add'}">
+                Supplier ID: <input type="text" name="id" value="${mode == 'update' ? supplier.supplierId : index}" readonly /><br/>
             </c:if>
             
             Supplier Name: <input type="text" name="supplierName" value="${supplier.supplierName}" required/><br/>

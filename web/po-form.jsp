@@ -11,8 +11,8 @@
         <form action="MainController" method="post">
             <input type="hidden" name="action" value="${mode == 'update' ? 'saveUpdatePurchaseOrder' : 'saveAddPurchaseOrder'}"/> <br/>
             
-            <c:if test="${mode == 'update'}">
-                PO ID: <input type="text" name="id" value="${po.poId}" readonly /><br/>
+            <c:if test="${mode == 'update' or mode == 'add'}">
+                PO ID: <input type="text" name="id" value="${mode == 'update' ? po.poId : index}" readonly /><br/>
             </c:if>
             
             Item ID: <input type="number" name="itemId" value="${po.itemId}" required/><br/>

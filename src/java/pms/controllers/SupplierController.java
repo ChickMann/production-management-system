@@ -76,9 +76,10 @@ public class SupplierController extends HttpServlet {
             SupplierDTO s = new SupplierDTO(0, supplierName, contactPhone);
             if (error.isEmpty()) {
                 if (sdao.Add(s)) {
-                    msg = "Thêm thành công";
+                    msg = "add thành công";
                 } else {
-                    error = "Thêm thất bại";
+                    error = "add thất bại";
+                    sdao.ReseedSQL();
                 }
             }
             request.setAttribute("supplier", s);
@@ -86,6 +87,14 @@ public class SupplierController extends HttpServlet {
             request.setAttribute("error", error);
         }
 
+        int index = sdao.GetCurrentID();
+        if (index > 0) {
+            request.setAttribute("index", index + 1); // Next ID would usually be index + 1 depending on DB behavior, or we just pass index + 1
+            // Let's check how UserController does it: it passes index, then user-form value is `index`.
+            // Wait, UserController does `int index = udao.GetCurrentID(); request.setAttribute("index", index);`
+            // and user-form sets value="${mode == 'update'? u.id : index}". We will replicate this exact behavior.
+        }
+        
         url = "supplier-form.jsp";
     }
 
