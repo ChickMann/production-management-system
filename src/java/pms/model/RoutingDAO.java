@@ -102,4 +102,23 @@ public class RoutingDAO {
         }
         return isSuccess;
     }
+    
+    // ==========================================
+    // 5. Lấy 1 Quy trình theo ID (Dùng cho form Sửa)
+    // ==========================================
+    public RoutingDTO getRoutingById(int routingId) {
+        String sql = "SELECT * FROM [dbo].[Routing] WHERE routing_id = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, routingId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new RoutingDTO(rs.getInt("routing_id"), rs.getString("routing_name"));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error in getRoutingById: " + e.getMessage());
+        }
+        return null;
+    }
 }

@@ -56,7 +56,7 @@ public class DefectReasonDAO {
              PreparedStatement ps = conn.prepareStatement(sql);) {
            
 
-            ps.setString(1, defect.getReasonName());
+            ps.setNString(1, defect.getReasonName());
             int change = ps.executeUpdate();
 
             if (change > 0) {
@@ -83,7 +83,7 @@ public class DefectReasonDAO {
             PreparedStatement ps = conn.prepareStatement(sql);) {
            
 
-            ps.setString(1, defect.getReasonName());
+            ps.setNString(1, defect.getReasonName());;
             ps.setInt(2, defect.getDefectId());
 
             int change = ps.executeUpdate();
@@ -123,5 +123,19 @@ public class DefectReasonDAO {
             System.err.println("Error delete DefectReasons: " + e.getMessage());
         }
         return isSuccess;
+    }
+    
+    public DefectReasonDTO getDefectReasonById(int defectId) {
+        String sql = "SELECT * FROM [dbo].[Defect_Reason] WHERE defect_id = ?";
+        try (Connection conn = DbUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, defectId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new DefectReasonDTO(rs.getInt("defect_id"), rs.getString("reason_name"));
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
     }
 }
