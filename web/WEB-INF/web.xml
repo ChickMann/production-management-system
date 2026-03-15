@@ -16,6 +16,14 @@
         <servlet-name>BomController</servlet-name>
         <servlet-class>pms.controllers.BomController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>SupplierController</servlet-name>
+        <servlet-class>pms.controllers.SupplierController</servlet-class>
+    </servlet>
+      <servlet>
+        <servlet-name>PurchaseOrderController</servlet-name>
+        <servlet-class>pms.controllers.PurchaseOrderController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>MainController</servlet-name>
         <url-pattern>/MainController</url-pattern>
@@ -27,6 +35,14 @@
     <servlet-mapping>
         <servlet-name>ItemController</servlet-name>
         <url-pattern>/ItemController</url-pattern>
+    </servlet-mapping>
+     <servlet-mapping>
+        <servlet-name>SupplierController</servlet-name>
+        <url-pattern>/SupplierController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PurchaseOrderController</servlet-name>
+        <url-pattern>/PurchaseOrderController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>BomController</servlet-name>

@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 public class DBUtils implements Serializable {
 
-    private static final String DB_NAME = "FactoryERP";
+    private static final String DB_NAME = "FactoryERD";
     private static final String DB_USER_NAME = "SA";
     private static final String DB_PASSWORD = "12345";
 

@@ -20,6 +20,7 @@ public class SupplierController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
+        System.err.println("adad");
 
         switch (action) {
             case "addSupplier":
@@ -35,6 +36,7 @@ public class SupplierController extends HttpServlet {
                 break;
             case "searchSupplier":
                 SearchSupplier(request);
+
                 break;
         }
 

@@ -13,30 +13,30 @@ VALUES ('admin', '123456', 'Sep'),
 
 -- Thêm Item (2 Sản phẩm, 2 Vật tư) 📦
 INSERT INTO Item (item_name, item_type, stock_quantity) 
-VALUES ('Bàn gỗ', 'SanPham', 10), 
-       ('Ghế gỗ', 'SanPham', 20),
-       ('Gỗ công nghiệp', 'VatTu', 100), 
-       ('Ốc vít', 'VatTu', 500);
+VALUES (N'Bàn gỗ', 'SanPham', 10), 
+       (N'Ghế gỗ', 'SanPham', 20),
+       (N'Gỗ công nghiệp', 'VatTu', 100), 
+       (N'Ốc vít', 'VatTu', 500);
 
 -- Thêm Nhà cung cấp 🏭
 INSERT INTO Supplier (supplier_name, contact_phone) 
-VALUES ('Gỗ An Cường', '0901234567'), 
-       ('Kim Khí Hòa Phát', '0987654321');
+VALUES (N'Gỗ An Cường', '0901234567'), 
+       (N'Kim Khí Hòa Phát', '0987654321');
 
 -- Thêm Khách hàng 🤝
 INSERT INTO Customer (customer_name, phone, email) 
-VALUES ('Nguyễn Văn A', '0911111111', 'a@gmail.com');
+VALUES (N'Nguyễn Văn A', '0911111111', 'a@gmail.com');
 
 -- Thêm Danh sách lỗi ⚠️
 INSERT INTO Defect_Reason (reason_name) 
-VALUES ('Trầy xước bề mặt'), 
-       ('Nứt gỗ'), 
-       ('Thiếu ốc vít');
+VALUES (N'Trầy xước bề mặt'), 
+       (N'Nứt gỗ'), 
+       (N'Thiếu ốc vít');
 
 -- Thêm Quy trình tổng ⚙️
 INSERT INTO Routing (routing_name) 
-VALUES ('Quy trình sản xuất Bàn'), 
-       ('Quy trình sản xuất Ghế');
+VALUES (N'Quy trình sản xuất Bàn'), 
+       (N'Quy trình sản xuất Ghế');
 
 -- ==========================================
 -- 2. CHÈN DỮ LIỆU CÁC BẢNG GIAO DỊCH (Có khóa ngoại)
@@ -44,8 +44,8 @@ VALUES ('Quy trình sản xuất Bàn'),
 
 -- Thêm Công đoạn chi tiết (Cho Quy trình Bàn: ID 1) ⏱️
 INSERT INTO Routing_Step (routing_id, step_name, estimated_time, is_inspected) 
-VALUES (1, 'Cắt gỗ', 30, 0), 
-       (1, 'Lắp ráp Bàn', 45, 1);
+VALUES (1, N'Cắt gỗ', 30, 0), 
+       (1, N'Lắp ráp Bàn', 45, 1);
 
 -- Thêm BOM (Công thức làm 1 Bàn gỗ: Cần 2 Gỗ công nghiệp, 20 Ốc vít) 📜
 INSERT INTO BOM (product_item_id, material_item_id, quantity_required) 

@@ -39,6 +39,7 @@ public class UserDAO {
     }
 
     public UserDTO SearchByName(String username) {
+        System.err.println(SearchByColumn("username", username));
         return SearchByColumn("username", username);
     }
 

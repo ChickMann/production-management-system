@@ -71,7 +71,7 @@ public class ItemDAO {
     }
 
     public ArrayList<ItemDTO> FilterByName(String name) {
-        return FilterByColumn("name", name);
+        return FilterByColumn("item_name", name);
     }
 
    
