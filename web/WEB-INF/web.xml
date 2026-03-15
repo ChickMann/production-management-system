@@ -1,59 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
     <servlet>
-        <servlet-name>MainController</servlet-name>
-        <servlet-class>pms.controllers.MainController</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>UserController</servlet-name>
-        <servlet-class>pms.controllers.UserController</servlet-class>
+        <servlet-name>BOMServlet</servlet-name>
+        <servlet-class>controller.BOMServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>ItemController</servlet-name>
-        <servlet-class>pms.controllers.ItemController</servlet-class>
+        <servlet-name>DefectReasonServlet</servlet-name>
+        <servlet-class>controller.DefectReasonServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>BomController</servlet-name>
-        <servlet-class>pms.controllers.BomController</servlet-class>
+        <servlet-name>RoutingServlet</servlet-name>
+        <servlet-class>controller.RoutingServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>SupplierController</servlet-name>
-        <servlet-class>pms.controllers.SupplierController</servlet-class>
+        <servlet-name>RoutingStepServlet</servlet-name>
+        <servlet-class>controller.RoutingStepServlet</servlet-class>
     </servlet>
-      <servlet>
-        <servlet-name>PurchaseOrderController</servlet-name>
-        <servlet-class>pms.controllers.PurchaseOrderController</servlet-class>
+    <servlet>
+        <servlet-name>listRoutingStep</servlet-name>
+        <servlet-class>listRoutingStep</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>MainController</servlet-name>
-        <url-pattern>/MainController</url-pattern>
+        <servlet-name>BOMServlet</servlet-name>
+        <url-pattern>/BOMServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>UserController</servlet-name>
-        <url-pattern>/UserController</url-pattern>
+        <servlet-name>DefectReasonServlet</servlet-name>
+        <url-pattern>/DefectReasonServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>ItemController</servlet-name>
-        <url-pattern>/ItemController</url-pattern>
-    </servlet-mapping>
-     <servlet-mapping>
-        <servlet-name>SupplierController</servlet-name>
-        <url-pattern>/SupplierController</url-pattern>
+        <servlet-name>RoutingServlet</servlet-name>
+        <url-pattern>/RoutingServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>PurchaseOrderController</servlet-name>
-        <url-pattern>/PurchaseOrderController</url-pattern>
+        <servlet-name>RoutingStepServlet</servlet-name>
+        <url-pattern>/RoutingStepServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>BomController</servlet-name>
-        <url-pattern>/BomController</url-pattern>
+        <servlet-name>listRoutingStep</servlet-name>
+        <url-pattern>/listRoutingStep</url-pattern>
     </servlet-mapping>
     <session-config>
-        <session-timeout>
-            30
-        </session-timeout>
+        <session-timeout>30</session-timeout>
     </session-config>
     <welcome-file-list>
-        <welcome-file>login.jsp</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 </web-app>
