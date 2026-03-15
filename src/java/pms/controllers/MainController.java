@@ -41,6 +41,12 @@ public class MainController extends HttpServlet {
         } else if(action.contains("Bom"))
         {
             url = "BomController";
+        } else if(action.contains("Supplier"))
+        {
+            url = "SupplierController";
+        } else if(action.contains("PurchaseOrder"))
+        {
+            url = "PurchaseOrderController";
         }
         
         request.getRequestDispatcher(url).forward(request, response);

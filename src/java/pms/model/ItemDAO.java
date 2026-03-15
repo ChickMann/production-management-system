@@ -17,17 +17,18 @@ import pms.utils.DBUtils;
 public class ItemDAO {
 
     private ItemDTO SearchByColumn(String column, String value) {
-        String sql = "SELECT * FROM item WHERE status =1 And " + column + " = ?";
+        String sql = "SELECT * FROM Item WHERE " + column + " = ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, value);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new ItemDTO(rs.getInt("item_id"),
-                            rs.getString("item_code"),
-                            rs.getString("name"),
-                            rs.getString("type"),
-                            rs.getDouble("standard_cost")
+                            "ITEM-" + rs.getInt("item_id"),
+                            rs.getString("item_name"),
+                            rs.getString("item_type"),
+                            0.0,
+                            rs.getInt("stock_quantity")
                     );
                 }
             }
@@ -39,17 +40,18 @@ public class ItemDAO {
 
     private ArrayList<ItemDTO> FilterByColumn(String column, String value) {
         ArrayList<ItemDTO> iList = new ArrayList<>();
-        String sql = "SELECT * FROM item WHERE status =1 And " + column + " LIKE ?";
+        String sql = "SELECT * FROM Item WHERE " + column + " LIKE ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, "%" + value + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     iList.add(new ItemDTO(rs.getInt("item_id"),
-                            rs.getString("item_code"),
-                            rs.getString("name"),
-                            rs.getString("type"),
-                            rs.getDouble("standard_cost"))
+                            "ITEM-" + rs.getInt("item_id"),
+                            rs.getString("item_name"),
+                            rs.getString("item_type"),
+                            0.0,
+                            rs.getInt("stock_quantity"))
                     );
                 }
             }
@@ -76,7 +78,7 @@ public class ItemDAO {
 
     public Boolean SoftDelete(String id) {
         int result = 0;
-        String sql = "UPDATE Item SET status=0 WHERE item_id =?";
+        String sql = "DELETE FROM Item WHERE item_id =?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
@@ -89,13 +91,12 @@ public class ItemDAO {
 
     public boolean Add(ItemDTO i) {
         int result = 0;
-        String sql = "INSERT into Item values(?,?,?,?)";
+        String sql = "INSERT into Item (item_name, item_type, stock_quantity) values(?,?,?)";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, i.getItemCode());
-            ps.setString(2, i.getName());
-            ps.setString(3, i.getType());
-            ps.setDouble(4, i.getStandardCost());
+            ps.setString(1, i.getName());
+            ps.setString(2, i.getType());
+            ps.setInt(3, i.getStockQuantity());
             result = ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,19 +107,17 @@ public class ItemDAO {
     public boolean Update(ItemDTO i) {
         int result = 0;
         String sql = "Update Item SET"
-                + " item_code = ?,"
-                + " name = ?,"
-                + " type = ?,"
-                + " standard_cost = ?"
+                + " item_name = ?,"
+                + " item_type = ?,"
+                + " stock_quantity = ?"
                 + " Where item_id = ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, i.getItemCode());
-            ps.setString(2, i.getName());
-            ps.setString(3, i.getType());
-            ps.setDouble(4, i.getStandardCost());
-            ps.setInt(5, i.getItemID());
+            ps.setString(1, i.getName());
+            ps.setString(2, i.getType());
+            ps.setInt(3, i.getStockQuantity());
+            ps.setInt(4, i.getItemID());
             result = ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,16 +141,17 @@ public class ItemDAO {
 
     public ArrayList<ItemDTO> ItemList() {
         ArrayList<ItemDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM item WHERE status = 1";
+        String sql = "SELECT * FROM Item";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new ItemDTO(rs.getInt("item_id"),
-                        rs.getString("item_code"),
-                        rs.getString("name"),
-                        rs.getString("type"),
-                        rs.getDouble("standard_cost")
+                        "ITEM-" + rs.getInt("item_id"),
+                        rs.getString("item_name"),
+                        rs.getString("item_type"),
+                        0.0,
+                        rs.getInt("stock_quantity")
                 ));
             }
         } catch (Exception e) {

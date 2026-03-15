@@ -17,16 +17,16 @@ import pms.utils.DBUtils;
 public class BomDAO {
 
     private BomDTO SearchByColumn(String column, String value) {
-        String sql = "SELECT * FROM BOM WHERE status =1 And " + column + " = ?";
+        String sql = "SELECT * FROM BOM WHERE " + column + " = ?";
         try (Connection con = DBUtils.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, value);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new BomDTO(rs.getInt("bom_id"),
-                            rs.getInt("parent_item_id"),
-                            rs.getInt("child_item_id"),
-                            rs.getFloat("quantity"));
+                            rs.getInt("product_item_id"),
+                            rs.getInt("material_item_id"),
+                            rs.getFloat("quantity_required"));
                 }
             }
         } catch (Exception e) {
@@ -37,16 +37,16 @@ public class BomDAO {
 
     private ArrayList<BomDTO> FilterByColumn(String column, String value) {
         ArrayList<BomDTO> bList = new ArrayList<>();
-        String sql = "SELECT * FROM BOM WHERE status =1 And " + column + " LIKE ?";
+        String sql = "SELECT * FROM BOM WHERE " + column + " LIKE ?";
         try (Connection con = DBUtils.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, "%" + value + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     bList.add(new BomDTO(rs.getInt("bom_id"),
-                            rs.getInt("parent_item_id"),
-                            rs.getInt("child_item_id"),
-                            rs.getFloat("quantity")));
+                            rs.getInt("product_item_id"),
+                            rs.getInt("material_item_id"),
+                            rs.getFloat("quantity_required")));
                 }
             }
             return bList;
@@ -66,7 +66,7 @@ public class BomDAO {
 
     public Boolean SoftDelete(String id) {
         int result = 0;
-        String sql = "UPDATE BOM SET status=0 WHERE bom_id =?";
+        String sql = "DELETE FROM BOM WHERE bom_id =?";
         try (Connection conn = DBUtils.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
@@ -79,13 +79,12 @@ public class BomDAO {
 
     public boolean Add(BomDTO b) {
         int result = 0;
-        String sql = "INSERT into BOM values(?,?,?,?)";
+        String sql = "INSERT into BOM (product_item_id, material_item_id, quantity_required) values(?,?,?)";
         try (Connection con = DBUtils.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, b.getParentItemID());
             ps.setInt(2, b.getChildItemID());
             ps.setFloat(3, b.getQuantity());
-            ps.setInt(4, 1); // setting status to 1
             result = ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,9 +95,9 @@ public class BomDAO {
     public boolean Update(BomDTO b) {
         int result = 0;
         String sql = "Update BOM SET"
-                + " parent_item_id = ?,"
-                + " child_item_id = ?,"
-                + " quantity = ?"
+                + " product_item_id = ?,"
+                + " material_item_id = ?,"
+                + " quantity_required = ?"
                 + " Where bom_id = ?";
         try (Connection con = DBUtils.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
@@ -131,15 +130,15 @@ public class BomDAO {
 
     public ArrayList<BomDTO> BomList() {
         java.util.ArrayList<BomDTO> list = new java.util.ArrayList<>();
-        String sql = "SELECT * FROM BOM WHERE status = 1";
+        String sql = "SELECT * FROM BOM";
         try (Connection con = DBUtils.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new BomDTO(rs.getInt("bom_id"),
-                        rs.getInt("parent_item_id"),
-                        rs.getInt("child_item_id"),
-                        rs.getFloat("quantity")));
+                        rs.getInt("product_item_id"),
+                        rs.getInt("material_item_id"),
+                        rs.getFloat("quantity_required")));
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -59,7 +59,13 @@
             <h2>BOM Management</h2>
             <a href="SearchBom.jsp">Search Bom</a>
 
+            <hr/>
+            <h2>Supplier Management</h2>
+            <a href="SearchSupplier.jsp">Search Supplier</a>
 
+            <hr/>
+            <h2>Purchase Order Management</h2>
+            <a href="SearchPurchaseOrder.jsp">Search Purchase Order</a>
             <br/>
             <a href="MainController?action=logoutUser">Logout</a>
         </c:if>

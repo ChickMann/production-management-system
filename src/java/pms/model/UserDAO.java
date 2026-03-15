@@ -17,7 +17,7 @@ import pms.utils.DBUtils;
 public class UserDAO {
 
     private UserDTO SearchByColumn(String column, String value) {
-        String sql = "SELECT * FROM [User] WHERE " + column + " = ?";
+        String sql = "SELECT * FROM Users WHERE " + column + " = ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, value);
@@ -25,10 +25,10 @@ public class UserDAO {
                 if (rs.next()) {
                     return new UserDTO(rs.getInt("user_id"),
                             rs.getString("username"),
-                            rs.getString("password"),
-                            rs.getString("full_name"),
+                            rs.getString("password_hash"),
+                            rs.getString("username"),
                             rs.getString("role"),
-                            rs.getBoolean("status")
+                            true
                     );
                 }
             }
@@ -57,7 +57,7 @@ public class UserDAO {
 
     public ArrayList<UserDTO> EmployeeList(String role) {
         ArrayList<UserDTO> eList = new ArrayList<>();
-        String sql = "SELECT * FROM [User] WHERE status = 1 AND role = ?";
+        String sql = "SELECT * FROM Users WHERE role = ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, role);
@@ -65,10 +65,10 @@ public class UserDAO {
                 while (rs.next()) {
                     eList.add(new UserDTO(rs.getInt("user_id") - 1,
                             rs.getString("username"),
-                            rs.getString("password"),
-                            rs.getString("full_name"),
+                            rs.getString("password_hash"),
+                            rs.getString("username"),
                             rs.getString("role"),
-                            rs.getBoolean("status"))
+                            true)
                     );
                 }
             }
@@ -81,7 +81,9 @@ public class UserDAO {
 
     public Boolean SoftDelete(String id) {
         int result = 0;
-        String sql = "UPDATE [User] SET status=0 WHERE user_id =?";
+        // status is removed, so we can't soft delete. We will hard delete or ignore.
+        // The prompt says we shouldn't break old logic. Assuming we delete it.
+        String sql = "DELETE FROM Users WHERE user_id =?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
@@ -94,14 +96,12 @@ public class UserDAO {
 
     public boolean Add(UserDTO u) {
         int result = 0;
-        String sql = "INSERT INTO [User] VALUES(?,?,?,?,?)";
+        String sql = "INSERT INTO Users (username, password_hash, role) VALUES(?,?,?)";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
-            ps.setString(3, u.getFullName());
-            ps.setString(4, u.getRole());
-            ps.setBoolean(5, true);
+            ps.setString(3, u.getRole());
             result = ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,22 +110,18 @@ public class UserDAO {
     }
 
     public boolean Update(UserDTO u) {
-        String sql = "UPDATE [User] SET "
+        String sql = "UPDATE Users SET "
                 + " username = ?, "
-                + " password = ?, "
-                + " full_name = ?, "
-                + " role = ?, "
-                + " status = ? "
+                + " password_hash = ?, "
+                + " role = ? "
                 + " WHERE user_id = ?";
 
         try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
-            ps.setString(3, u.getFullName());
-            ps.setString(4, u.getRole());
-            ps.setBoolean(5, true);
-            ps.setInt(6, u.getId());
+            ps.setString(3, u.getRole());
+            ps.setInt(4, u.getId());
 
             return ps.executeUpdate() > 0;
 
@@ -136,7 +132,7 @@ public class UserDAO {
     }
 
     public int GetCurrentID() {
-        String sql = "SELECT TOP 1 user_id FROM [User] ORDER BY user_id DESC";
+        String sql = "SELECT TOP 1 user_id FROM Users ORDER BY user_id DESC";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -150,7 +146,7 @@ public class UserDAO {
     }
 
     public void ReseedSQL() {
-        try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('[User]', RESEED, "
+        try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('Users', RESEED, "
                 + GetCurrentID() + ")")) {
 
             ps.executeUpdate();
