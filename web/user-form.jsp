@@ -18,7 +18,11 @@
             username: <input type="text" name="username" value="${u.username}" required/><br/>
             password: <input type="text" name="password" value="${u.password}" required/><br/>
             full name: <input type="text" name="fullName" value="${u.fullName}" required/><br/>
-            role: <input type="text" name="role" value="${u.role}" required/><br/>
+            role: 
+            <select name="role">
+                <option value="admin" ${u.role == 'admin' ? 'selected' : ''}>admin</option>
+                <option value="employee" ${u.role == 'employee' ? 'selected' : ''}>employee</option>
+            </select><br/>
             <input type="submit" value="${mode == 'update'?'Update':'Add'}"/><br/>
         </form>
             <p style="color: green">${msg}</p><br/>

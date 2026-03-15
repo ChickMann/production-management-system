@@ -14,8 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import pms.model.ItemDAO;
 import pms.model.ItemDTO;
-import pms.model.UserDAO;
-import pms.model.UserDTO;
 
 /**
  *

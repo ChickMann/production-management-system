@@ -14,6 +14,7 @@ public class ItemDTO {
     String name;
     String type;
     double standardCost;
+    int stockQuantity;
 
     public ItemDTO(int itemID, String itemCode, String name, String type, double standardCost) {
         this.itemID = itemID;
@@ -21,6 +22,16 @@ public class ItemDTO {
         this.name = name;
         this.type = type;
         this.standardCost = standardCost;
+        this.stockQuantity = 0;
+    }
+
+    public ItemDTO(int itemID, String itemCode, String name, String type, double standardCost, int stockQuantity) {
+        this.itemID = itemID;
+        this.itemCode = itemCode;
+        this.name = name;
+        this.type = type;
+        this.standardCost = standardCost;
+        this.stockQuantity = stockQuantity;
     }
 
     public ItemDTO() {
@@ -64,6 +75,14 @@ public class ItemDTO {
 
     public void setStandardCost(double standardCost) {
         this.standardCost = standardCost;
+    }
+    
+    public int getStockQuantity() {
+        return stockQuantity;
+    }
+
+    public void setStockQuantity(int stockQuantity) {
+        this.stockQuantity = stockQuantity;
     }
     
         
