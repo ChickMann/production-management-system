@@ -54,9 +54,16 @@
 
                 <br/>
                 <a href="MainController?action=addUser">Add employee</a> <br/><br/>
+                <!-- BILL MANAGEMENT BUTTON -->
+                <form action="BillController" method="get">
+                    <input type="hidden" name="action" value="listBill"/>
+                    <input type="submit" value="Bill Management"/>
+                </form>
+                <br/>
+
             </c:if>
 
             <a href="MainController?action=logout">Logout</a>
-        </c:if>
+        </c:if>        
     </body>
 </html>

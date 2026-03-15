@@ -8,6 +8,10 @@
         <servlet-name>UserController</servlet-name>
         <servlet-class>pms.controllers.UserController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>BillController</servlet-name>
+        <servlet-class>pms.controllers.BillController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>MainController</servlet-name>
         <url-pattern>/MainController</url-pattern>
@@ -15,6 +19,10 @@
     <servlet-mapping>
         <servlet-name>UserController</servlet-name>
         <url-pattern>/UserController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BillController</servlet-name>
+        <url-pattern>/BillController</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
