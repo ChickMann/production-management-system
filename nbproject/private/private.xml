@@ -3,19 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/BillDAO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/datebase/SQLQuery.sql</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/web/bill.jsp</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/utils/DBUtils.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/web/login.jsp</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/UserDAO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/controllers/MainController.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/UserDTO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/controllers/BillController.java</file>
+            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/web/customer.jsp</file>
+            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/CustomerDAO.java</file>
+            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/controllers/CustomerController.java</file>
             <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/web/BangDieuKien.jsp</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/controllers/UserController.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/BillDTO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/web/Banned.jsp</file>
+            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/CustomerDTO.java</file>
         </group>
     </open-files>
 </project-private>

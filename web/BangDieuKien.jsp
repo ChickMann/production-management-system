@@ -61,6 +61,13 @@
                 </form>
                 <br/>
 
+                <!-- CUSTOMER MANAGEMENT BUTTON -->
+                <form action="CustomerController" method="get">
+                    <input type="hidden" name="action" value="searchCustomer"/>
+                    <input type="submit" value="Customer Management"/>
+                </form>
+                <br/>
+
             </c:if>
 
             <a href="MainController?action=logout">Logout</a>
