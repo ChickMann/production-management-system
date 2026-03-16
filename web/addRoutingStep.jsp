@@ -10,8 +10,8 @@
     <head><title>Thêm Công đoạn</title></head>
     <body>
         <h2>Thêm Công đoạn mới</h2>
-        <form action="RoutingStepServlet" method="POST">
-            <input type="hidden" name="action" value="add">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="addRoutingStep">
             
             <p>ID Quy trình tổng (Routing ID): <br>
                <input type="number" name="routingId" required></p>

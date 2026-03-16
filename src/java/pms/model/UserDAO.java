@@ -23,6 +23,7 @@ public class UserDAO {
             ps.setString(1, value);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    
                     return new UserDTO(rs.getInt("user_id"),
                             rs.getString("username"),
                             rs.getString("password_hash"),
@@ -37,7 +38,6 @@ public class UserDAO {
     }
 
     public UserDTO SearchByName(String username) {
-        System.err.println(SearchByColumn("username", username));
         return SearchByColumn("username", username);
     }
 

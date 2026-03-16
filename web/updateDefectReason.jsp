@@ -13,8 +13,8 @@
     <body>
         <h2>Cập nhật Danh mục Lỗi</h2>
         <% DefectReasonDTO d = (DefectReasonDTO) request.getAttribute("defectEdit"); if (d != null) { %>
-        <form action="DefectReasonServlet" method="POST">
-            <input type="hidden" name="action" value="update">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="saveUpdateDefectReason">
             <input type="hidden" name="defectId" value="<%= d.getDefectId() %>">
             
             Tên nguyên nhân lỗi: <input type="text" name="reasonName" value="<%= d.getReasonName() %>" required>

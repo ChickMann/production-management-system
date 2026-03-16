@@ -16,8 +16,8 @@
             RoutingStepDTO s = (RoutingStepDTO) request.getAttribute("stepEdit"); 
             if (s != null) { 
         %>
-        <form action="RoutingStepServlet" method="POST">
-            <input type="hidden" name="action" value="update">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="saveUpdateRoutingStep">
             <input type="hidden" name="stepId" value="<%= s.getStepId() %>">
             
             <p>ID Quy trình tổng: <br>

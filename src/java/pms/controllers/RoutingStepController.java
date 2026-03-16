@@ -26,13 +26,13 @@ public class RoutingStepController extends HttpServlet {
 
         try {
             switch (action) {
-                case "list":
+                case "listRoutingStep":
                     List<RoutingStepDTO> list = dao.getAllRoutingStep();
                     request.setAttribute("listStep", list);
                     request.getRequestDispatcher("listRoutingStep.jsp").forward(request, response);
                     break;
                     
-                case "add":
+                case "addRoutingStep":
                     int rId = Integer.parseInt(request.getParameter("routingId"));
                     String sName = request.getParameter("stepName");
                     int time = Integer.parseInt(request.getParameter("estimatedTime"));
@@ -42,19 +42,19 @@ public class RoutingStepController extends HttpServlet {
                     response.sendRedirect("MainController?action=listRoutingStep");
                     break;
                     
-                case "delete":
+                case "deleteRoutingStep":
                     int delId = Integer.parseInt(request.getParameter("stepId"));
                     dao.deleteRoutingStep(delId);
                     response.sendRedirect("MainController?action=listRoutingStep");
                     break;
                     
-                case "load_update":
+                case "loadUpdateRoutingStep":
                     int updId = Integer.parseInt(request.getParameter("stepId"));
                     request.setAttribute("stepEdit", dao.getRoutingStepById(updId));
                     request.getRequestDispatcher("updateRoutingStep.jsp").forward(request, response);
                     break;
                     
-                case "update":
+                case "saveUpdateRoutingStep":
                     int uId = Integer.parseInt(request.getParameter("stepId"));
                     int uRId = Integer.parseInt(request.getParameter("routingId"));
                     String uName = request.getParameter("stepName");

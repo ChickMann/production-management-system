@@ -17,7 +17,7 @@ public class UserDTO {
     public UserDTO() {
     }
 
-    public UserDTO(int id, String username , String fullName, String role, boolean status) {
+    public UserDTO(int id, String username , String password,String role, boolean status) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -29,7 +29,6 @@ public class UserDTO {
     public void setStatus(boolean status) {
         this.status = status;
     }
-
 
 
     public int getId() {

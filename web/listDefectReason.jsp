@@ -19,10 +19,10 @@
     </head>
     <body>
         <h2>Danh mục Nguyên nhân Lỗi</h2>
-        <a href="index.jsp" class="btn-back">⬅️ Quay lại Menu</a>
+        <a href="MainController?action=loginUser" class="btn-back">⬅️ Quay lại Menu</a>
         
-        <form action="DefectReasonServlet" method="POST" style="margin-bottom: 20px;">
-            <input type="hidden" name="action" value="add">
+        <form action="MainController" method="POST" style="margin-bottom: 20px;">
+            <input type="hidden" name="action" value="addDefectReason">
             Tên nguyên nhân lỗi: <input type="text" name="reasonName" required>
             <button type="submit">+ Thêm Lỗi</button>
         </form>
@@ -37,8 +37,8 @@
             <tr>
                 <td><%= d.getDefectId() %></td><td><%= d.getReasonName() %></td>
                 <td>
-                    <a href="MainController?action=listDefectReason&action=load_update&defectId=<%= d.getDefectId() %>">Sửa</a> | 
-                    <a href="MainController?action=listDefectReason&action=delete&defectId=<%= d.getDefectId() %>" onclick="return confirm('Xóa lỗi này?');" style="color:red;">Xóa</a>
+                    <a href="MainController?action=loadUpdateDefectReason&defectId=<%= d.getDefectId() %>">Sửa</a> | 
+                    <a href="MainController?action=deleteDefectReason&defectId=<%= d.getDefectId() %>" onclick="return confirm('Xóa lỗi này?');" style="color:red;">Xóa</a>
                 </td>
             </tr>
             <% } } else { out.print("<tr><td colspan='3'>Chưa có dữ liệu</td></tr>"); } %>

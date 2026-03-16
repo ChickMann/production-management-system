@@ -17,7 +17,6 @@
             User id: <input type="text" name="id" value="${mode == 'update'? u.id : index}" readonly /><br/>
             username: <input type="text" name="username" value="${u.username}" required/><br/>
             password: <input type="text" name="password" value="${u.password}" required/><br/>
-            full name: <input type="text" name="fullName" value="${u.fullName}" required/><br/>
             role: 
             <select name="role">
                 <option value="admin" ${u.role == 'admin' ? 'selected' : ''}>admin</option>

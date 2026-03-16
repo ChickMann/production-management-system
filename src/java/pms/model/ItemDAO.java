@@ -24,11 +24,9 @@ public class ItemDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new ItemDTO(rs.getInt("item_id"),
-                            "ITEM-" + rs.getInt("item_id"),
-                            rs.getString("item_name"),
-                            rs.getString("item_type"),
-                            0.0,
-                            rs.getInt("stock_quantity")
+                        rs.getString("item_name"),
+                        rs.getString("item_type"),
+                        rs.getInt("stock_quantity")
                     );
                 }
             }
@@ -47,11 +45,9 @@ public class ItemDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     iList.add(new ItemDTO(rs.getInt("item_id"),
-                            "ITEM-" + rs.getInt("item_id"),
-                            rs.getString("item_name"),
-                            rs.getString("item_type"),
-                            0.0,
-                            rs.getInt("stock_quantity"))
+                        rs.getString("item_name"),
+                        rs.getString("item_type"),
+                        rs.getInt("stock_quantity"))
                     );
                 }
             }
@@ -94,8 +90,8 @@ public class ItemDAO {
         String sql = "INSERT into Item (item_name, item_type, stock_quantity) values(?,?,?)";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, i.getName());
-            ps.setString(2, i.getType());
+            ps.setString(1, i.getItemName());
+            ps.setString(2, i.getItemType());
             ps.setInt(3, i.getStockQuantity());
             result = ps.executeUpdate();
         } catch (Exception e) {
@@ -114,8 +110,8 @@ public class ItemDAO {
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, i.getName());
-            ps.setString(2, i.getType());
+            ps.setString(1, i.getItemName());
+            ps.setString(2, i.getItemType());
             ps.setInt(3, i.getStockQuantity());
             ps.setInt(4, i.getItemID());
             result = ps.executeUpdate();
@@ -142,15 +138,14 @@ public class ItemDAO {
     public ArrayList<ItemDTO> ItemList() {
         ArrayList<ItemDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM Item";
+        System.err.println("abc");
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new ItemDTO(rs.getInt("item_id"),
-                        "ITEM-" + rs.getInt("item_id"),
                         rs.getString("item_name"),
                         rs.getString("item_type"),
-                        0.0,
                         rs.getInt("stock_quantity")
                 ));
             }

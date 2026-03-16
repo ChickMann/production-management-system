@@ -21,8 +21,8 @@
     <body>
         <h2>Thêm Công thức Sản phẩm mới</h2>
         
-        <form action="BOMServlet" method="POST">
-            <input type="hidden" name="action" value="add">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="addBom">
             
             <div class="form-group">
                 <label>ID Sản phẩm:</label>

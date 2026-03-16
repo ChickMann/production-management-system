@@ -86,18 +86,17 @@ public class ItemController extends HttpServlet {
         request.setAttribute("mode", "add");
 
         if (action.equals("saveAddItem")) {
-            String itemCode = request.getParameter("itemCode");
-            String name = request.getParameter("name");
+                String name = request.getParameter("name");
             String type = request.getParameter("type");
-            String s_standardCost = request.getParameter("standardCost");
-            double standardCost = 0;
+            String s_stockQuantity = request.getParameter("stockQuantity");
+             int stockQuantity = 0;
             try {
-                standardCost = Double.parseDouble(s_standardCost);
+                stockQuantity = Integer.parseInt(s_stockQuantity);
             } catch (Exception e) {
                 error += "standard cost phải là số; ";
             }
 
-            ItemDTO i = new ItemDTO(0, itemCode, name, type, standardCost);
+            ItemDTO i = new ItemDTO(0, name, type, stockQuantity);
             if (error.isEmpty()) {
                 if (idao.Add(i)) {
                     msg = "Thêm thành công";
@@ -127,19 +126,18 @@ public class ItemController extends HttpServlet {
         request.setAttribute("mode", "update");
 
         if (action.equals("saveUpdateItem")) {
-            String itemCode = request.getParameter("itemCode");
             String name = request.getParameter("name");
             String type = request.getParameter("type");
-            String s_standardCost = request.getParameter("standardCost");
-            double standardCost = 0;
+            String s_stockQuantity = request.getParameter("stockQuantity");
+            int stockQuantity = 0;
             try {
-                standardCost = Double.parseDouble(s_standardCost);
+                stockQuantity = Integer.parseInt(s_stockQuantity);
             } catch (Exception e) {
                 error += "standard cost phải là số; ";
             }
             int id = Integer.parseInt(s_id);
 
-            i = new ItemDTO(id, itemCode, name, type, standardCost);
+            i = new ItemDTO(id, name, type, stockQuantity);
             if (error.isEmpty()) {
                 if (idao.Update(i)) {
                     msg = "Cập nhật thành công";
@@ -158,11 +156,15 @@ public class ItemController extends HttpServlet {
 
     private void SearchItem(HttpServletRequest request) {
         String keyword = request.getParameter("keyword");
+        if (keyword == null) {
+            keyword = "";
+        }
         ItemDAO idao = new ItemDAO();
+
         ArrayList<ItemDTO> itemList = new ArrayList<>();
         if (keyword.trim().length() > 0) {
             itemList = idao.FilterByName(keyword);
-        }else {
+        } else {
             itemList = idao.ItemList();
         }
 

@@ -21,7 +21,7 @@
     </head>
     <body>
         <h2>Danh sách Công thức Sản phẩm (BOM)</h2>
-        <a href="index.jsp" class="btn btn-back">⬅️ Quay lại Menu</a>
+        <a href="MainController?action=loginUser" class="btn btn-back">⬅️ Quay lại Menu</a>
         <a href="addBOM.jsp" class="btn btn-add">+ Thêm BOM mới</a>
         
         <table>
@@ -35,8 +35,8 @@
                 <td><%= bom.getBomId() %></td><td><%= bom.getProductItemId() %></td>
                 <td><%= bom.getMaterialItemId() %></td><td><%= bom.getQuantityRequired() %></td>
                 <td>
-                    <a href="MainController?action=listBOM&action=load_update&bomId=<%= bom.getBomId() %>">Sửa</a> | 
-                    <a href="MainController?action=listBOM&action=delete&bomId=<%= bom.getBomId() %>" onclick="return confirm('Xóa BOM này?');" style="color:red;">Xóa</a>
+                    <a href="MainController?action=loadUpdateBom&bomId=<%= bom.getBomId() %>">Sửa</a> | 
+                    <a href="MainController?action=deleteBom&bomId=<%= bom.getBomId() %>" onclick="return confirm('Xóa BOM này?');" style="color:red;">Xóa</a>
                 </td>
             </tr>
             <% } } else { out.print("<tr><td colspan='5'>Chưa có dữ liệu</td></tr>"); } %>

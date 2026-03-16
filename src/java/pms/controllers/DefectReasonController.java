@@ -34,27 +34,27 @@ public class DefectReasonController extends HttpServlet {
 
         try {
             switch (action) {
-                case "list":
+                case "listDefectReason":
                     List<DefectReasonDTO> list = dao.getAllDefectReasons();
                     request.setAttribute("listDefect", list);
                     request.getRequestDispatcher("listDefectReason.jsp").forward(request, response);
                     break;
-                case "add":
+                case "addDefectReason":
                     String addName = request.getParameter("reasonName");
                     dao.insertDefectReasons(new DefectReasonDTO(0, addName));
                     response.sendRedirect("MainController?action=listDefectReason");
                     break;
-                case "delete":
+                case "deleteDefectReason":
                     int delId = Integer.parseInt(request.getParameter("defectId"));
                     dao.deleteDefectReasons(new DefectReasonDTO(delId, "")); // Truyền DTO giả chỉ chứa ID
                     response.sendRedirect("MainController?action=listDefectReason");
                     break;
-                case "load_update":
+                case "loadUpdateDefectReason":
                     int updId = Integer.parseInt(request.getParameter("defectId"));
                     request.setAttribute("defectEdit", dao.getDefectReasonById(updId));
                     request.getRequestDispatcher("updateDefectReason.jsp").forward(request, response);
                     break;
-                case "update":
+                case "saveUpdateDefectReason":
                     int uId = Integer.parseInt(request.getParameter("defectId"));
                     String uName = request.getParameter("reasonName");
                     dao.updateDefectReasons(new DefectReasonDTO(uId, uName));

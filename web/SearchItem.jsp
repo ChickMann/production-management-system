@@ -27,24 +27,22 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Code</th>
                             <th>Name</th>
                             <th>Type</th>
-                            <th>Cost</th>
+                            <th>Stock quantity</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach items="${itemList}" var="i">
                             <tr>
                                 <td>${i.itemID}</td>
-                                <td>${i.itemCode}</td>
-                                <td>${i.name}</td>
-                                <td>${i.type}</td>
-                                <td>${i.standardCost}</td>
+                                <td>${i.itemName}</td>
+                                <td>${i.itemType}</td>
+                                <td>${i.stockQuantity}</td>
                                 <td>
                                     <a href="MainController?action=updateItem&id=${i.itemID}">Update</a> |
                                     <a href="MainController?action=removeItem&id=${i.itemID}" onclick="return confirm('Are you sure?')">Remove</a>
-                                </td>
+                                </td>   
                             </tr>
                         </c:forEach>
                     </tbody>

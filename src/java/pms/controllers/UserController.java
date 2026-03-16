@@ -43,7 +43,6 @@ public class UserController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        System.err.println(action);
 
         switch (action) {
             case "loginUser":
@@ -140,7 +139,6 @@ public class UserController extends HttpServlet {
         if (action.equals("saveAddUser")) {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
-            String fullName = request.getParameter("fullName");
             String role = request.getParameter("role");
 
             UserDTO u = new UserDTO(0, username, password, role, true);
@@ -157,7 +155,7 @@ public class UserController extends HttpServlet {
             request.setAttribute("msg", msg);
             request.setAttribute("error", error);
         }
-        int index = udao.GetCurrentID();
+        int index = udao.GetCurrentID()+1;
 
         if (index > 0) {
             request.setAttribute("index", index);
@@ -180,18 +178,16 @@ public class UserController extends HttpServlet {
         } catch (Exception e) {
             error += "id phai la so nguyen duong";
         }
-        UserDTO u = udao.SearchByID(id + 1);
+        UserDTO u = udao.SearchByID(id);
         request.setAttribute("mode", "update");
         if (action.equals("saveUpdateUser")) {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
-            String fullName = request.getParameter("fullName");
             String role = request.getParameter("role");
             System.err.println(id);
             System.err.println(password);
-            System.err.println(fullName);
             System.err.println(role);
-            u = new UserDTO(id, username, fullName, role, true);
+            u = new UserDTO(id, username, password, role, true);
             if (error.isEmpty()) {
                 if (udao.Update(u)) {
                     msg = "update thanh cong";

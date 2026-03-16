@@ -20,10 +20,10 @@
     </head>
     <body>
         <h2>Danh sách Quy trình Sản xuất (Routing)</h2>
-        <a href="index.jsp" class="btn-back">⬅️ Quay lại Menu</a>
+        <a href="MainController?action=loginUser" class="btn-back">⬅️ Quay lại Menu</a>
         
-        <form action="RoutingServlet" method="POST" style="margin-bottom: 20px;">
-            <input type="hidden" name="action" value="add">
+        <form action="MainController" method="POST" style="margin-bottom: 20px;">
+            <input type="hidden" name="action" value="addRouting">
             Tên quy trình mới: <input type="text" name="routingName" required>
             <button type="submit">+ Thêm Quy trình</button>
         </form>
@@ -38,8 +38,8 @@
             <tr>
                 <td><%= r.getRoutingId() %></td><td><%= r.getRoutingName() %></td>
                 <td>
-                    <a href="MainController?action=listRouting&action=load_update&routingId=<%= r.getRoutingId() %>">Sửa</a> | 
-                    <a href="MainController?action=listRouting&action=delete&routingId=<%= r.getRoutingId() %>" onclick="return confirm('Xóa Quy trình này?');" style="color:red;">Xóa</a>
+                    <a href="MainController?action=loadUpdateRouting&routingId=<%= r.getRoutingId() %>">Sửa</a> | 
+                    <a href="MainController?action=deleteRouting&routingId=<%= r.getRoutingId() %>" onclick="return confirm('Xóa Quy trình này?');" style="color:red;">Xóa</a>
                 </td>
             </tr>
             <% } } else { out.print("<tr><td colspan='3'>Chưa có dữ liệu</td></tr>"); } %>

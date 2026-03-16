@@ -16,10 +16,9 @@
         <form action="MainController" method="post">
             <input type="hidden" name="action" value="${mode == 'update' ? 'saveUpdateItem' : 'saveAddItem'}"/> <br/>
             Item ID: <input type="text" name="id" value="${mode == 'update' ? item.itemID : index}" readonly /><br/>
-            Item Code: <input type="text" name="itemCode" value="${item.itemCode}" required/><br/>
-            Name: <input type="text" name="name" value="${item.name}" required/><br/>
-            Type: <input type="text" name="type" value="${item.type}" required/><br/>
-            Standard Cost: <input type="number" step="0.01" min="0" name="standardCost" value="${item.standardCost}" required/><br/>
+            Name: <input type="text" name="name" value="${item.itemName}" required/><br/>
+            Type: <input type="text" name="type" value="${item.itemType}" required/><br/>
+            Stock quantity: <input type="number" step="0.01" min="0" name="stockQuantity:" value="${item.stockQuantity}" required/><br/>
             <input type="submit" value="${mode == 'update' ? 'Update' : 'Add'}"/><br/>
         </form>
         <p style="color: green">${msg}</p><br/>

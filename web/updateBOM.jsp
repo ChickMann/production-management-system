@@ -29,8 +29,8 @@
             if (bom != null) {
         %>
         
-        <form action="BOMServlet" method="POST">
-            <input type="hidden" name="action" value="update">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="saveUpdateBom">
             <input type="hidden" name="bomId" value="<%= bom.getBomId() %>">
             
             <div class="form-group">

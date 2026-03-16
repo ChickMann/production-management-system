@@ -27,27 +27,27 @@ public class RoutingController extends HttpServlet {
 
         try {
             switch (action) {
-                case "list":
+                case "listRouting":
                     List<RoutingDTO> list = dao.getAllRouting();
                     request.setAttribute("listRouting", list);
                     request.getRequestDispatcher("listRouting.jsp").forward(request, response);
                     break;
-                case "add":
+                case "addRouting":
                     String addName = request.getParameter("routingName");
                     dao.insertRouting(new RoutingDTO(0, addName));
                     response.sendRedirect("MainController?action=listRouting");
                     break;
-                case "delete":
+                case "deleteRouting":
                     int delId = Integer.parseInt(request.getParameter("routingId"));
                     dao.deleteRouting(new RoutingDTO(delId, "")); // Truyền vỏ rỗng
                     response.sendRedirect("MainController?action=listRouting");
                     break;
-                case "load_update":
+                case "loadUpdateRouting":
                     int updId = Integer.parseInt(request.getParameter("routingId"));
                     request.setAttribute("routingEdit", dao.getRoutingById(updId));
                     request.getRequestDispatcher("updateRouting.jsp").forward(request, response);
                     break;
-                case "update":
+                case "saveUpdateRouting":
                     int uId = Integer.parseInt(request.getParameter("routingId"));
                     String uName = request.getParameter("routingName");
                     dao.updateRouting(new RoutingDTO(uId, uName));
