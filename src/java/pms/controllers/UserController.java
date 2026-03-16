@@ -16,8 +16,8 @@ import pms.model.UserDAO;
 import pms.model.UserDTO;
 import pms.model.ItemDAO;
 import pms.model.ItemDTO;
-import pms.model.BomDAO;
-import pms.model.BomDTO;
+import pms.model.BOMDAO;
+import pms.model.BOMDTO;
 
 /**
  *
@@ -73,8 +73,7 @@ public class UserController extends HttpServlet {
         UserDTO user = (UserDTO) session.getAttribute("user");
         
         UserDAO udao = new UserDAO();
-        ItemDAO idao = new ItemDAO();
-        BomDAO bdao = new BomDAO();
+ 
 
         if (user == null) {
             String username = request.getParameter("txtUsername");
@@ -95,10 +94,7 @@ public class UserController extends HttpServlet {
                     request.setAttribute("eList", eList);
                 }
               
-                ArrayList<ItemDTO> itemList = idao.ItemList();
-                java.util.ArrayList<BomDTO> bomList = bdao.BomList();
-                request.setAttribute("itemList", itemList);
-                request.setAttribute("bomList", bomList);
+          
             }
         } else {
             url = "login.jsp";
@@ -147,7 +143,7 @@ public class UserController extends HttpServlet {
             String fullName = request.getParameter("fullName");
             String role = request.getParameter("role");
 
-            UserDTO u = new UserDTO(0, username, password, fullName, role, true);
+            UserDTO u = new UserDTO(0, username, password, role, true);
             if (error.isEmpty()) {
                 if (udao.Add(u)) {
                     msg = "Add thanh cong";
@@ -195,7 +191,7 @@ public class UserController extends HttpServlet {
             System.err.println(password);
             System.err.println(fullName);
             System.err.println(role);
-            u = new UserDTO(id, username, password, fullName, role, true);
+            u = new UserDTO(id, username, fullName, role, true);
             if (error.isEmpty()) {
                 if (udao.Update(u)) {
                     msg = "update thanh cong";

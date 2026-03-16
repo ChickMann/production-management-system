@@ -11,17 +11,17 @@ package pms.model;
 public class UserDTO {
 
     int id;
-    String username, password, fullName, role;
+    String username, password, role;
     boolean status;
 
     public UserDTO() {
     }
 
-    public UserDTO(int id, String username, String password, String fullName, String role, boolean status) {
+    public UserDTO(int id, String username , String fullName, String role, boolean status) {
         this.id = id;
         this.username = username;
         this.password = password;
-        this.fullName = fullName;
+
         this.role = role;
         this.status = status;
     }
@@ -44,10 +44,7 @@ public class UserDTO {
         return password;
     }
 
-    public String getFullName() {
-        return fullName;
-    }
-
+   
     public String getRole() {
         return role;
     }
@@ -64,9 +61,7 @@ public class UserDTO {
         this.password = password;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+   
 
     public void setRole(String role) {
         this.role = role;

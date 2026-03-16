@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import utils.DBUtils;
+import pms.utils.DBUtils;
 
 /**
  *

@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.transform.Result;
-import utils.DBUtils;
+import pms.utils.DBUtils;
 
 /**
  *
@@ -141,7 +141,7 @@ public class BOMDAO {
     // ==========================================
     public BOMDTO getBOMById(int bomId) {
         String sql = "SELECT * FROM [dbo].[BOM] WHERE bom_id = ?";
-        try (Connection conn = utils.DBUtils.getConnection();
+        try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, bomId);
             try (ResultSet rs = ps.executeQuery()) {
