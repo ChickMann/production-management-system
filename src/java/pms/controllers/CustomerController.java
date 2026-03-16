@@ -59,7 +59,7 @@ public class CustomerController extends HttpServlet {
     }
     List<CustomerDTO> customerList = cdao.getAllCustomers();
     request.setAttribute("customerList", customerList);
-    url = "SearchCustomer.jsp";
+    url = "customer.jsp";
 }
 
     private void AddCustomer(HttpServletRequest request) {
@@ -82,7 +82,7 @@ public class CustomerController extends HttpServlet {
             request.setAttribute("msg", msg);
             request.setAttribute("error", error);
         }
-        url = "customer-form.jsp";
+        url = "customer.jsp";
     }
 
     private void UpdateCustomer(HttpServletRequest request) {
@@ -108,7 +108,7 @@ public class CustomerController extends HttpServlet {
             request.setAttribute("error", error);
         }
         request.setAttribute("customer", c);
-        url = "customer-form.jsp";
+        url = "customer.jsp";
     }
 
     private void SearchCustomer(HttpServletRequest request) {
@@ -126,7 +126,7 @@ public class CustomerController extends HttpServlet {
         request.setAttribute("customerList", customerList);
         request.setAttribute("keyword", keyword);
 
-        url = "SearchCustomer.jsp";
+        url = "customer.jsp";
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
