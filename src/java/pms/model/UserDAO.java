@@ -19,17 +19,15 @@ public class UserDAO {
     private UserDTO SearchByColumn(String column, String value) {
         String sql = "SELECT * FROM Users WHERE " + column + " = ?";
         try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, value);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new UserDTO(rs.getInt("user_id"),
                             rs.getString("username"),
                             rs.getString("password_hash"),
-                            rs.getString("username"),
                             rs.getString("role"),
-                            true
-                    );
+                            true);
                 }
             }
         } catch (Exception e) {
@@ -60,17 +58,15 @@ public class UserDAO {
         ArrayList<UserDTO> eList = new ArrayList<>();
         String sql = "SELECT * FROM Users WHERE role = ?";
         try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, role);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    eList.add(new UserDTO(rs.getInt("user_id") - 1,
+                    eList.add(new UserDTO(rs.getInt("user_id"),
                             rs.getString("username"),
                             rs.getString("password_hash"),
-                            rs.getString("username"),
                             rs.getString("role"),
-                            true)
-                    );
+                            true));
                 }
             }
             return eList;
@@ -86,7 +82,7 @@ public class UserDAO {
         // The prompt says we shouldn't break old logic. Assuming we delete it.
         String sql = "DELETE FROM Users WHERE user_id =?";
         try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             result = ps.executeUpdate();
         } catch (Exception e) {
@@ -99,7 +95,7 @@ public class UserDAO {
         int result = 0;
         String sql = "INSERT INTO Users (username, password_hash, role) VALUES(?,?,?)";
         try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
             ps.setString(3, u.getRole());
@@ -117,7 +113,7 @@ public class UserDAO {
                 + " role = ? "
                 + " WHERE user_id = ?";
 
-        try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = DBUtils.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
@@ -135,8 +131,8 @@ public class UserDAO {
     public int GetCurrentID() {
         String sql = "SELECT TOP 1 user_id FROM Users ORDER BY user_id DESC";
         try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return Integer.parseInt(rs.getString("user_id"));
             }
@@ -147,8 +143,9 @@ public class UserDAO {
     }
 
     public void ReseedSQL() {
-        try ( Connection con = DBUtils.getConnection();  PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('Users', RESEED, "
-                + GetCurrentID() + ")")) {
+        try (Connection con = DBUtils.getConnection();
+                PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('Users', RESEED, "
+                        + GetCurrentID() + ")")) {
 
             ps.executeUpdate();
 

@@ -6,53 +6,57 @@ package pms.model;
 
 /**
  *
- * @author BAO
+ * @author se193234_TranGiaBao
  */
-public class BomDTO {
-    int bomID, parentItemID, ChildItemID;
-    float quantity;
+public class BOMDTO {
+    private int bomId;
+    private int productItemId;
+    private int materialItemId;
+    private int quantityRequired;
 
-    public BomDTO() {
+    public BOMDTO() {
     }
 
-    public BomDTO(int bomID, int parentItemID, int ChildItemID, float quantity) {
-        this.bomID = bomID;
-        this.parentItemID = parentItemID;
-        this.ChildItemID = ChildItemID;
-        this.quantity = quantity;
+    public BOMDTO(int bomId, int productItemId, int materialItemId, int quantityRequired) {
+        this.bomId = bomId;
+        this.productItemId = productItemId;
+        this.materialItemId = materialItemId;
+        this.quantityRequired = quantityRequired;
     }
 
-    public int getBomID() {
-        return bomID;
+    public int getBomId() {
+        return bomId;
     }
 
-    public int getParentItemID() {
-        return parentItemID;
+    public void setBomId(int bomId) {
+        this.bomId = bomId;
     }
 
-    public int getChildItemID() {
-        return ChildItemID;
+    public int getProductItemId() {
+        return productItemId;
     }
 
-    public float getQuantity() {
-        return quantity;
+    public void setProductItemId(int productItemId) {
+        this.productItemId = productItemId;
     }
 
-    public void setBomID(int bomID) {
-        this.bomID = bomID;
+    public int getMaterialItemId() {
+        return materialItemId;
     }
 
-    public void setParentItemID(int parentItemID) {
-        this.parentItemID = parentItemID;
+    public void setMaterialItemId(int materialItemId) {
+        this.materialItemId = materialItemId;
     }
 
-    public void setChildItemID(int ChildItemID) {
-        this.ChildItemID = ChildItemID;
+    public int getQuantityRequired() {
+        return quantityRequired;
     }
 
-    public void setQuantity(float quantity) {
-        this.quantity = quantity;
+    public void setQuantityRequired(int quantityRequired) {
+        this.quantityRequired = quantityRequired;
     }
+    
+    
     
     
 }

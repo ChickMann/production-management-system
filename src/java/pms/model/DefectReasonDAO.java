@@ -2,14 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package model;
+package pms.model;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import utils.DbUtils;
+import utils.DBUtils;
 
 /**
  *
@@ -25,7 +25,7 @@ public class DefectReasonDAO {
         String sql = "SELECT *"
                 + "  FROM [dbo].[Defect_Reason]";
 
-        try(Connection conn = DbUtils.getConnection();  
+        try(Connection conn = DBUtils.getConnection();  
                 PreparedStatement ps = conn.prepareStatement(sql);  
                 ResultSet rs = ps.executeQuery();) {
             
@@ -52,11 +52,11 @@ public class DefectReasonDAO {
 
         Boolean isSuccess = false;
 
-        try( Connection conn = DbUtils.getConnection();  
+        try( Connection conn = DBUtils.getConnection();  
              PreparedStatement ps = conn.prepareStatement(sql);) {
            
 
-            ps.setString(1, defect.getReasonName());
+            ps.setNString(1, defect.getReasonName());
             int change = ps.executeUpdate();
 
             if (change > 0) {
@@ -79,11 +79,11 @@ public class DefectReasonDAO {
 
         Boolean isSuccess = false;
 
-        try( Connection conn = DbUtils.getConnection();
+        try( Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);) {
            
 
-            ps.setString(1, defect.getReasonName());
+            ps.setNString(1, defect.getReasonName());;
             ps.setInt(2, defect.getDefectId());
 
             int change = ps.executeUpdate();
@@ -107,7 +107,7 @@ public class DefectReasonDAO {
 
         Boolean isSuccess = false;
 
-        try(Connection conn = DbUtils.getConnection();
+        try(Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);) {
             
 
@@ -123,5 +123,19 @@ public class DefectReasonDAO {
             System.err.println("Error delete DefectReasons: " + e.getMessage());
         }
         return isSuccess;
+    }
+    
+    public DefectReasonDTO getDefectReasonById(int defectId) {
+        String sql = "SELECT * FROM [dbo].[Defect_Reason] WHERE defect_id = ?";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, defectId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new DefectReasonDTO(rs.getInt("defect_id"), rs.getString("reason_name"));
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
     }
 }
