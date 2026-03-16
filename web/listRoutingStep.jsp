@@ -38,8 +38,8 @@
                     <%= s.isIsInspected() ? "Có" : "Không" %>
                 </td>
                 <td>
-                    <a href="RoutingStepServlet?action=load_update&stepId=<%= s.getStepId() %>">Sửa</a> | 
-                    <a href="RoutingStepServlet?action=delete&stepId=<%= s.getStepId() %>" onclick="return confirm('Xóa công đoạn này?');" style="color:red;">Xóa</a>
+                    <a href="MainController?action=listRoutingStep&action=load_update&stepId=<%= s.getStepId() %>">Sửa</a> | 
+                    <a href="MainController?action=listRoutingStep&action=delete&stepId=<%= s.getStepId() %>" onclick="return confirm('Xóa công đoạn này?');" style="color:red;">Xóa</a>
                 </td>
             </tr>
             <% } } else { out.print("<tr><td colspan='6'>Chưa có công đoạn nào</td></tr>"); } %>

@@ -37,8 +37,8 @@
             <tr>
                 <td><%= d.getDefectId() %></td><td><%= d.getReasonName() %></td>
                 <td>
-                    <a href="DefectReasonServlet?action=load_update&defectId=<%= d.getDefectId() %>">Sửa</a> | 
-                    <a href="DefectReasonServlet?action=delete&defectId=<%= d.getDefectId() %>" onclick="return confirm('Xóa lỗi này?');" style="color:red;">Xóa</a>
+                    <a href="MainController?action=listDefectReason&action=load_update&defectId=<%= d.getDefectId() %>">Sửa</a> | 
+                    <a href="MainController?action=listDefectReason&action=delete&defectId=<%= d.getDefectId() %>" onclick="return confirm('Xóa lỗi này?');" style="color:red;">Xóa</a>
                 </td>
             </tr>
             <% } } else { out.print("<tr><td colspan='3'>Chưa có dữ liệu</td></tr>"); } %>

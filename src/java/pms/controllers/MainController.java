@@ -38,7 +38,7 @@ public class MainController extends HttpServlet {
             url = "UserController";
         }else if(action.contains("Item")){
             url = "ItemController";
-        } else if(action.contains("Bom"))
+        } else if(action.contains("Bom") || action.contains("BOM"))
         {
             url = "BomController";
         } else if(action.contains("Supplier"))
@@ -47,6 +47,16 @@ public class MainController extends HttpServlet {
         } else if(action.contains("PurchaseOrder"))
         {
             url = "PurchaseOrderController";
+        } else if (action.contains("RoutingStep")) 
+        {
+            // Note: Check RoutingStep before Routing to avoid incorrect partial matches 
+            url = "RoutingStepController";
+        } else if (action.contains("Routing")) 
+        {
+            url = "RoutingController";
+        } else if (action.contains("DefectReason")) 
+        {
+            url = "DefectReasonController";
         }
         
         request.getRequestDispatcher(url).forward(request, response);

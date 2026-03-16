@@ -34,7 +34,7 @@
             </label></p>
             
             <button type="submit">Lưu Cập Nhật</button>
-            <a href="RoutingStepServlet?action=list">Hủy</a>
+            <a href="MainController?action=listRoutingStep">Hủy</a>
         </form>
         <% } else { out.print("Lỗi dữ liệu!"); } %>
     </body>

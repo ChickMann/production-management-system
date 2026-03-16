@@ -35,8 +35,8 @@
                 <td><%= bom.getBomId() %></td><td><%= bom.getProductItemId() %></td>
                 <td><%= bom.getMaterialItemId() %></td><td><%= bom.getQuantityRequired() %></td>
                 <td>
-                    <a href="BOMServlet?action=load_update&bomId=<%= bom.getBomId() %>">Sửa</a> | 
-                    <a href="BOMServlet?action=delete&bomId=<%= bom.getBomId() %>" onclick="return confirm('Xóa BOM này?');" style="color:red;">Xóa</a>
+                    <a href="MainController?action=listBOM&action=load_update&bomId=<%= bom.getBomId() %>">Sửa</a> | 
+                    <a href="MainController?action=listBOM&action=delete&bomId=<%= bom.getBomId() %>" onclick="return confirm('Xóa BOM này?');" style="color:red;">Xóa</a>
                 </td>
             </tr>
             <% } } else { out.print("<tr><td colspan='5'>Chưa có dữ liệu</td></tr>"); } %>

@@ -54,12 +54,12 @@
             </div>
             
             <button type="submit">Cập nhật vào Database</button>
-            <a href="BOMServlet?action=list" style="margin-left: 10px; text-decoration: none; color: red;">Hủy</a>
+            <a href="MainController?action=listBOM" style="margin-left: 10px; text-decoration: none; color: red;">Hủy</a>
         </form>
         
         <% } else { %>
             <h3 style="color:red;">Không tìm thấy BOM này!</h3>
-            <a href="BOMServlet?action=list">Quay lại danh sách</a>
+            <a href="MainController?action=listBOM">Quay lại danh sách</a>
         <% } %>
     </body>
 </html>

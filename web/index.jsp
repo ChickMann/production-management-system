@@ -30,10 +30,10 @@
     <body>
         <h1>🛠️ BẢNG ĐIỀU KHIỂN - MODULE SẢN XUẤT</h1>
         <div class="menu-container">
-            <a href="BOMServlet?action=list" class="menu-btn btn-bom">📦 Quản lý BOM<span>(Công thức sản phẩm)</span></a>
-            <a href="DefectReasonServlet?action=list" class="menu-btn btn-defect">⚠️ Danh mục Lỗi<span>(Các loại lỗi hư hỏng)</span></a>
-            <a href="RoutingServlet?action=list" class="menu-btn btn-routing">📋 Quy trình tổng<span>(Tên các quy trình lớn)</span></a>
-            <a href="RoutingStepServlet?action=list" class="menu-btn btn-step">⚙️ Chi tiết Công đoạn<span>(Các bước trong quy trình)</span></a>
+            <a href="MainController?action=listBOM" class="menu-btn btn-bom">📦 Quản lý BOM<span>(Công thức sản phẩm)</span></a>
+            <a href="MainController?action=listDefectReason" class="menu-btn btn-defect">⚠️ Danh mục Lỗi<span>(Các loại lỗi hư hỏng)</span></a>
+            <a href="MainController?action=listRouting" class="menu-btn btn-routing">📋 Quy trình tổng<span>(Tên các quy trình lớn)</span></a>
+            <a href="MainController?action=listRoutingStep" class="menu-btn btn-step">⚙️ Chi tiết Công đoạn<span>(Các bước trong quy trình)</span></a>
         </div>
     </body>
 </html>

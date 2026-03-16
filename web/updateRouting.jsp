@@ -20,7 +20,7 @@
             
             Tên quy trình: <input type="text" name="routingName" value="<%= r.getRoutingName() %>" required>
             <button type="submit">Lưu Cập Nhật</button>
-            <a href="RoutingServlet?action=list">Hủy</a>
+            <a href="MainController?action=listRouting">Hủy</a>
         </form>
         <% } else { out.print("<h3 style='color:red;'>Không tìm thấy Quy trình này!</h3>"); } %>
     </body>

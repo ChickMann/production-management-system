@@ -40,7 +40,7 @@
             </div>
             
             <button type="submit">Lưu vào Database</button>
-            <a href="BOMServlet?action=list" style="margin-left: 10px; text-decoration: none; color: red;">Hủy</a>
+            <a href="MainController?action=listBOM" style="margin-left: 10px; text-decoration: none; color: red;">Hủy</a>
         </form>
     </body>
 </html>

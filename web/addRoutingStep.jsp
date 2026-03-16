@@ -27,7 +27,7 @@
             </label></p>
             
             <button type="submit">Lưu Công đoạn</button>
-            <a href="RoutingStepServlet?action=list">Hủy</a>
+            <a href="MainController?action=listRoutingStep">Hủy</a>
         </form>
     </body>
 </html>

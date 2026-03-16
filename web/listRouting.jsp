@@ -38,8 +38,8 @@
             <tr>
                 <td><%= r.getRoutingId() %></td><td><%= r.getRoutingName() %></td>
                 <td>
-                    <a href="RoutingServlet?action=load_update&routingId=<%= r.getRoutingId() %>">Sửa</a> | 
-                    <a href="RoutingServlet?action=delete&routingId=<%= r.getRoutingId() %>" onclick="return confirm('Xóa Quy trình này?');" style="color:red;">Xóa</a>
+                    <a href="MainController?action=listRouting&action=load_update&routingId=<%= r.getRoutingId() %>">Sửa</a> | 
+                    <a href="MainController?action=listRouting&action=delete&routingId=<%= r.getRoutingId() %>" onclick="return confirm('Xóa Quy trình này?');" style="color:red;">Xóa</a>
                 </td>
             </tr>
             <% } } else { out.print("<tr><td colspan='3'>Chưa có dữ liệu</td></tr>"); } %>

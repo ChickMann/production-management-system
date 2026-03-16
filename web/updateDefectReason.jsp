@@ -19,7 +19,7 @@
             
             Tên nguyên nhân lỗi: <input type="text" name="reasonName" value="<%= d.getReasonName() %>" required>
             <button type="submit">Lưu Cập Nhật</button>
-            <a href="DefectReasonServlet?action=list">Hủy</a>
+            <a href="MainController?action=listDefectReason">Hủy</a>
         </form>
         <% } else { out.print("Lỗi không tồn tại!"); } %>
     </body>

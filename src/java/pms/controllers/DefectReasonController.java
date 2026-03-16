@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package pms.controller;
+package pms.controllers;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,7 +20,7 @@ import pms.model.DefectReasonDTO;
  *
  * @author se193234_TranGiaBao
  */
-public class DefectReasonServlet extends HttpServlet {
+public class DefectReasonController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -42,12 +42,12 @@ public class DefectReasonServlet extends HttpServlet {
                 case "add":
                     String addName = request.getParameter("reasonName");
                     dao.insertDefectReasons(new DefectReasonDTO(0, addName));
-                    response.sendRedirect("DefectReasonServlet?action=list");
+                    response.sendRedirect("MainController?action=listDefectReason");
                     break;
                 case "delete":
                     int delId = Integer.parseInt(request.getParameter("defectId"));
                     dao.deleteDefectReasons(new DefectReasonDTO(delId, "")); // Truyền DTO giả chỉ chứa ID
-                    response.sendRedirect("DefectReasonServlet?action=list");
+                    response.sendRedirect("MainController?action=listDefectReason");
                     break;
                 case "load_update":
                     int updId = Integer.parseInt(request.getParameter("defectId"));
@@ -58,7 +58,7 @@ public class DefectReasonServlet extends HttpServlet {
                     int uId = Integer.parseInt(request.getParameter("defectId"));
                     String uName = request.getParameter("reasonName");
                     dao.updateDefectReasons(new DefectReasonDTO(uId, uName));
-                    response.sendRedirect("DefectReasonServlet?action=list");
+                    response.sendRedirect("MainController?action=listDefectReason");
                     break;
             }
         } catch (Exception e) { e.printStackTrace(); }

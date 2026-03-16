@@ -53,11 +53,23 @@
             </c:if>
             <hr/>
             <h2>Item Management</h2>
-            <a href="SearchItem.jsp">Search Item</a>
+            <a href="MainController?action=searchItem">Show List Item</a>
 
             <hr/>
             <h2>BOM Management</h2>
-            <a href="SearchBom.jsp">Search Bom</a>
+            <a href="MainController?action=listBOM">Show List BOM</a>
+
+            <hr/>
+            <h2>Routing Management</h2>
+            <a href="MainController?action=listRouting">Show List Routing</a>
+
+            <hr/>
+            <h2>Routing Step Management</h2>
+            <a href="MainController?action=listRoutingStep">Show List Routing Step</a>
+
+            <hr/>
+            <h2>Defect Reason Management</h2>
+            <a href="MainController?action=listDefectReason">Show List Defect Reason</a>
 
             <hr/>
             <h2>Supplier Management</h2>
