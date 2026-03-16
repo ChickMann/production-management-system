@@ -4,7 +4,8 @@
     Author     : se193234_TranGiaBao
 --%>
 
-<%@page import="model.RoutingDTO"%>
+
+<%@page import="pms.model.RoutingDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

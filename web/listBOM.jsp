@@ -3,8 +3,8 @@
     Created on : Mar 14, 2026, 9:00:26 PM
     Author     : se193234_TranGiaBao
 --%>
+<%@page import="pms.model.BOMDTO"%>
 <%@page import="java.util.List"%>
-<%@page import="model.BOMDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

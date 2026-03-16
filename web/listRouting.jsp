@@ -4,8 +4,9 @@
     Author     : se193234_TranGiaBao
 --%>
 
+<%@page import="pms.model.RoutingDTO"%>
 <%@page import="java.util.List"%>
-<%@page import="model.RoutingDTO"%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

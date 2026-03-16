@@ -4,7 +4,8 @@
     Author     : se193234_TranGiaBao
 --%>
 
-<%@page import="model.DefectReasonDTO"%>
+
+<%@page import="pms.model.DefectReasonDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
