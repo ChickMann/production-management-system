@@ -1,4 +1,4 @@
-package model; // Nhớ check lại tên package của bạn
+package pms.model; // Nhớ check lại tên package của bạn
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -1,4 +1,4 @@
-package controller;
+package pms.controller;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -12,8 +12,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import model.RoutingDAO;
-import model.RoutingDTO;
+import pms.model.RoutingDAO;
+import pms.model.RoutingDTO;
+
 
 /**
  *
