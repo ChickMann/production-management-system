@@ -1,9 +1,3 @@
-<%-- 
-    Document   : bom-form
-    Created on : Mar 14, 2026
-    Author     : Antigravity
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

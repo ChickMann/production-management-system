@@ -1,6 +1,7 @@
 package pms.model;
 
 public class SupplierDTO {
+
     private int supplierId;
     private String supplierName;
     private String contactPhone;
@@ -37,4 +38,5 @@ public class SupplierDTO {
     public void setContactPhone(String contactPhone) {
         this.contactPhone = contactPhone;
     }
+
 }

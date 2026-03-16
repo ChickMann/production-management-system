@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
 import java.sql.Connection;
@@ -10,10 +6,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import pms.utils.DBUtils;
 
-/**
- *
- * @author BAO
- */
 public class UserDAO {
 
     private UserDTO SearchByColumn(String column, String value) {
@@ -23,7 +15,6 @@ public class UserDAO {
             ps.setString(1, value);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    
                     return new UserDTO(rs.getInt("user_id"),
                             rs.getString("username"),
                             rs.getString("password_hash"),
@@ -78,8 +69,6 @@ public class UserDAO {
 
     public Boolean SoftDelete(String id) {
         int result = 0;
-        // status is removed, so we can't soft delete. We will hard delete or ignore.
-        // The prompt says we shouldn't break old logic. Assuming we delete it.
         String sql = "DELETE FROM Users WHERE user_id =?";
         try (Connection conn = DBUtils.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -107,21 +96,13 @@ public class UserDAO {
     }
 
     public boolean Update(UserDTO u) {
-        String sql = "UPDATE Users SET "
-                + " username = ?, "
-                + " password_hash = ?, "
-                + " role = ? "
-                + " WHERE user_id = ?";
-
+        String sql = "UPDATE Users SET username = ?, password_hash = ?, role = ? WHERE user_id = ?";
         try (Connection con = DBUtils.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
             ps.setString(3, u.getRole());
             ps.setInt(4, u.getId());
-
             return ps.executeUpdate() > 0;
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -146,9 +127,7 @@ public class UserDAO {
         try (Connection con = DBUtils.getConnection();
                 PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('Users', RESEED, "
                         + GetCurrentID() + ")")) {
-
             ps.executeUpdate();
-
         } catch (Exception e) {
             e.printStackTrace();
         }

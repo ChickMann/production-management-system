@@ -1,10 +1,3 @@
-<%-- 
-    Document   : updateRouting
-    Created on : Mar 14, 2026, 9:32:30 PM
-    Author     : se193234_TranGiaBao
---%>
-
-
 <%@page import="pms.model.RoutingDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>

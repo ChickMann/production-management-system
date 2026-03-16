@@ -1,9 +1,3 @@
-<%-- 
-    Document   : user-form
-    Created on : Mar 14, 2026, 10:00:11 AM
-    Author     : BAO
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

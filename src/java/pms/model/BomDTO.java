@@ -1,14 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
-/**
- *
- * @author se193234_TranGiaBao
- */
 public class BOMDTO {
+
     private int bomId;
     private int productItemId;
     private int materialItemId;
@@ -55,8 +48,5 @@ public class BOMDTO {
     public void setQuantityRequired(int quantityRequired) {
         this.quantityRequired = quantityRequired;
     }
-    
-    
-    
-    
+
 }

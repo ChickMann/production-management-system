@@ -20,7 +20,6 @@ public class SupplierController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        System.err.println("adad");
 
         switch (action) {
             case "addSupplier":
@@ -36,7 +35,6 @@ public class SupplierController extends HttpServlet {
                 break;
             case "searchSupplier":
                 SearchSupplier(request);
-
                 break;
         }
 
@@ -89,10 +87,7 @@ public class SupplierController extends HttpServlet {
 
         int index = sdao.GetCurrentID();
         if (index > 0) {
-            request.setAttribute("index", index + 1); // Next ID would usually be index + 1 depending on DB behavior, or we just pass index + 1
-            // Let's check how UserController does it: it passes index, then user-form value is `index`.
-            // Wait, UserController does `int index = udao.GetCurrentID(); request.setAttribute("index", index);`
-            // and user-form sets value="${mode == 'update'? u.id : index}". We will replicate this exact behavior.
+            request.setAttribute("index", index + 1);
         }
         
         url = "supplier-form.jsp";
@@ -152,6 +147,6 @@ public class SupplierController extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Short description";
+        return "Supplier Controller";
     }
 }

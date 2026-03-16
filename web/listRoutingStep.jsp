@@ -1,9 +1,3 @@
-<%-- 
-    Document   : listRoutingStep
-    Created on : Mar 14, 2026, 9:35:43 PM
-    Author     : se193234_TranGiaBao
---%>
-
 <%@page import="pms.model.RoutingStepDTO"%>
 <%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>

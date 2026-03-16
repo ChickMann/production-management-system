@@ -44,32 +44,30 @@ public class SupplierDAO {
     }
 
     public boolean Add(SupplierDTO s) {
-        int result = 0;
         String sql = "INSERT INTO Supplier (supplier_name, contact_phone) VALUES (?, ?)";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, s.getSupplierName());
             ps.setString(2, s.getContactPhone());
-            result = ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return result > 0;
+        return false;
     }
 
     public boolean Update(SupplierDTO s) {
-        int result = 0;
         String sql = "UPDATE Supplier SET supplier_name = ?, contact_phone = ? WHERE supplier_id = ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, s.getSupplierName());
             ps.setString(2, s.getContactPhone());
             ps.setInt(3, s.getSupplierId());
-            result = ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return result > 0;
+        return false;
     }
 
     public boolean Delete(int id) {

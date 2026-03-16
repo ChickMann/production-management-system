@@ -1,9 +1,3 @@
-<%-- 
-    Document   : listDefectReason
-    Created on : Mar 14, 2026, 9:20:19 PM
-    Author     : se193234_TranGiaBao
---%>
-
 <%@page import="pms.model.DefectReasonDTO"%>
 <%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>

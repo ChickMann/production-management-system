@@ -1,14 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
-/**
- *
- * @author se193234_TranGiaBao
- */
 public class RoutingStepDTO {
+
     private int stepId;
     private int routingId;
     private String stepName;
@@ -25,7 +18,6 @@ public class RoutingStepDTO {
         this.estimatedTime = estimatedTime;
         this.isInspected = isInspected;
     }
-
 
     public int getStepId() {
         return stepId;
@@ -66,6 +58,5 @@ public class RoutingStepDTO {
     public void setIsInspected(boolean isInspected) {
         this.isInspected = isInspected;
     }
-    
-    
+
 }

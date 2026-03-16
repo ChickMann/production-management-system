@@ -1,9 +1,3 @@
-<%-- 
-    Document   : item-form
-    Created on : Mar 14, 2026
-    Author     : Antigravity
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -18,7 +12,7 @@
             Item ID: <input type="text" name="id" value="${mode == 'update' ? item.itemID : index}" readonly /><br/>
             Name: <input type="text" name="name" value="${item.itemName}" required/><br/>
             Type: <input type="text" name="type" value="${item.itemType}" required/><br/>
-            Stock quantity: <input type="number" step="0.01" min="0" name="stockQuantity:" value="${item.stockQuantity}" required/><br/>
+            Stock quantity: <input type="number" step="0.01" min="0" name="stockQuantity" value="${item.stockQuantity}" required/><br/>
             <input type="submit" value="${mode == 'update' ? 'Update' : 'Add'}"/><br/>
         </form>
         <p style="color: green">${msg}</p><br/>

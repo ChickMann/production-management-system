@@ -1,9 +1,6 @@
 package pms.controllers;
 
-
-
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,14 +11,13 @@ import pms.model.RoutingDTO;
 
 public class RoutingController extends HttpServlet {
 
-
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null) action = "list";
+        if (action == null) action = "listRouting";
 
         RoutingDAO dao = new RoutingDAO();
 
@@ -39,7 +35,7 @@ public class RoutingController extends HttpServlet {
                     break;
                 case "deleteRouting":
                     int delId = Integer.parseInt(request.getParameter("routingId"));
-                    dao.deleteRouting(new RoutingDTO(delId, "")); // Truyền vỏ rỗng
+                    dao.deleteRouting(new RoutingDTO(delId, ""));
                     response.sendRedirect("MainController?action=listRouting");
                     break;
                 case "loadUpdateRouting":

@@ -1,14 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
-/**
- *
- * @author se193234_TranGiaBao
- */
 public class DefectReasonDTO {
+
     private int defectId;
     private String reasonName;
 
@@ -35,6 +28,5 @@ public class DefectReasonDTO {
     public void setReasonName(String reasonName) {
         this.reasonName = reasonName;
     }
-    
-    
+
 }

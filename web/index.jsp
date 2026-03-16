@@ -1,9 +1,3 @@
-<%-- 
-    Document   : index
-    Created on : Mar 13, 2026, 8:07:29 AM
-    Author     : se193234_TranGiaBao
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

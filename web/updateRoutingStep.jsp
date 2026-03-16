@@ -1,10 +1,3 @@
-<%-- 
-    Document   : updateRoutingStep
-    Created on : Mar 14, 2026, 9:36:11 PM
-    Author     : se193234_TranGiaBao
---%>
-
-
 <%@page import="pms.model.RoutingStepDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>

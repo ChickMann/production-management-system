@@ -1,10 +1,3 @@
-<%-- 
-    Document   : updateDefectReason
-    Created on : Mar 14, 2026, 9:20:43 PM
-    Author     : se193234_TranGiaBao
---%>
-
-
 <%@page import="pms.model.DefectReasonDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>

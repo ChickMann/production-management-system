@@ -1,9 +1,3 @@
-<%-- 
-    Document   : listRouting
-    Created on : Mar 14, 2026, 9:32:07 PM
-    Author     : se193234_TranGiaBao
---%>
-
 <%@page import="pms.model.RoutingDTO"%>
 <%@page import="java.util.List"%>
 

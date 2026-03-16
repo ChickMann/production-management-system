@@ -1,14 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
-/**
- *
- * @author se193234_TranGiaBao
- */
 public class RoutingDTO {
+
     private int routingId;
     private String routingName;
 
@@ -35,6 +28,5 @@ public class RoutingDTO {
     public void setRoutingName(String routingName) {
         this.routingName = routingName;
     }
-    
-    
+
 }

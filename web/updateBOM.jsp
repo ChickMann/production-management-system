@@ -1,10 +1,3 @@
-<%-- 
-    Document   : updateBOM
-    Created on : Mar 14, 2026, 9:08:05 PM
-    Author     : se193234_TranGiaBao
---%>
-
-
 <%@page import="pms.model.BOMDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>

@@ -1,8 +1,6 @@
-
 package pms.controllers;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,8 +11,7 @@ import pms.model.BOMDTO;
 
 public class BomController extends HttpServlet {
 
-
-   protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         response.setContentType("text/html;charset=UTF-8");
@@ -22,7 +19,7 @@ public class BomController extends HttpServlet {
         
         String action = request.getParameter("action");
         if (action == null || action.isEmpty()) {
-            action = "list";
+            action = "listBOM";
         }
 
         BOMDAO dao = new BOMDAO();
@@ -48,7 +45,6 @@ public class BomController extends HttpServlet {
                 case "deleteBom":
                 case "removeBom":
                     int delId = Integer.parseInt(request.getParameter("bomId"));
-                    // Vì DAO của bạn nhận vào 1 Object DTO, mình tạo 1 vỏ rỗng nhét ID vào
                     BOMDTO delBom = new BOMDTO();
                     delBom.setBomId(delId);
                     
@@ -82,7 +78,6 @@ public class BomController extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.getWriter().println("Lỗi hệ thống: " + e.getMessage());
         }
     }
 
