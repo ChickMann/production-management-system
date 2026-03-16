@@ -41,7 +41,6 @@ public class BillController extends HttpServlet {
 
         if (action == null) {
             action = "listBill";
-
         }
         switch (action) {
             case "listBill":

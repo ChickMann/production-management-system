@@ -16,6 +16,14 @@
         <servlet-name>CustomerController</servlet-name>
         <servlet-class>pms.controllers.CustomerController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>WorkOrderController</servlet-name>
+        <servlet-class>pms.controllers.WorkOrderController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProductionLogController</servlet-name>
+        <servlet-class>pms.controllers.ProductionLogController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>MainController</servlet-name>
         <url-pattern>/MainController</url-pattern>
@@ -31,6 +39,14 @@
     <servlet-mapping>
         <servlet-name>CustomerController</servlet-name>
         <url-pattern>/CustomerController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>WorkOrderController</servlet-name>
+        <url-pattern>/WorkOrderController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProductionLogController</servlet-name>
+        <url-pattern>/ProductionLogController</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

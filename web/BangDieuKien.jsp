@@ -55,18 +55,33 @@
                 <br/>
                 <a href="MainController?action=addUser">Add employee</a> <br/><br/>
                 <!-- BILL MANAGEMENT BUTTON -->
-                <form action="BillController" method="get">
+                <form action="BillController" method="post">
                     <input type="hidden" name="action" value="listBill"/>
                     <input type="submit" value="Bill Management"/>
                 </form>
                 <br/>
 
                 <!-- CUSTOMER MANAGEMENT BUTTON -->
-                <form action="CustomerController" method="get">
+                <form action="CustomerController" method="post">
                     <input type="hidden" name="action" value="searchCustomer"/>
                     <input type="submit" value="Customer Management"/>
                 </form>
                 <br/>
+                <!-- WORK ORDER MANAGEMENT BUTTON -->
+                <form action="WorkOrderController" method="post">
+                    <input type="hidden" name="action" value="search"/>
+                    <input type="submit" value="Work Order Management"/>
+                </form>
+                <br/>
+
+                <!-- PRODUCTION LOG MANAGEMENT BUTTON -->
+                <form action="ProductionLogController" method="post">
+                    <input type="hidden" name="action" value="list"/>
+                    <input type="submit" value="Production Log Management"/>
+                </form>
+                <br/>
+
+
 
             </c:if>
 
