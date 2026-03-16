@@ -5,14 +5,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import utils.DbUtils;
+import utils.DBUtils;
 
 public class RoutingStepDAO {
     // 1. READ
     public List<RoutingStepDTO> getAllRoutingStep() {
         List<RoutingStepDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM [dbo].[Routing_Step]";
-        try (Connection conn = DbUtils.getConnection(); 
+        try (Connection conn = DBUtils.getConnection(); 
              PreparedStatement ps = conn.prepareStatement(sql); 
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -27,7 +27,7 @@ public class RoutingStepDAO {
     public boolean insertRoutingStep(RoutingStepDTO step) {
         String sql = "INSERT INTO [dbo].[Routing_Step] (routing_id, step_name, estimated_time, is_inspected) VALUES(?, ?, ?, ?)";
         boolean isSuccess = false;
-        try (Connection conn = DbUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, step.getRoutingId());
             ps.setString(2, step.getStepName());
             ps.setInt(3, step.getEstimatedTime());
@@ -41,7 +41,7 @@ public class RoutingStepDAO {
     public boolean updateRoutingStep(RoutingStepDTO step) {
         String sql = "UPDATE [dbo].[Routing_Step] SET routing_id = ?, step_name = ?, estimated_time = ?, is_inspected = ? WHERE step_id = ?";
         boolean isSuccess = false;
-        try (Connection conn = DbUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, step.getRoutingId());
             ps.setString(2, step.getStepName());
             ps.setInt(3, step.getEstimatedTime());
@@ -56,7 +56,7 @@ public class RoutingStepDAO {
     public boolean deleteRoutingStep(int stepId) {
         String sql = "DELETE FROM [dbo].[Routing_Step] WHERE step_id = ?"; // Đã fix 1 chữ WHERE
         boolean isSuccess = false;
-        try (Connection conn = DbUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, stepId);
             if (ps.executeUpdate() > 0) isSuccess = true; // Đã fix thành true
         } catch (Exception e) { e.printStackTrace(); }
@@ -68,7 +68,7 @@ public class RoutingStepDAO {
     // ==========================================
     public RoutingStepDTO getRoutingStepById(int stepId) {
         String sql = "SELECT * FROM [dbo].[Routing_Step] WHERE step_id = ?";
-        try (Connection conn = DbUtils.getConnection();
+        try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, stepId);
             try (ResultSet rs = ps.executeQuery()) {

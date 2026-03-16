@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import utils.DbUtils;
+import utils.DBUtils;
 
 /**
  *
@@ -25,7 +25,7 @@ public class DefectReasonDAO {
         String sql = "SELECT *"
                 + "  FROM [dbo].[Defect_Reason]";
 
-        try(Connection conn = DbUtils.getConnection();  
+        try(Connection conn = DBUtils.getConnection();  
                 PreparedStatement ps = conn.prepareStatement(sql);  
                 ResultSet rs = ps.executeQuery();) {
             
@@ -52,7 +52,7 @@ public class DefectReasonDAO {
 
         Boolean isSuccess = false;
 
-        try( Connection conn = DbUtils.getConnection();  
+        try( Connection conn = DBUtils.getConnection();  
              PreparedStatement ps = conn.prepareStatement(sql);) {
            
 
@@ -79,7 +79,7 @@ public class DefectReasonDAO {
 
         Boolean isSuccess = false;
 
-        try( Connection conn = DbUtils.getConnection();
+        try( Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);) {
            
 
@@ -107,7 +107,7 @@ public class DefectReasonDAO {
 
         Boolean isSuccess = false;
 
-        try(Connection conn = DbUtils.getConnection();
+        try(Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);) {
             
 
@@ -127,7 +127,7 @@ public class DefectReasonDAO {
     
     public DefectReasonDTO getDefectReasonById(int defectId) {
         String sql = "SELECT * FROM [dbo].[Defect_Reason] WHERE defect_id = ?";
-        try (Connection conn = DbUtils.getConnection();
+        try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, defectId);
             try (ResultSet rs = ps.executeQuery()) {

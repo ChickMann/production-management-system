@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.transform.Result;
-import utils.DbUtils;
+import utils.DBUtils;
 
 /**
  *
@@ -27,7 +27,7 @@ public class BOMDAO {
         String sql = "SELECT *"
                 + "  FROM [dbo].[BOM]";
 
-        try(Connection conn = DbUtils.getConnection();
+        try(Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();) {
             
@@ -60,7 +60,7 @@ public class BOMDAO {
 
         boolean isSuccess = false;
 
-        try(Connection conn = DbUtils.getConnection();
+        try(Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);) {
             
 
@@ -91,7 +91,7 @@ public class BOMDAO {
 
         boolean isSuccess = false;
 
-        try(Connection conn = DbUtils.getConnection();
+        try(Connection conn = DBUtils.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);) {
             
 
@@ -120,7 +120,7 @@ public class BOMDAO {
 
         boolean isSuccess = false;
 
-        try(Connection conn = DbUtils.getConnection();  
+        try(Connection conn = DBUtils.getConnection();  
                 PreparedStatement ps = conn.prepareStatement(sql);) {
             
 
@@ -141,7 +141,7 @@ public class BOMDAO {
     // ==========================================
     public BOMDTO getBOMById(int bomId) {
         String sql = "SELECT * FROM [dbo].[BOM] WHERE bom_id = ?";
-        try (Connection conn = utils.DbUtils.getConnection();
+        try (Connection conn = utils.DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, bomId);
             try (ResultSet rs = ps.executeQuery()) {

@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import utils.DbUtils;
+import utils.DBUtils;
 
 /**
  *
@@ -25,7 +25,7 @@ public class RoutingDAO {
         String sql = "SELECT *"
                 + "  FROM [dbo].[Routing]";
 
-        try ( Connection conn = DbUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int routingId = rs.getInt("routing_id");
                 String routingName = rs.getString("routing_name");
@@ -47,7 +47,7 @@ public class RoutingDAO {
                 + "     VALUES(?)";
         boolean isSuccess = false;
 
-        try ( Connection conn = DbUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);) {
+        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);) {
             ps.setString(1, routing.getRoutingName());
             int change = ps.executeUpdate();
             if (change > 0) {
@@ -68,7 +68,7 @@ public class RoutingDAO {
                 + " WHERE routing_id = ?";
         boolean isSuccess = false;
 
-        try ( Connection conn = DbUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);) {
+        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);) {
             ps.setString(1, routing.getRoutingName());
             ps.setInt(2, routing.getRoutingId());
 
@@ -90,7 +90,7 @@ public class RoutingDAO {
                 + "      WHERE routing_id = ?";
         boolean isSuccess = false;
 
-        try ( Connection conn = DbUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);) {
+        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);) {
             ps.setInt(1, routing.getRoutingId());
 
             int change = ps.executeUpdate();
@@ -108,7 +108,7 @@ public class RoutingDAO {
     // ==========================================
     public RoutingDTO getRoutingById(int routingId) {
         String sql = "SELECT * FROM [dbo].[Routing] WHERE routing_id = ?";
-        try (Connection conn = DbUtils.getConnection();
+        try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, routingId);
             try (ResultSet rs = ps.executeQuery()) {
