@@ -67,7 +67,7 @@ public class UserController extends HttpServlet {
                 url = "BangDieuKien.jsp";
                 if (user.getRole().equals("admin")) {
                     ArrayList<UserDTO> eList = udao.EmployeeList("employee");
-                    request.setAttribute("eList", eList);
+                    session.setAttribute("eList", eList);
                 }
             }
         } else {
@@ -97,7 +97,7 @@ public class UserController extends HttpServlet {
             }
         }
         ArrayList<UserDTO> eList = udao.EmployeeList("employee");
-        request.setAttribute("eList", eList);
+        request.getSession().setAttribute("eList", eList);
         url = "BangDieuKien.jsp";
     }
 

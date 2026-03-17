@@ -38,6 +38,18 @@ public class MainController extends HttpServlet {
         } else if (action.contains("DefectReason")) 
         {
             url = "DefectReasonController";
+        } else if (action.contains("Bill")) 
+        {
+            url = "BillController";
+        } else if (action.contains("Customer")) 
+        {
+            url = "CustomerController";
+        } else if (action.contains("Production")) 
+        {
+            url = "ProductionLogController";
+        } else if (action.contains("WorkOrder")) 
+        {
+            url = "WorkOrderController";
         }
         
         request.getRequestDispatcher(url).forward(request, response);

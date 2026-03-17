@@ -82,6 +82,10 @@
                 <a href="MainController?action=listDefectReason" class="menu-btn btn-defect">⚠️ Danh mục Lỗi<span>(Các loại lỗi hư hỏng)</span></a>
                 <a href="MainController?action=searchSupplier" class="menu-btn btn-other">🏢 Tùy chọn Nhà cung cấp<span>(Danh sách Nhà cung cấp)</span></a>
                 <a href="MainController?action=searchPurchaseOrder" class="menu-btn btn-other">📄 Tùy chọn Hóa đơn<span>(Quản lý Order mua hàng)</span></a>
+                <a href="MainController?action=listBill" class="menu-btn btn-routing">💵 Quản lý Bill<span>(Hóa đơn thanh toán)</span></a>
+                <a href="MainController?action=searchCustomer" class="menu-btn btn-step">👥 Quản lý Customer<span>(Khách hàng)</span></a>
+                <a href="MainController?action=listProduction" class="menu-btn btn-bom">🏭 Quản lý Production<span>(Nhật ký sản xuất)</span></a>
+                <a href="MainController?action=listWorkOrder" class="menu-btn btn-defect">📝 Quản lý WorkOrder<span>(Lệnh sản xuất)</span></a>
             </div>
             
             <div class="logout-container">
