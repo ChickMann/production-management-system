@@ -48,7 +48,7 @@ public class UserDAO {
 
     public UserDTO Login(String username, String password) {
         UserDTO user = SearchByName(username);
-        if (user != null && user.getPassword().equalsIgnoreCase(password)) {
+        if (user != null && password != null && password.equalsIgnoreCase(user.getPassword())) {
             return user;
         }
         return null;
