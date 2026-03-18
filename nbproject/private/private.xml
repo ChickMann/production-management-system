@@ -2,19 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/BillDAO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/ProductionLogDTO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/controllers/WorkOrderController.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/web/workorder.jsp</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/WorkOrderDAO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/ProductionLogDAO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/controllers/BillController.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/web/BangDieuKien.jsp</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/controllers/UserController.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/model/WorkOrderDTO.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/src/java/pms/controllers/ProductionLogController.java</file>
-            <file>file:/D:/Phuc/PRJ301/Assignment/production-management-system/web/productionlog.jsp</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
