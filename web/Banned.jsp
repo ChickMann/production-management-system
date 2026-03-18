@@ -1,9 +1,3 @@
-<%-- 
-    Document   : Banned
-    Created on : Mar 7, 2026, 10:05:40 AM
-    Author     : BAO
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

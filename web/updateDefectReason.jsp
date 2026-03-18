@@ -1,10 +1,3 @@
-<%-- 
-    Document   : updateDefectReason
-    Created on : Mar 14, 2026, 9:20:43 PM
-    Author     : se193234_TranGiaBao
---%>
-
-
 <%@page import="pms.model.DefectReasonDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -13,8 +6,8 @@
     <body>
         <h2>Cập nhật Danh mục Lỗi</h2>
         <% DefectReasonDTO d = (DefectReasonDTO) request.getAttribute("defectEdit"); if (d != null) { %>
-        <form action="DefectReasonServlet" method="POST">
-            <input type="hidden" name="action" value="update">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="saveUpdateDefectReason">
             <input type="hidden" name="defectId" value="<%= d.getDefectId() %>">
             
             Tên nguyên nhân lỗi: <input type="text" name="reasonName" value="<%= d.getReasonName() %>" required>

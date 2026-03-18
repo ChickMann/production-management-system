@@ -1,8 +1,6 @@
-
 package pms.controllers;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,8 +11,7 @@ import pms.model.BOMDTO;
 
 public class BomController extends HttpServlet {
 
-
-   protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         response.setContentType("text/html;charset=UTF-8");
@@ -22,20 +19,21 @@ public class BomController extends HttpServlet {
         
         String action = request.getParameter("action");
         if (action == null || action.isEmpty()) {
-            action = "list";
+            action = "listBOM";
         }
 
         BOMDAO dao = new BOMDAO();
 
         try {
             switch (action) {
-                case "list":
+                case "listBOM":
+                case "searchBom":
                     List<BOMDTO> listBom = dao.getAllBOMS();
                     request.setAttribute("danhSachBOM", listBom);
                     request.getRequestDispatcher("listBOM.jsp").forward(request, response);
                     break;
                     
-                case "add":
+                case "addBom":
                     int pId = Integer.parseInt(request.getParameter("productItemId"));
                     int mId = Integer.parseInt(request.getParameter("materialItemId"));
                     int qty = Integer.parseInt(request.getParameter("quantityRequired"));
@@ -44,9 +42,9 @@ public class BomController extends HttpServlet {
                     response.sendRedirect("MainController?action=listBOM");
                     break;
                     
-                case "delete":
+                case "deleteBom":
+                case "removeBom":
                     int delId = Integer.parseInt(request.getParameter("bomId"));
-                    // Vì DAO của bạn nhận vào 1 Object DTO, mình tạo 1 vỏ rỗng nhét ID vào
                     BOMDTO delBom = new BOMDTO();
                     delBom.setBomId(delId);
                     
@@ -54,15 +52,17 @@ public class BomController extends HttpServlet {
                     response.sendRedirect("MainController?action=listBOM");
                     break;
                     
-                case "load_update":
+                case "loadUpdateBom":
+                case "updateBom":
                     int updId = Integer.parseInt(request.getParameter("bomId"));
+                    if(request.getParameter("id") != null && updId == 0) updId = Integer.parseInt(request.getParameter("id"));
                     BOMDTO bomEdit = dao.getBOMById(updId);
                     
                     request.setAttribute("bomEdit", bomEdit);
                     request.getRequestDispatcher("updateBOM.jsp").forward(request, response);
                     break;
                     
-                case "update":
+                case "saveUpdateBom":
                     int uBomId = Integer.parseInt(request.getParameter("bomId"));
                     int uPId = Integer.parseInt(request.getParameter("productItemId"));
                     int uMId = Integer.parseInt(request.getParameter("materialItemId"));
@@ -78,7 +78,6 @@ public class BomController extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.getWriter().println("Lỗi hệ thống: " + e.getMessage());
         }
     }
 

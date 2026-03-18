@@ -1,37 +1,26 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
-/**
- *
- * @author BAO
- */
 public class ItemDTO {
-    int itemID;
-    String itemCode;
-    String name;
-    String type;
-    double standardCost;
-    int stockQuantity;
 
-    public ItemDTO(int itemID, String itemCode, String name, String type, double standardCost) {
+    int itemID;
+    String itemName;
+    String itemType;
+    int stockQuantity;
+    String imageBase64;
+
+    public ItemDTO(int itemID, String itemName, String itemType, int stockQuantity) {
         this.itemID = itemID;
-        this.itemCode = itemCode;
-        this.name = name;
-        this.type = type;
-        this.standardCost = standardCost;
-        this.stockQuantity = 0;
+        this.itemName = itemName;
+        this.itemType = itemType;
+        this.stockQuantity = stockQuantity;
     }
 
-    public ItemDTO(int itemID, String itemCode, String name, String type, double standardCost, int stockQuantity) {
+    public ItemDTO(int itemID, String itemName, String itemType, int stockQuantity, String imageBase64) {
         this.itemID = itemID;
-        this.itemCode = itemCode;
-        this.name = name;
-        this.type = type;
-        this.standardCost = standardCost;
+        this.itemName = itemName;
+        this.itemType = itemType;
         this.stockQuantity = stockQuantity;
+        this.imageBase64 = imageBase64;
     }
 
     public ItemDTO() {
@@ -41,49 +30,40 @@ public class ItemDTO {
         return itemID;
     }
 
-    public String getItemCode() {
-        return itemCode;
+    public String getItemName() {
+        return itemName;
     }
 
-    public String getName() {
-        return name;
+    public String getItemType() {
+        return itemType;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public double getStandardCost() {
-        return standardCost;
+    public int getStockQuantity() {
+        return stockQuantity;
     }
 
     public void setItemID(int itemID) {
         this.itemID = itemID;
     }
 
-    public void setItemCode(String itemCode) {
-        this.itemCode = itemCode;
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setStandardCost(double standardCost) {
-        this.standardCost = standardCost;
-    }
-    
-    public int getStockQuantity() {
-        return stockQuantity;
+    public void setItemType(String itemType) {
+        this.itemType = itemType;
     }
 
     public void setStockQuantity(int stockQuantity) {
         this.stockQuantity = stockQuantity;
     }
-    
-        
+
+    public String getImageBase64() {
+        return imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
+    }
+
 }

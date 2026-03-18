@@ -1,17 +1,11 @@
-<%-- 
-    Document   : addRoutingStep
-    Created on : Mar 14, 2026, 9:35:58 PM
-    Author     : se193234_TranGiaBao
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
     <head><title>Thêm Công đoạn</title></head>
     <body>
         <h2>Thêm Công đoạn mới</h2>
-        <form action="RoutingStepServlet" method="POST">
-            <input type="hidden" name="action" value="add">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="addRoutingStep">
             
             <p>ID Quy trình tổng (Routing ID): <br>
                <input type="number" name="routingId" required></p>

@@ -73,18 +73,19 @@ public class PurchaseOrderController extends HttpServlet {
                 int itemId = Integer.parseInt(request.getParameter("itemId"));
                 int supplierId = Integer.parseInt(request.getParameter("supplierId"));
                 int requiredQuantity = Integer.parseInt(request.getParameter("requiredQuantity"));
-                Date alertDate = Date.valueOf(request.getParameter("alertDate")); // format yyyy-[m]m-[d]d
+                Date alertDate = Date.valueOf(request.getParameter("alertDate"));
                 String status = request.getParameter("status");
 
                 PurchaseOrderDTO po = new PurchaseOrderDTO(0, itemId, supplierId, requiredQuantity, alertDate, status);
-              if (error.isEmpty()) {
-                if (pdao.Add(po)) {
-                    msg = "add thành công";
-                } else {
-                    error = "add thất bại";
-                    pdao.ReseedSQL();
+                if (error.isEmpty()) {
+                    if (pdao.Add(po)) {
+                        msg = "add thành công";
+                    } else {
+                        error = "add thất bại";
+                        pdao.ReseedSQL();
+                    }
                 }
-            }    request.setAttribute("po", po);
+                request.setAttribute("po", po);
             } catch (Exception e) {
                 error = "Vui lòng nhập đúng định dạng dữ liệu (ID và Số lượng là số, Ngày là yyyy-mm-dd)";
             }

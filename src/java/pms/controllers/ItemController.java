@@ -1,39 +1,28 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package pms.controllers;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import pms.model.ItemDAO;
 import pms.model.ItemDTO;
 
-/**
- *
- * @author BAO
- */
+@MultipartConfig(maxFileSize = 10485760)
 public class ItemController extends HttpServlet {
 
     String url = "";
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, Exception {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
@@ -77,7 +66,7 @@ public class ItemController extends HttpServlet {
         url = "SearchItem.jsp";
     }
 
-    private void AddItem(HttpServletRequest request) {
+    private void AddItem(HttpServletRequest request) throws Exception {
         String msg = "";
         String error = "";
 
@@ -86,23 +75,38 @@ public class ItemController extends HttpServlet {
         request.setAttribute("mode", "add");
 
         if (action.equals("saveAddItem")) {
-            String itemCode = request.getParameter("itemCode");
             String name = request.getParameter("name");
             String type = request.getParameter("type");
-            String s_standardCost = request.getParameter("standardCost");
-            double standardCost = 0;
+            String s_stockQuantity = request.getParameter("stockQuantity");
+            int stockQuantity = 0;
             try {
-                standardCost = Double.parseDouble(s_standardCost);
+                stockQuantity = Integer.parseInt(s_stockQuantity);
             } catch (Exception e) {
-                error += "standard cost phải là số; ";
+                error += "stock quantity phải là số ";
             }
 
-            ItemDTO i = new ItemDTO(0, itemCode, name, type, standardCost);
+            String base64Image = null;
+            Part filePart = request.getPart("imageFile");
+            if (filePart != null && filePart.getSize() > 0) {
+                String contentType = filePart.getContentType();
+                InputStream is = filePart.getInputStream();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    bos.write(buffer, 0, bytesRead);
+                }
+                byte[] imageBytes = bos.toByteArray();
+                base64Image = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
+            }
+
+            ItemDTO i = new ItemDTO(0, name, type, stockQuantity, base64Image);
             if (error.isEmpty()) {
                 if (idao.Add(i)) {
                     msg = "Thêm thành công";
                 } else {
                     error = "Thêm thất bại";
+                    idao.ReseedSQL();
                 }
             }
             request.setAttribute("item", i);
@@ -115,7 +119,7 @@ public class ItemController extends HttpServlet {
         url = "item-form.jsp";
     }
 
-    private void UpdateItem(HttpServletRequest request) {
+    private void UpdateItem(HttpServletRequest request) throws Exception {
         String msg = "";
         String error = "";
 
@@ -127,19 +131,34 @@ public class ItemController extends HttpServlet {
         request.setAttribute("mode", "update");
 
         if (action.equals("saveUpdateItem")) {
-            String itemCode = request.getParameter("itemCode");
             String name = request.getParameter("name");
             String type = request.getParameter("type");
-            String s_standardCost = request.getParameter("standardCost");
-            double standardCost = 0;
+            String s_stockQuantity = request.getParameter("stockQuantity");
+            int stockQuantity = 0;
             try {
-                standardCost = Double.parseDouble(s_standardCost);
+                stockQuantity = Integer.parseInt(s_stockQuantity);
             } catch (Exception e) {
                 error += "standard cost phải là số; ";
             }
             int id = Integer.parseInt(s_id);
+            String base64Image = null;
+            Part filePart = request.getPart("imageFile");
+            if (filePart != null && filePart.getSize() > 0) {
+                String contentType = filePart.getContentType();
+                InputStream is = filePart.getInputStream();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    bos.write(buffer, 0, bytesRead);
+                }
+                byte[] imageBytes = bos.toByteArray();
+                base64Image = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
+            } else if (i != null) {
+                base64Image = i.getImageBase64();
+            }
 
-            i = new ItemDTO(id, itemCode, name, type, standardCost);
+            i = new ItemDTO(id, name, type, stockQuantity, base64Image);
             if (error.isEmpty()) {
                 if (idao.Update(i)) {
                     msg = "Cập nhật thành công";
@@ -158,11 +177,15 @@ public class ItemController extends HttpServlet {
 
     private void SearchItem(HttpServletRequest request) {
         String keyword = request.getParameter("keyword");
+        if (keyword == null) {
+            keyword = "";
+        }
         ItemDAO idao = new ItemDAO();
+
         ArrayList<ItemDTO> itemList = new ArrayList<>();
         if (keyword.trim().length() > 0) {
             itemList = idao.FilterByName(keyword);
-        }else {
+        } else {
             itemList = idao.ItemList();
         }
 
@@ -171,43 +194,29 @@ public class ItemController extends HttpServlet {
         url = "SearchItem.jsp";
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(ItemController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(ItemController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+        return "Item Controller";
+    }
 
 }

@@ -1,9 +1,3 @@
-<%-- 
-    Document   : addBOM
-    Created on : Mar 14, 2026, 9:02:29 PM
-    Author     : se193234_TranGiaBao
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -21,8 +15,8 @@
     <body>
         <h2>Thêm Công thức Sản phẩm mới</h2>
         
-        <form action="BOMServlet" method="POST">
-            <input type="hidden" name="action" value="add">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="addBom">
             
             <div class="form-group">
                 <label>ID Sản phẩm:</label>

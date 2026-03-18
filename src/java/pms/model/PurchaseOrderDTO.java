@@ -3,6 +3,7 @@ package pms.model;
 import java.util.Date;
 
 public class PurchaseOrderDTO {
+
     private int poId;
     private int itemId;
     private int supplierId;
@@ -69,4 +70,5 @@ public class PurchaseOrderDTO {
     public void setStatus(String status) {
         this.status = status;
     }
+
 }

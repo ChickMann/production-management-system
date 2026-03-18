@@ -1,9 +1,6 @@
 package pms.controllers;
 
-
-
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,40 +11,39 @@ import pms.model.RoutingDTO;
 
 public class RoutingController extends HttpServlet {
 
-
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null) action = "list";
+        if (action == null) action = "listRouting";
 
         RoutingDAO dao = new RoutingDAO();
 
         try {
             switch (action) {
-                case "list":
+                case "listRouting":
                     List<RoutingDTO> list = dao.getAllRouting();
                     request.setAttribute("listRouting", list);
                     request.getRequestDispatcher("listRouting.jsp").forward(request, response);
                     break;
-                case "add":
+                case "addRouting":
                     String addName = request.getParameter("routingName");
                     dao.insertRouting(new RoutingDTO(0, addName));
                     response.sendRedirect("MainController?action=listRouting");
                     break;
-                case "delete":
+                case "deleteRouting":
                     int delId = Integer.parseInt(request.getParameter("routingId"));
-                    dao.deleteRouting(new RoutingDTO(delId, "")); // Truyền vỏ rỗng
+                    dao.deleteRouting(new RoutingDTO(delId, ""));
                     response.sendRedirect("MainController?action=listRouting");
                     break;
-                case "load_update":
+                case "loadUpdateRouting":
                     int updId = Integer.parseInt(request.getParameter("routingId"));
                     request.setAttribute("routingEdit", dao.getRoutingById(updId));
                     request.getRequestDispatcher("updateRouting.jsp").forward(request, response);
                     break;
-                case "update":
+                case "saveUpdateRouting":
                     int uId = Integer.parseInt(request.getParameter("routingId"));
                     String uName = request.getParameter("routingName");
                     dao.updateRouting(new RoutingDTO(uId, uName));

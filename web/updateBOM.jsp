@@ -1,10 +1,3 @@
-<%-- 
-    Document   : updateBOM
-    Created on : Mar 14, 2026, 9:08:05 PM
-    Author     : se193234_TranGiaBao
---%>
-
-
 <%@page import="pms.model.BOMDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -29,8 +22,8 @@
             if (bom != null) {
         %>
         
-        <form action="BOMServlet" method="POST">
-            <input type="hidden" name="action" value="update">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="saveUpdateBom">
             <input type="hidden" name="bomId" value="<%= bom.getBomId() %>">
             
             <div class="form-group">

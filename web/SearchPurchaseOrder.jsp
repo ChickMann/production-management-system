@@ -13,7 +13,6 @@
             <input type="submit" value="Reload Purchase Orders"/> <br/>
         </form>
         
-        <!-- Alerts for upcoming/pending Purchase Orders can be styled here -->
         <h3>Purchase Order Alerts</h3>
         <ul>
             <c:forEach items="${poList}" var="po">

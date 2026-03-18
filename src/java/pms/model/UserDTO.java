@@ -1,36 +1,34 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
-/**
- *
- * @author BAO
- */
 public class UserDTO {
 
     int id;
-    String username, password, role;
+    String username, password, role, fullName;
     boolean status;
 
     public UserDTO() {
     }
 
-    public UserDTO(int id, String username , String fullName, String role, boolean status) {
+    public UserDTO(int id, String username , String password,String role, boolean status) {
         this.id = id;
         this.username = username;
         this.password = password;
-
         this.role = role;
+        this.status = status;
+    }
+
+    public UserDTO(int id, String username, String password, String role, String fullName, boolean status) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.fullName = fullName;
         this.status = status;
     }
 
     public void setStatus(boolean status) {
         this.status = status;
     }
-
-
 
     public int getId() {
         return id;
@@ -44,7 +42,6 @@ public class UserDTO {
         return password;
     }
 
-   
     public String getRole() {
         return role;
     }
@@ -61,14 +58,20 @@ public class UserDTO {
         this.password = password;
     }
 
-   
-
     public void setRole(String role) {
         this.role = role;
     }
 
     public boolean isStatus() {
         return status;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
 }

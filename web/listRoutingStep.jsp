@@ -1,9 +1,3 @@
-<%-- 
-    Document   : listRoutingStep
-    Created on : Mar 14, 2026, 9:35:43 PM
-    Author     : se193234_TranGiaBao
---%>
-
 <%@page import="pms.model.RoutingStepDTO"%>
 <%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -21,7 +15,7 @@
     </head>
     <body>
         <h2>Danh sách Chi tiết Công đoạn (Routing Step)</h2>
-        <a href="index.jsp" class="btn btn-back">⬅️ Quay lại Menu</a>
+        <a href="MainController?action=loginUser" class="btn btn-back">⬅️ Quay lại Menu</a>
         <a href="addRoutingStep.jsp" class="btn btn-add">+ Thêm Công đoạn mới</a>
         
         <table>
@@ -38,8 +32,8 @@
                     <%= s.isIsInspected() ? "Có" : "Không" %>
                 </td>
                 <td>
-                    <a href="MainController?action=listRoutingStep&action=load_update&stepId=<%= s.getStepId() %>">Sửa</a> | 
-                    <a href="MainController?action=listRoutingStep&action=delete&stepId=<%= s.getStepId() %>" onclick="return confirm('Xóa công đoạn này?');" style="color:red;">Xóa</a>
+                    <a href="MainController?action=loadUpdateRoutingStep&stepId=<%= s.getStepId() %>">Sửa</a> | 
+                    <a href="MainController?action=deleteRoutingStep&stepId=<%= s.getStepId() %>" onclick="return confirm('Xóa công đoạn này?');" style="color:red;">Xóa</a>
                 </td>
             </tr>
             <% } } else { out.print("<tr><td colspan='6'>Chưa có công đoạn nào</td></tr>"); } %>

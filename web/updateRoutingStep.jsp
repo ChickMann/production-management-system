@@ -1,10 +1,3 @@
-<%-- 
-    Document   : updateRoutingStep
-    Created on : Mar 14, 2026, 9:36:11 PM
-    Author     : se193234_TranGiaBao
---%>
-
-
 <%@page import="pms.model.RoutingStepDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -16,8 +9,8 @@
             RoutingStepDTO s = (RoutingStepDTO) request.getAttribute("stepEdit"); 
             if (s != null) { 
         %>
-        <form action="RoutingStepServlet" method="POST">
-            <input type="hidden" name="action" value="update">
+        <form action="MainController" method="POST">
+            <input type="hidden" name="action" value="saveUpdateRoutingStep">
             <input type="hidden" name="stepId" value="<%= s.getStepId() %>">
             
             <p>ID Quy trình tổng: <br>

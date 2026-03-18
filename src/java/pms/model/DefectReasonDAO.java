@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
 import java.sql.Connection;
@@ -10,120 +6,59 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import pms.utils.DBUtils;
-import pms.model.DefectReasonDTO;
 
-/**
- *
- * @author se193234_TranGiaBao
- */
 public class DefectReasonDAO {
 
-    // ==========================================
-    // 1. R - READ: Lấy danh sách toàn bộ BOM
-    // ==========================================
     public List<DefectReasonDTO> getAllDefectReasons() {
         List<DefectReasonDTO> list = new ArrayList<>();
-        String sql = "SELECT *"
-                + "  FROM [dbo].[Defect_Reason]";
-
+        String sql = "SELECT * FROM [dbo].[Defect_Reason]";
         try(Connection conn = DBUtils.getConnection();  
                 PreparedStatement ps = conn.prepareStatement(sql);  
-                ResultSet rs = ps.executeQuery();) {
-            
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                int defectId = rs.getInt("defect_id");
-                String reasonName = rs.getString("reason_name");
-                DefectReasonDTO dr = new DefectReasonDTO(defectId, reasonName);
-                list.add(dr);
+                list.add(new DefectReasonDTO(rs.getInt("defect_id"), rs.getString("reason_name")));
             }
         } catch (Exception e) {
-            System.err.println("Error list DefectReasons: " + e.getMessage());
+            e.printStackTrace();
         }
         return list;
-
     }
 
-    // ==========================================
-    // 2. C - CREATE: Thêm mới 1 công thức BOM
-    // ==========================================
     public boolean insertDefectReasons(DefectReasonDTO defect) {
-        String sql = "INSERT INTO [dbo].[Defect_Reason]\n"
-                + "           ([reason_name])\n"
-                + "     VALUES(?)";
-
-        Boolean isSuccess = false;
-
+        String sql = "INSERT INTO [dbo].[Defect_Reason] ([reason_name]) VALUES(?)";
         try( Connection conn = DBUtils.getConnection();  
-             PreparedStatement ps = conn.prepareStatement(sql);) {
-           
-
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setNString(1, defect.getReasonName());
-            int change = ps.executeUpdate();
-
-            if (change > 0) {
-                isSuccess = true;
-            }
-
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            System.err.println("Error create DefectReasons: " + e.getMessage());
+            e.printStackTrace();
         }
-        return isSuccess;
+        return false;
     }
 
-    // ==========================================
-    // 3. U - UPDATE: Cập nhật công thức BOM
-    // ==========================================  
     public boolean updateDefectReasons(DefectReasonDTO defect) {
-        String sql = "UPDATE [dbo].[Defect_Reason]\n"
-                + "   SET [reason_name] = ?"
-                + " WHERE defect_id = ?";
-
-        Boolean isSuccess = false;
-
+        String sql = "UPDATE [dbo].[Defect_Reason] SET [reason_name] = ? WHERE defect_id = ?";
         try( Connection conn = DBUtils.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);) {
-           
-
-            ps.setNString(1, defect.getReasonName());;
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setNString(1, defect.getReasonName());
             ps.setInt(2, defect.getDefectId());
-
-            int change = ps.executeUpdate();
-
-            if (change > 0) {
-                isSuccess = true;
-            }
-
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            System.err.println("Error update DefectReasons: " + e.getMessage());
+            e.printStackTrace();
         }
-        return isSuccess;
+        return false;
     }
 
-    // ==========================================
-    // 4. D - DELETE: Xóa 1 công thức BOM theo ID
-    // ==========================================
     public boolean deleteDefectReasons(DefectReasonDTO defect) {
-        String sql = "DELETE FROM [dbo].[Defect_Reason]\n"
-                + "      WHERE defect_id = ?";
-
-        Boolean isSuccess = false;
-
+        String sql = "DELETE FROM [dbo].[Defect_Reason] WHERE defect_id = ?";
         try(Connection conn = DBUtils.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);) {
-            
-
+            PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, defect.getDefectId());
-
-            int change = ps.executeUpdate();
-
-            if (change > 0) {
-                isSuccess = true;
-            }
-
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            System.err.println("Error delete DefectReasons: " + e.getMessage());
+            e.printStackTrace();
         }
-        return isSuccess;
+        return false;
     }
     
     public DefectReasonDTO getDefectReasonById(int defectId) {
@@ -136,7 +71,9 @@ public class DefectReasonDAO {
                     return new DefectReasonDTO(rs.getInt("defect_id"), rs.getString("reason_name"));
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }

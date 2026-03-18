@@ -1,8 +1,6 @@
-
 package pms.controllers;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,26 +11,24 @@ import pms.model.RoutingStepDTO;
 
 public class RoutingStepController extends HttpServlet {
 
-
-   protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null) action = "list";
+        if (action == null) action = "listRoutingStep";
 
         RoutingStepDAO dao = new RoutingStepDAO();
 
         try {
             switch (action) {
-                case "list":
+                case "listRoutingStep":
                     List<RoutingStepDTO> list = dao.getAllRoutingStep();
                     request.setAttribute("listStep", list);
                     request.getRequestDispatcher("listRoutingStep.jsp").forward(request, response);
                     break;
-                    
-                case "add":
+                case "addRoutingStep":
                     int rId = Integer.parseInt(request.getParameter("routingId"));
                     String sName = request.getParameter("stepName");
                     int time = Integer.parseInt(request.getParameter("estimatedTime"));
@@ -41,25 +37,22 @@ public class RoutingStepController extends HttpServlet {
                     dao.insertRoutingStep(new RoutingStepDTO(0, rId, sName, time, isInsp));
                     response.sendRedirect("MainController?action=listRoutingStep");
                     break;
-                    
-                case "delete":
+                case "deleteRoutingStep":
                     int delId = Integer.parseInt(request.getParameter("stepId"));
                     dao.deleteRoutingStep(delId);
                     response.sendRedirect("MainController?action=listRoutingStep");
                     break;
-                    
-                case "load_update":
+                case "loadUpdateRoutingStep":
                     int updId = Integer.parseInt(request.getParameter("stepId"));
                     request.setAttribute("stepEdit", dao.getRoutingStepById(updId));
                     request.getRequestDispatcher("updateRoutingStep.jsp").forward(request, response);
                     break;
-                    
-                case "update":
+                case "saveUpdateRoutingStep":
                     int uId = Integer.parseInt(request.getParameter("stepId"));
                     int uRId = Integer.parseInt(request.getParameter("routingId"));
                     String uName = request.getParameter("stepName");
                     int uTime = Integer.parseInt(request.getParameter("estimatedTime"));
-                    boolean uInsp = request.getParameter("isInspected") != null; // Xử lý checkbox
+                    boolean uInsp = request.getParameter("isInspected") != null;
                     
                     dao.updateRoutingStep(new RoutingStepDTO(uId, uRId, uName, uTime, uInsp));
                     response.sendRedirect("MainController?action=listRoutingStep");

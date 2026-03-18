@@ -1,4 +1,4 @@
-package pms.model; // Nhớ check lại tên package của bạn
+package pms.model;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,10 +6,9 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import pms.utils.DBUtils;
-import pms.model.RoutingStepDTO;
 
 public class RoutingStepDAO {
-    // 1. READ
+
     public List<RoutingStepDTO> getAllRoutingStep() {
         List<RoutingStepDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM [dbo].[Routing_Step]";
@@ -20,53 +19,52 @@ public class RoutingStepDAO {
                 list.add(new RoutingStepDTO(rs.getInt("step_id"), rs.getInt("routing_id"),
                         rs.getString("step_name"), rs.getInt("estimated_time"), rs.getBoolean("is_inspected")));
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
-    // 2. CREATE
     public boolean insertRoutingStep(RoutingStepDTO step) {
         String sql = "INSERT INTO [dbo].[Routing_Step] (routing_id, step_name, estimated_time, is_inspected) VALUES(?, ?, ?, ?)";
-        boolean isSuccess = false;
         try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, step.getRoutingId());
             ps.setString(2, step.getStepName());
             ps.setInt(3, step.getEstimatedTime());
             ps.setBoolean(4, step.isIsInspected());
-            if (ps.executeUpdate() > 0) isSuccess = true; // Đã fix thành true
-        } catch (Exception e) { e.printStackTrace(); }
-        return isSuccess;
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
-    // 3. UPDATE
     public boolean updateRoutingStep(RoutingStepDTO step) {
         String sql = "UPDATE [dbo].[Routing_Step] SET routing_id = ?, step_name = ?, estimated_time = ?, is_inspected = ? WHERE step_id = ?";
-        boolean isSuccess = false;
         try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, step.getRoutingId());
             ps.setString(2, step.getStepName());
             ps.setInt(3, step.getEstimatedTime());
             ps.setBoolean(4, step.isIsInspected());
             ps.setInt(5, step.getStepId());
-            if (ps.executeUpdate() > 0) isSuccess = true; // Đã fix thành true
-        } catch (Exception e) { e.printStackTrace(); }
-        return isSuccess;
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
-    // 4. DELETE
     public boolean deleteRoutingStep(int stepId) {
-        String sql = "DELETE FROM [dbo].[Routing_Step] WHERE step_id = ?"; // Đã fix 1 chữ WHERE
-        boolean isSuccess = false;
+        String sql = "DELETE FROM [dbo].[Routing_Step] WHERE step_id = ?";
         try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, stepId);
-            if (ps.executeUpdate() > 0) isSuccess = true; // Đã fix thành true
-        } catch (Exception e) { e.printStackTrace(); }
-        return isSuccess;
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
     
-    // ==========================================
-    // 5. Lấy 1 Công đoạn theo ID (Dùng cho form Sửa)
-    // ==========================================
     public RoutingStepDTO getRoutingStepById(int stepId) {
         String sql = "SELECT * FROM [dbo].[Routing_Step] WHERE step_id = ?";
         try (Connection conn = DBUtils.getConnection();
@@ -84,8 +82,8 @@ public class RoutingStepDAO {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error getRoutingStepById: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
-}
+}

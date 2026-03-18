@@ -1,8 +1,3 @@
-<%-- 
-    Document   : SearchItem
-    Created on : Mar 14, 2026, 8:37:20 PM
-    Author     : BAO
---%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -27,24 +22,32 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Code</th>
                             <th>Name</th>
                             <th>Type</th>
-                            <th>Cost</th>
+                            <th>Stock quantity</th>
+                            <th>Image</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach items="${itemList}" var="i">
                             <tr>
                                 <td>${i.itemID}</td>
-                                <td>${i.itemCode}</td>
-                                <td>${i.name}</td>
-                                <td>${i.type}</td>
-                                <td>${i.standardCost}</td>
+                                <td>${i.itemName}</td>
+                                <td>${i.itemType}</td>
+                                <td>${i.stockQuantity}</td>
+                                <td>
+                                    <c:if test="${not empty i.imageBase64}">
+                                        <img src="${i.imageBase64}" style="max-width:80px; max-height:80px; object-fit:contain;" alt="Ảnh" /><br/>
+                                        <a href="${i.imageBase64}" download="item_${i.itemID}">📥 Tải ảnh</a>
+                                    </c:if>
+                                    <c:if test="${empty i.imageBase64}">
+                                        Không có ảnh
+                                    </c:if>
+                                </td>
                                 <td>
                                     <a href="MainController?action=updateItem&id=${i.itemID}">Update</a> |
                                     <a href="MainController?action=removeItem&id=${i.itemID}" onclick="return confirm('Are you sure?')">Remove</a>
-                                </td>
+                                </td>   
                             </tr>
                         </c:forEach>
                     </tbody>

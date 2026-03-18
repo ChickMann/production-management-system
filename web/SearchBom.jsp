@@ -1,8 +1,3 @@
-<%-- 
-    Document   : SearchBom
-    Created on : Mar 14, 2026, 8:57:40 PM
-    Author     : BAO
---%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
