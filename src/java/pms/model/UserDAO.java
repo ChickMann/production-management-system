@@ -19,6 +19,7 @@ public class UserDAO {
                             rs.getString("username"),
                             rs.getString("password_hash"),
                             rs.getString("role"),
+                            rs.getString("full_name"),
                             true);
                 }
             }
@@ -57,6 +58,7 @@ public class UserDAO {
                             rs.getString("username"),
                             rs.getString("password_hash"),
                             rs.getString("role"),
+                            rs.getString("full_name"),
                             true));
                 }
             }
@@ -82,12 +84,13 @@ public class UserDAO {
 
     public boolean Add(UserDTO u) {
         int result = 0;
-        String sql = "INSERT INTO Users (username, password_hash, role) VALUES(?,?,?)";
+        String sql = "INSERT INTO Users (username, password_hash, role, full_name) VALUES(?,?,?,?)";
         try (Connection con = DBUtils.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
             ps.setString(3, u.getRole());
+            ps.setString(4, u.getFullName());
             result = ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,12 +99,13 @@ public class UserDAO {
     }
 
     public boolean Update(UserDTO u) {
-        String sql = "UPDATE Users SET username = ?, password_hash = ?, role = ? WHERE user_id = ?";
+        String sql = "UPDATE Users SET username = ?, password_hash = ?, role = ?, full_name = ? WHERE user_id = ?";
         try (Connection con = DBUtils.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
             ps.setString(3, u.getRole());
-            ps.setInt(4, u.getId());
+            ps.setString(4, u.getFullName());
+            ps.setInt(5, u.getId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();

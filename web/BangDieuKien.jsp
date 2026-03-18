@@ -32,7 +32,7 @@
     <body>
 
         <c:if test="${not empty user}">
-            <h1>Hello ${user.username} (${user.role})</h1><br/>
+            <h1>Hello ${user.fullName} (${user.role})</h1><br/>
 
             <c:if test="${user.role eq 'admin'}">
                 <h2>User Management</h2>
@@ -46,6 +46,7 @@
                                 <tr>
                                     <th>Id</th>
                                     <th>Username</th>
+                                    <th>Full Name</th>
                                     <th>Password</th>
                                     <th>Actions</th> 
                                 </tr>
@@ -55,6 +56,7 @@
                                     <tr>
                                         <td>${e.id}</td>
                                         <td>${e.username}</td>
+                                        <td>${e.fullName}</td>
                                         <td>${e.password}</td>
                                         <td>
                                             <a href="MainController?action=updateUser&id=${e.id}">Update</a> |

@@ -112,8 +112,9 @@ public class UserController extends HttpServlet {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             String role = request.getParameter("role");
+            String fullName = request.getParameter("fullName");
 
-            UserDTO u = new UserDTO(0, username, password, role, true);
+            UserDTO u = new UserDTO(0, username, password, role, fullName, true);
             if (error.isEmpty()) {
                 if (udao.Add(u)) {
                     msg = "Add thanh cong";
@@ -156,7 +157,8 @@ public class UserController extends HttpServlet {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             String role = request.getParameter("role");
-            u = new UserDTO(id, username, password, role, true);
+            String fullName = request.getParameter("fullName");
+            u = new UserDTO(id, username, password, role, fullName, true);
             if (error.isEmpty()) {
                 if (udao.Update(u)) {
                     msg = "update thanh cong";

@@ -25,6 +25,7 @@
                             <th>Name</th>
                             <th>Type</th>
                             <th>Stock quantity</th>
+                            <th>Image</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -34,6 +35,15 @@
                                 <td>${i.itemName}</td>
                                 <td>${i.itemType}</td>
                                 <td>${i.stockQuantity}</td>
+                                <td>
+                                    <c:if test="${not empty i.imageBase64}">
+                                        <img src="${i.imageBase64}" style="max-width:80px; max-height:80px; object-fit:contain;" alt="Ảnh" /><br/>
+                                        <a href="${i.imageBase64}" download="item_${i.itemID}">📥 Tải ảnh</a>
+                                    </c:if>
+                                    <c:if test="${empty i.imageBase64}">
+                                        Không có ảnh
+                                    </c:if>
+                                </td>
                                 <td>
                                     <a href="MainController?action=updateItem&id=${i.itemID}">Update</a> |
                                     <a href="MainController?action=removeItem&id=${i.itemID}" onclick="return confirm('Are you sure?')">Remove</a>

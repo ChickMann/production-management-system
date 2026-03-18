@@ -1,20 +1,28 @@
 package pms.controllers;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import pms.model.ItemDAO;
 import pms.model.ItemDTO;
 
+@MultipartConfig(maxFileSize = 10485760)
 public class ItemController extends HttpServlet {
 
     String url = "";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, Exception {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
@@ -58,7 +66,7 @@ public class ItemController extends HttpServlet {
         url = "SearchItem.jsp";
     }
 
-    private void AddItem(HttpServletRequest request) {
+    private void AddItem(HttpServletRequest request) throws Exception {
         String msg = "";
         String error = "";
 
@@ -74,15 +82,31 @@ public class ItemController extends HttpServlet {
             try {
                 stockQuantity = Integer.parseInt(s_stockQuantity);
             } catch (Exception e) {
-                error += "standard cost phải là số; ";
+                error += "stock quantity phải là số ";
             }
 
-            ItemDTO i = new ItemDTO(0, name, type, stockQuantity);
+            String base64Image = null;
+            Part filePart = request.getPart("imageFile");
+            if (filePart != null && filePart.getSize() > 0) {
+                String contentType = filePart.getContentType();
+                InputStream is = filePart.getInputStream();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    bos.write(buffer, 0, bytesRead);
+                }
+                byte[] imageBytes = bos.toByteArray();
+                base64Image = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
+            }
+
+            ItemDTO i = new ItemDTO(0, name, type, stockQuantity, base64Image);
             if (error.isEmpty()) {
                 if (idao.Add(i)) {
                     msg = "Thêm thành công";
                 } else {
                     error = "Thêm thất bại";
+                    idao.ReseedSQL();
                 }
             }
             request.setAttribute("item", i);
@@ -95,7 +119,7 @@ public class ItemController extends HttpServlet {
         url = "item-form.jsp";
     }
 
-    private void UpdateItem(HttpServletRequest request) {
+    private void UpdateItem(HttpServletRequest request) throws Exception {
         String msg = "";
         String error = "";
 
@@ -117,8 +141,24 @@ public class ItemController extends HttpServlet {
                 error += "standard cost phải là số; ";
             }
             int id = Integer.parseInt(s_id);
+            String base64Image = null;
+            Part filePart = request.getPart("imageFile");
+            if (filePart != null && filePart.getSize() > 0) {
+                String contentType = filePart.getContentType();
+                InputStream is = filePart.getInputStream();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    bos.write(buffer, 0, bytesRead);
+                }
+                byte[] imageBytes = bos.toByteArray();
+                base64Image = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
+            } else if (i != null) {
+                base64Image = i.getImageBase64();
+            }
 
-            i = new ItemDTO(id, name, type, stockQuantity);
+            i = new ItemDTO(id, name, type, stockQuantity, base64Image);
             if (error.isEmpty()) {
                 if (idao.Update(i)) {
                     msg = "Cập nhật thành công";
@@ -157,13 +197,21 @@ public class ItemController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(ItemController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(ItemController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

@@ -6,12 +6,21 @@ public class ItemDTO {
     String itemName;
     String itemType;
     int stockQuantity;
+    String imageBase64;
 
     public ItemDTO(int itemID, String itemName, String itemType, int stockQuantity) {
         this.itemID = itemID;
         this.itemName = itemName;
         this.itemType = itemType;
         this.stockQuantity = stockQuantity;
+    }
+
+    public ItemDTO(int itemID, String itemName, String itemType, int stockQuantity, String imageBase64) {
+        this.itemID = itemID;
+        this.itemName = itemName;
+        this.itemType = itemType;
+        this.stockQuantity = stockQuantity;
+        this.imageBase64 = imageBase64;
     }
 
     public ItemDTO() {
@@ -47,6 +56,14 @@ public class ItemDTO {
 
     public void setStockQuantity(int stockQuantity) {
         this.stockQuantity = stockQuantity;
+    }
+
+    public String getImageBase64() {
+        return imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
     }
 
 }
