@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/RoutingStepDAO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/DefectReasonDAO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/BOMDTO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/UserController.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/ItemDTO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/DefectReasonController.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/web/SearchItem.jsp</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/BOMDAO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/ItemDAO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/RoutingController.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/UserDAO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/RoutingDAO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/web/BangDieuKien.jsp</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/web/item-form.jsp</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/model/UserDTO.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/utils/DBUtils.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/BomController.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/ItemController.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/MainController.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/web/index.jsp</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/PurchaseOrderController.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/RoutingStepController.java</file>
+            <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/web/user-form.jsp</file>
+        </group>
+    </open-files>
+</project-private>
