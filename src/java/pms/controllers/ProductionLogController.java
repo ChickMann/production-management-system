@@ -38,7 +38,7 @@ public class ProductionLogController extends HttpServlet {
         String action = request.getParameter("action");
         ProductionLogDAO dao = new ProductionLogDAO();
         try {
-            if (action == null || action.equals("list") || action.equals("listProduction")) {
+            if (action == null || action.equals("list")) {
                 List<ProductionLogDTO> list = dao.getAllLogs();
                 request.setAttribute("logs", list);
                 request.getRequestDispatcher("productionlog.jsp").forward(request, response);

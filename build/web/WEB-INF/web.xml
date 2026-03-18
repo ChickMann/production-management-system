@@ -9,34 +9,6 @@
         <servlet-class>pms.controllers.UserController</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>ItemController</servlet-name>
-        <servlet-class>pms.controllers.ItemController</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>BomController</servlet-name>
-        <servlet-class>pms.controllers.BomController</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>SupplierController</servlet-name>
-        <servlet-class>pms.controllers.SupplierController</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>PurchaseOrderController</servlet-name>
-        <servlet-class>pms.controllers.PurchaseOrderController</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>RoutingController</servlet-name>
-        <servlet-class>pms.controllers.RoutingController</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>RoutingStepController</servlet-name>
-        <servlet-class>pms.controllers.RoutingStepController</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>DefectReasonController</servlet-name>
-        <servlet-class>pms.controllers.DefectReasonController</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>BillController</servlet-name>
         <servlet-class>pms.controllers.BillController</servlet-class>
     </servlet>
@@ -45,12 +17,12 @@
         <servlet-class>pms.controllers.CustomerController</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>ProductionLogController</servlet-name>
-        <servlet-class>pms.controllers.ProductionLogController</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>WorkOrderController</servlet-name>
         <servlet-class>pms.controllers.WorkOrderController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProductionLogController</servlet-name>
+        <servlet-class>pms.controllers.ProductionLogController</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>MainController</servlet-name>
@@ -61,34 +33,6 @@
         <url-pattern>/UserController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>ItemController</servlet-name>
-        <url-pattern>/ItemController</url-pattern>
-    </servlet-mapping>
-     <servlet-mapping>
-        <servlet-name>SupplierController</servlet-name>
-        <url-pattern>/SupplierController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>PurchaseOrderController</servlet-name>
-        <url-pattern>/PurchaseOrderController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>BomController</servlet-name>
-        <url-pattern>/BomController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>RoutingController</servlet-name>
-        <url-pattern>/RoutingController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>RoutingStepController</servlet-name>
-        <url-pattern>/RoutingStepController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>DefectReasonController</servlet-name>
-        <url-pattern>/DefectReasonController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>BillController</servlet-name>
         <url-pattern>/BillController</url-pattern>
     </servlet-mapping>
@@ -97,12 +41,12 @@
         <url-pattern>/CustomerController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>ProductionLogController</servlet-name>
-        <url-pattern>/ProductionLogController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>WorkOrderController</servlet-name>
         <url-pattern>/WorkOrderController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProductionLogController</servlet-name>
+        <url-pattern>/ProductionLogController</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

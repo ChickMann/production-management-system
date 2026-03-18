@@ -69,8 +69,6 @@ public class WorkOrderController extends HttpServlet {
                 WorkOrderDTO wo = dao.searchById(id);
                 request.setAttribute("WORKORDER", wo);
                 request.getRequestDispatcher("workorder.jsp").forward(request, response);
-            } else {
-                response.sendRedirect("workorder.jsp");
             }
 
         } catch (Exception e) {

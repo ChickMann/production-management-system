@@ -1,0 +1,174 @@
+:root {
+  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --search-width: 320px;
+  --search-width-collapsed: 0px;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sidebar {
+  box-shadow: var(--shadow-soft);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+.nav-item.active {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.search-box {
+  --current-width: var(--search-width-collapsed);
+}
+
+.search-box.is-open {
+  --current-width: var(--search-width);
+}
+
+.search-input {
+  width: var(--current-width);
+  opacity: 0;
+  pointer-events: none;
+  transition: width 0.2s ease, opacity 0.2s ease;
+}
+
+.search-box.is-open .search-input {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --search-width: 200px;
+  }
+}
+
+.nav-item.active span {
+  background: rgba(20, 184, 166, 0.15);
+  color: #5eead4;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Dark mode styles */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+html.dark .bg-white {
+  background-color: #1e293b;
+}
+
+html.dark .bg-slate-50 {
+  background-color: #0f172a;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #1e293b;
+}
+
+html.dark .bg-slate-900 {
+  background-color: #020617;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-white {
+  color: #f8fafc !important;
+}
+
+html.dark .border-slate-200 {
+  border-color: #334155;
+}
+
+html.dark .border-slate-100 {
+  border-color: #334155;
+}
+
+html.dark .border-slate-800 {
+  border-color: #1e293b;
+}
+
+html.dark .hover\:bg-slate-100:hover {
+  background-color: #334155;
+}
+
+html.dark .bg-white\/90 {
+  background-color: rgba(15, 23, 42, 0.92);
+}
+
+html.dark .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+html.dark .search-input {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+html.dark .nav-item.active {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+html.dark *::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.6);
+}
+
+html.dark * {
+  scrollbar-color: rgba(71, 85, 105, 0.6) transparent;
+}
