@@ -1,170 +1,88 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package pms.controllers;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.List;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import pms.model.BillDAO;
-import pms.model.BillDTO;
+import pms.model.*;
 
-/**
- *
- * @author HP
- */
+@WebServlet(name = "BillController", urlPatterns = {"/BillController"})
 public class BillController extends HttpServlet {
-
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    String url = "";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
+        if (action == null) action = "listBill";
 
-        if (action == null) {
-            action = "listBill";
-        }
-        switch (action) {
-            case "listBill":
-                ListBill(request);
-                break;
-
-            case "addBill":
-                AddBill(request);
-                break;
-
-            case "deleteBill":
-                DeleteBill(request);
-                break;
-
-            case "updateBill":
-                UpdateBill(request);
-                break;
-
-            case "searchBill":
-                SearchBill(request);
-                break;
-        }
-        request.getRequestDispatcher(url).forward(request, response);
-    }
-
-    private void ListBill(HttpServletRequest request) {
         BillDAO dao = new BillDAO();
-        ArrayList<BillDTO> list = dao.getAllBill();
-        request.setAttribute("billList", list);
-        url = "bill.jsp";
-    }
+        WorkOrderDAO woDao = new WorkOrderDAO();
+        CustomerDAO cDao = new CustomerDAO();
 
-    private void AddBill(HttpServletRequest request) {
+        try {
+            switch (action) {
+                case "listBill":
+                case "searchBill":
+                    String keyword = request.getParameter("keyword");
+                    List<BillDTO> list = (keyword != null && !keyword.trim().isEmpty()) 
+                                         ? dao.searchBill(keyword) : dao.getAllBill();
+                    
+                    request.setAttribute("billList", list);
+                    request.setAttribute("listWO", woDao.getAllWorkOrders());
+                    request.setAttribute("listC", cDao.getAllCustomers());
+                    request.setAttribute("listI", new ItemDAO().ItemList());
+                    request.getRequestDispatcher("bill.jsp").forward(request, response);
+                    break;
 
-        int wo_id = Integer.parseInt(request.getParameter("wo_id"));
-        int customer_id = Integer.parseInt(request.getParameter("customer_id"));
-        double total_amount = Double.parseDouble(request.getParameter("total_amount"));
-        BillDAO dao = new BillDAO();
-        BillDTO bill = new BillDTO(0, wo_id, customer_id, total_amount, null);
-        boolean result = dao.InsertBill(bill);
-        if (result) {
-            request.setAttribute("msg", "Add Bill Success");
-        } else {
-            request.setAttribute("msg", "Add Bill Failed");
+                case "addBill":
+                    int woId = Integer.parseInt(request.getParameter("wo_id"));
+                    int cId = Integer.parseInt(request.getParameter("customer_id"));
+                    double totalAmount = Double.parseDouble(request.getParameter("total_amount"));
+                    Date date = Date.valueOf(LocalDate.now());
+
+                    dao.InsertBill(new BillDTO(0, woId, cId, totalAmount, date));
+                    response.sendRedirect("MainController?action=listBill");
+                    break;
+
+                case "deleteBill":
+                    int delId = Integer.parseInt(request.getParameter("id"));
+                    dao.deleteBill(delId);
+                    response.sendRedirect("MainController?action=listBill");
+                    break;
+
+                case "loadUpdateBill":
+                    int editId = Integer.parseInt(request.getParameter("id"));
+                    request.setAttribute("billEdit", dao.SearchByBillID(String.valueOf(editId)));
+                    request.setAttribute("billList", dao.getAllBill());
+                    request.setAttribute("listWO", woDao.getAllWorkOrders());
+                    request.setAttribute("listC", cDao.getAllCustomers());
+                    request.setAttribute("listI", new ItemDAO().ItemList());
+                    request.getRequestDispatcher("bill.jsp").forward(request, response);
+                    break;
+
+                case "saveUpdateBill":
+                    int uId = Integer.parseInt(request.getParameter("bill_id"));
+                    int uWoId = Integer.parseInt(request.getParameter("wo_id"));
+                    int uCId = Integer.parseInt(request.getParameter("customer_id"));
+                    double uTotalAmount = Double.parseDouble(request.getParameter("total_amount"));
+                    Date uDate = Date.valueOf(LocalDate.now());
+
+                    dao.UpdateBill(new BillDTO(uId, uWoId, uCId, uTotalAmount, uDate));
+                    response.sendRedirect("MainController?action=listBill");
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        ListBill(request);
     }
 
-    private void DeleteBill(HttpServletRequest request) {
-        int bill_id = Integer.parseInt(request.getParameter("bill_id"));
-        BillDAO dao = new BillDAO();
-        boolean result = dao.deleteBill(bill_id);
-        if (result) {
-            request.setAttribute("msg", "Delete Bill Success");
-        } else {
-            request.setAttribute("msg", "Delete Bill Failed");
-        }
-        ListBill(request);
-    }
-
-    private void UpdateBill(HttpServletRequest request) {
-
-        int bill_id = Integer.parseInt(request.getParameter("bill_id"));
-        int wo_id = Integer.parseInt(request.getParameter("wo_id"));
-        int customer_id = Integer.parseInt(request.getParameter("customer_id"));
-        double total_amount = Double.parseDouble(request.getParameter("total_amount"));
-        BillDAO dao = new BillDAO();
-        BillDTO bill = new BillDTO(bill_id, wo_id, customer_id, total_amount, null);
-        boolean result = dao.UpdateBill(bill);
-        if (result) {
-            request.setAttribute("msg", "Update Bill Success");
-        } else {
-            request.setAttribute("msg", "Update Bill Failed");
-        }
-
-        ListBill(request);
-    }
-
-    private void SearchBill(HttpServletRequest request) {
-        String keyword = request.getParameter("keyword");
-        BillDAO dao = new BillDAO();
-        ArrayList<BillDTO> list = dao.searchBill(keyword);
-        request.setAttribute("billList", list);
-        url = "bill.jsp";
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "";
-    }// </editor-fold>
-
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException { processRequest(req, resp); }
+    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException { processRequest(req, resp); }
 }

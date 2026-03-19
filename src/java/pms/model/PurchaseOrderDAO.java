@@ -1,52 +1,32 @@
 package pms.model;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 import pms.utils.DBUtils;
 
 public class PurchaseOrderDAO {
 
-    public PurchaseOrderDTO SearchByID(int id) {
-        String sql = "SELECT * FROM Purchase_Order WHERE po_id = ?";
-        try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new PurchaseOrderDTO(
-                            rs.getInt("po_id"),
-                            rs.getInt("item_id"),
-                            rs.getInt("supplier_id"),
-                            rs.getInt("required_quantity"),
-                            rs.getDate("alert_date"),
-                            rs.getString("status")
-                    );
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public ArrayList<PurchaseOrderDTO> PurchaseOrderList() {
-        ArrayList<PurchaseOrderDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Purchase_Order";
-        try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
+    // 1. Lấy toàn bộ danh sách Đề nghị mua hàng
+    public List<PurchaseOrderDTO> getAllPurchaseOrders() {
+        List<PurchaseOrderDTO> list = new ArrayList<>();
+        // Đã sửa: JOIN với bảng Item, đổi tên cột thành item_name, required_quantity, alert_date
+        String sql = "SELECT po.*, i.item_name FROM Purchase_Order po " +
+                     "JOIN Item i ON po.item_id = i.item_id " +
+                     "ORDER BY po.po_id DESC";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(new PurchaseOrderDTO(
-                        rs.getInt("po_id"),
-                        rs.getInt("item_id"),
-                        rs.getInt("supplier_id"),
-                        rs.getInt("required_quantity"),
-                        rs.getDate("alert_date"),
-                        rs.getString("status")
-                ));
+                PurchaseOrderDTO po = new PurchaseOrderDTO(
+                    rs.getInt("po_id"),
+                    rs.getInt("item_id"),
+                    rs.getInt("required_quantity"), 
+                    rs.getString("status"),
+                    rs.getString("alert_date")      
+                );
+                po.setItemName(rs.getString("item_name"));
+                list.add(po);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,15 +34,16 @@ public class PurchaseOrderDAO {
         return list;
     }
 
-    public boolean Add(PurchaseOrderDTO po) {
-        String sql = "INSERT INTO Purchase_Order (item_id, supplier_id, required_quantity, alert_date, status) VALUES (?, ?, ?, ?, ?)";
-        try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+    // 2. Thêm mới một Đề nghị mua vật tư
+    public boolean insertPurchaseOrder(PurchaseOrderDTO po) {
+        // Đã sửa: Tên cột required_quantity, alert_date
+        String sql = "INSERT INTO Purchase_Order (item_id, required_quantity, status, alert_date) VALUES(?,?,?,?)";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, po.getItemId());
-            ps.setInt(2, po.getSupplierId());
-            ps.setInt(3, po.getRequiredQuantity());
-            ps.setDate(4, new Date(po.getAlertDate().getTime()));
-            ps.setString(5, po.getStatus());
+            ps.setInt(2, po.getQuantityRequested());
+            ps.setString(3, po.getStatus());
+            ps.setString(4, po.getOrderDate());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,16 +51,13 @@ public class PurchaseOrderDAO {
         return false;
     }
 
-    public boolean Update(PurchaseOrderDTO po) {
-        String sql = "UPDATE Purchase_Order SET item_id = ?, supplier_id = ?, required_quantity = ?, alert_date = ?, status = ? WHERE po_id = ?";
-        try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, po.getItemId());
-            ps.setInt(2, po.getSupplierId());
-            ps.setInt(3, po.getRequiredQuantity());
-            ps.setDate(4, new Date(po.getAlertDate().getTime()));
-            ps.setString(5, po.getStatus());
-            ps.setInt(6, po.getPoId());
+    // 3. Cập nhật trạng thái
+    public boolean updateStatus(int poId, String newStatus) {
+        String sql = "UPDATE Purchase_Order SET status = ? WHERE po_id = ?";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newStatus);
+            ps.setInt(2, poId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -87,38 +65,16 @@ public class PurchaseOrderDAO {
         return false;
     }
 
-    public boolean Delete(int id) {
+    // 4. Xóa đề nghị
+    public boolean deletePurchaseOrder(int poId) {
         String sql = "DELETE FROM Purchase_Order WHERE po_id = ?";
-        try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, poId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
-    }
-
-    public int GetCurrentID() {
-        String sql = "SELECT TOP 1 po_id FROM Purchase_Order ORDER BY po_id DESC";
-        try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt("po_id");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    public void ReseedSQL() {
-        try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('Purchase_Order', RESEED, " + GetCurrentID() + ")")) {
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

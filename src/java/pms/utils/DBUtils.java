@@ -16,4 +16,8 @@ public class DBUtils implements Serializable {
         String url = "jdbc:sqlserver://localhost:1433;databaseName=" + DB_NAME;
         return DriverManager.getConnection(url, DB_USER_NAME, DB_PASSWORD);
     }
+    
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        System.out.println(DBUtils.getConnection());
+    }
 }

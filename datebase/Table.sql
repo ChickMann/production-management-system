@@ -1,4 +1,4 @@
--- Khởi tạo và sử dụng Database mới
+﻿-- Khởi tạo và sử dụng Database mới
 USE master;
 GO
 
@@ -22,8 +22,7 @@ CREATE TABLE Users (
     user_id INT PRIMARY KEY IDENTITY(1,1),
     username VARCHAR(50) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(20) CHECK (role IN ('admin', 'employee')),
-    full_name NVARCHAR(100)
+    role VARCHAR(20) CHECK (role IN ('Sep', 'CongNhan'))
 );
 
 -- 2. Bảng Quản lý Vật phẩm (Sản phẩm & Vật tư)
@@ -31,8 +30,7 @@ CREATE TABLE Item (
     item_id INT PRIMARY KEY IDENTITY(1,1),
     item_name NVARCHAR(100) NOT NULL,
     item_type VARCHAR(20) CHECK (item_type IN ('SanPham', 'VatTu')),
-    stock_quantity INT DEFAULT 0,
-    image_base64 VARCHAR(MAX)
+    stock_quantity INT DEFAULT 0
 );
 
 -- 12. Bảng Nhà cung cấp

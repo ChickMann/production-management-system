@@ -14,7 +14,7 @@
     </servlet>
     <servlet>
         <servlet-name>BomController</servlet-name>
-        <servlet-class>pms.controllers.BomController</servlet-class>
+        <servlet-class>pms.controllers.BOMController</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>SupplierController</servlet-name>
@@ -34,7 +34,7 @@
     </servlet>
     <servlet>
         <servlet-name>DefectReasonController</servlet-name>
-        <servlet-class>pms.controllers.DefectReasonController</servlet-class>
+        <servlet-class>pms.controllers.DefectController</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>BillController</servlet-name>
@@ -64,7 +64,7 @@
         <servlet-name>ItemController</servlet-name>
         <url-pattern>/ItemController</url-pattern>
     </servlet-mapping>
-     <servlet-mapping>
+    <servlet-mapping>
         <servlet-name>SupplierController</servlet-name>
         <url-pattern>/SupplierController</url-pattern>
     </servlet-mapping>

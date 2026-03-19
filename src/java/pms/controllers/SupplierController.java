@@ -3,150 +3,72 @@ package pms.controllers;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import pms.model.SupplierDAO;
 import pms.model.SupplierDTO;
 
+@WebServlet(name = "SupplierController", urlPatterns = {"/SupplierController"})
 public class SupplierController extends HttpServlet {
-
-    String url = "";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-
-        switch (action) {
-            case "addSupplier":
-            case "saveAddSupplier":
-                AddSupplier(request);
-                break;
-            case "removeSupplier":
-                RemoveSupplier(request);
-                break;
-            case "updateSupplier":
-            case "saveUpdateSupplier":
-                UpdateSupplier(request);
-                break;
-            case "searchSupplier":
-                SearchSupplier(request);
-                break;
-        }
-
-        request.getRequestDispatcher(url).forward(request, response);
-    }
-
-    private void RemoveSupplier(HttpServletRequest request) {
-        String idStr = request.getParameter("id");
+        if (action == null) action = "listSupplier";
         SupplierDAO sdao = new SupplierDAO();
 
-        if (idStr != null && !idStr.isEmpty()) {
-            int id = Integer.parseInt(idStr);
-            boolean check = sdao.Delete(id);
-            if (check) {
-                request.setAttribute("msg", "Deleted!");
-            } else {
-                request.setAttribute("msg", "Error, can not delete: " + id);
+        try {
+            switch (action) {
+                case "listSupplier":
+                case "searchSupplier":
+                    String keyword = request.getParameter("keyword");
+                    ArrayList<SupplierDTO> list = sdao.SupplierList();
+                    
+                    // Logic Tìm kiếm: Theo Tên hoặc Số điện thoại
+                    if (keyword != null && !keyword.trim().isEmpty()) {
+                        ArrayList<SupplierDTO> filtered = new ArrayList<>();
+                        for (SupplierDTO s : list) {
+                            if (s.getSupplierName().toLowerCase().contains(keyword.toLowerCase()) || 
+                                s.getContactPhone().contains(keyword)) {
+                                filtered.add(s);
+                            }
+                        }
+                        list = filtered;
+                    }
+                    
+                    request.setAttribute("supplierList", list);
+                    request.getRequestDispatcher("supplier.jsp").forward(request, response);
+                    break;
+
+                case "addSupplier":
+                    sdao.Add(new SupplierDTO(0, request.getParameter("supplierName"), request.getParameter("contactPhone")));
+                    response.sendRedirect("MainController?action=listSupplier");
+                    break;
+
+                case "deleteSupplier":
+                    sdao.Delete(Integer.parseInt(request.getParameter("id")));
+                    response.sendRedirect("MainController?action=listSupplier");
+                    break;
+
+                case "loadUpdateSupplier":
+                    request.setAttribute("supplierEdit", sdao.SearchByID(Integer.parseInt(request.getParameter("id"))));
+                    request.setAttribute("supplierList", sdao.SupplierList());
+                    request.getRequestDispatcher("supplier.jsp").forward(request, response);
+                    break;
+
+                case "saveUpdateSupplier":
+                    sdao.Update(new SupplierDTO(Integer.parseInt(request.getParameter("id")), request.getParameter("supplierName"), request.getParameter("contactPhone")));
+                    response.sendRedirect("MainController?action=listSupplier");
+                    break;
             }
-        }
-        ArrayList<SupplierDTO> supplierList = sdao.SupplierList();
-        request.setAttribute("supplierList", supplierList);
-        url = "SearchSupplier.jsp";
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
-    private void AddSupplier(HttpServletRequest request) {
-        String msg = "";
-        String error = "";
-
-        SupplierDAO sdao = new SupplierDAO();
-        String action = request.getParameter("action");
-        request.setAttribute("mode", "add");
-
-        if (action.equals("saveAddSupplier")) {
-            String supplierName = request.getParameter("supplierName");
-            String contactPhone = request.getParameter("contactPhone");
-
-            SupplierDTO s = new SupplierDTO(0, supplierName, contactPhone);
-            if (error.isEmpty()) {
-                if (sdao.Add(s)) {
-                    msg = "add thành công";
-                } else {
-                    error = "add thất bại";
-                    sdao.ReseedSQL();
-                }
-            }
-            request.setAttribute("supplier", s);
-            request.setAttribute("msg", msg);
-            request.setAttribute("error", error);
-        }
-
-        int index = sdao.GetCurrentID();
-        if (index > 0) {
-            request.setAttribute("index", index + 1);
-        }
-        
-        url = "supplier-form.jsp";
-    }
-
-    private void UpdateSupplier(HttpServletRequest request) {
-        String msg = "";
-        String error = "";
-
-        SupplierDAO sdao = new SupplierDAO();
-        String action = request.getParameter("action");
-        String s_id = request.getParameter("id");
-
-        int id = Integer.parseInt(s_id);
-        SupplierDTO s = sdao.SearchByID(id);
-        request.setAttribute("mode", "update");
-
-        if (action.equals("saveUpdateSupplier")) {
-            String supplierName = request.getParameter("supplierName");
-            String contactPhone = request.getParameter("contactPhone");
-
-            s = new SupplierDTO(id, supplierName, contactPhone);
-            if (error.isEmpty()) {
-                if (sdao.Update(s)) {
-                    msg = "Cập nhật thành công";
-                } else {
-                    error = "Cập nhật thất bại";
-                }
-            }
-            request.setAttribute("msg", msg);
-            request.setAttribute("error", error);
-        }
-
-        request.setAttribute("supplier", s);
-        url = "supplier-form.jsp";
-    }
-
-    private void SearchSupplier(HttpServletRequest request) {
-        SupplierDAO sdao = new SupplierDAO();
-        ArrayList<SupplierDTO> supplierList = sdao.SupplierList();
-
-        request.setAttribute("supplierList", supplierList);
-        url = "SearchSupplier.jsp";
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    @Override
-    public String getServletInfo() {
-        return "Supplier Controller";
-    }
+    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException { processRequest(req, resp); }
+    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException { processRequest(req, resp); }
 }

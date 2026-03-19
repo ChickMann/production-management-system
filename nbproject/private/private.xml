@@ -27,5 +27,73 @@
             <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/src/java/pms/controllers/RoutingStepController.java</file>
             <file>file:/D:/data%20P/learn/PRJ301/Prj/production-management-system/web/user-form.jsp</file>
         </group>
+        <group name="project">
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/production-log.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/DefectController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/supplier.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/BillDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/login.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/BillController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/SupplierDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/ProductionLogDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/defect.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/Dashboard.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/supplier-form.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/updateDefectReason.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/addBOM.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/customer.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/ProductionLogController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/BOMController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/WorkOrderDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/ItemController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/WorkOrderDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/UserController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/CustomerController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/PurchaseOrderDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/ItemDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/index.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/DefectDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/DefectDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/ItemDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/PurchaseOrderController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/RoutingDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/SearchItem.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/listDefectReason.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/UserDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/listRouting.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/SupplierDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/WorkOrderController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/purchase-order.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/BillDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/SearchSupplier.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/addRoutingStep.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/ProductionLogDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/bill.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/item-form.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/listBOM.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/UserDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/user-form.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/SearchPurchaseOrder.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/updateRouting.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/MainController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/BOMDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/RoutingDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/updateBOM.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/RoutingStepDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/BOMDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/RoutingStepController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/PurchaseOrderDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/CustomerDAO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/listRoutingStep.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/RoutingController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/bom-form.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/Banned.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/controllers/SupplierController.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/CustomerDTO.java</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/work-order.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/SearchBOM.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/web/updateRoutingStep.jsp</file>
+            <file>file:/D:/github/production-management-system-main/production-management-system-tung-ui/src/java/pms/model/RoutingStepDAO.java</file>
+        </group>
     </open-files>
 </project-private>

@@ -1,4 +1,9 @@
-<%@page import="pms.model.DefectReasonDTO"%>
+<%-- 
+    Document   : listDefectReason
+    
+--%>
+
+<%@page import="pms.model.DefectDTO"%>
 <%@page import="java.util.List"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>

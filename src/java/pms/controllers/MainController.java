@@ -2,60 +2,54 @@ package pms.controllers;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@MultipartConfig
 public class MainController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
         
-        String url = "login.jsp";
+        String url = "login.jsp"; // Mặc định nếu không khớp thì về login
         String action = request.getParameter("action");
-        if(action.contains("User")){
-            url = "UserController";
-        }else if(action.contains("Item")){
-            url = "ItemController";
-        } else if(action.contains("Bom") || action.contains("BOM"))
-        {
-            url = "BomController";
-        } else if(action.contains("Supplier"))
-        {
-            url = "SupplierController";
-        } else if(action.contains("PurchaseOrder"))
-        {
-            url = "PurchaseOrderController";
-        } else if (action.contains("RoutingStep")) 
-        {
-            url = "RoutingStepController";
-        } else if (action.contains("Routing")) 
-        {
-            url = "RoutingController";
-        } else if (action.contains("DefectReason")) 
-        {
-            url = "DefectReasonController";
-        } else if (action.contains("Bill")) 
-        {
-            url = "BillController";
-        } else if (action.contains("Customer")) 
-        {
-            url = "CustomerController";
-        } else if (action.contains("Production")) 
-        {
-            url = "ProductionLogController";
-        } else if (action.contains("WorkOrder")) 
-        {
-            url = "WorkOrderController";
+
+        // Ghi log ra màn hình console của NetBeans để bác kiểm tra xem action gửi lên là gì
+        System.out.println("Action hien tai la: " + action);
+
+        try {
+            if (action == null || action.isEmpty()) {
+                url = "login.jsp";
+            } else {
+                String a = action.toLowerCase();
+                
+                // Kiểm tra các đầu mục
+                // Kiểm tra các đầu mục
+                if (a.contains("user")) url = "UserController";
+                else if (a.contains("item")) url = "ItemController";
+                else if (a.contains("bom")) url = "BOMController";
+                else if (a.contains("routingstep")) url = "RoutingStepController";
+                else if (a.contains("routing")) url = "RoutingController";
+                else if (a.contains("workorder")) url = "WorkOrderController";
+                else if (a.contains("customer")) url = "CustomerController";
+                
+                // ĐẢM BẢO 3 DÒNG NÀY ĐÃ CÓ TRONG MAIN CONTROLLER
+                else if (a.contains("bill")) url = "BillController";
+                else if (a.contains("defect")) url = "DefectController";
+                else if (a.contains("supplier")) url = "SupplierController"; 
+                
+                else if (a.contains("purchaseorder") || a.contains("po")) url = "PurchaseOrderController";
+                else if (a.contains("log") || a.contains("production")) url = "ProductionLogController";
+                }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Forward tới controller tương ứng
+            request.getRequestDispatcher(url).forward(request, response);
         }
-        
-        request.getRequestDispatcher(url).forward(request, response);
-        
     }
 
     @Override

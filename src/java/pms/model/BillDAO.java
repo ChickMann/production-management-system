@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package pms.model;
 
 import java.sql.Connection;
@@ -10,10 +6,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import pms.utils.DBUtils;
 
-/**
- *
- * @author HP
- */
 public class BillDAO {
 
     private BillDTO SearchByColumn(String column, String value) {
@@ -34,7 +26,6 @@ public class BillDAO {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-
         }
         return null;
     }
@@ -84,7 +75,6 @@ public class BillDAO {
 
     public boolean UpdateBill(BillDTO bill) {
         int result = 0;
-
         try {
             Connection conn = DBUtils.getConnection();
             String sql = "UPDATE BILL SET wo_id = ?, customer_id = ?, total_amount = ?, bill_date = ? WHERE bill_id = ?";
@@ -119,37 +109,28 @@ public class BillDAO {
     }
     
     public ArrayList<BillDTO> searchBill(String keyword) {
+        ArrayList<BillDTO> list = new ArrayList<>();
+        try {
+            Connection conn = DBUtils.getConnection();
+            String sql = "SELECT * FROM Bill WHERE bill_id LIKE ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, "%" + keyword + "%");
+            ResultSet rs = ps.executeQuery();
 
-    ArrayList<BillDTO> list = new ArrayList<>();
-
-    try {
-        Connection conn = DBUtils.getConnection();
-
-        String sql = "SELECT * FROM Bill WHERE bill_id LIKE ?";
-
-        PreparedStatement ps = conn.prepareStatement(sql);
-
-        ps.setString(1, "%" + keyword + "%");
-
-        ResultSet rs = ps.executeQuery();
-
-        while (rs.next()) {
-
-            list.add(new BillDTO(
-                    rs.getInt("bill_id"),
-                    rs.getInt("wo_id"),
-                    rs.getInt("customer_id"),
-                    rs.getDouble("total_amount"),
-                    rs.getDate("bill_date")
-            ));
+            while (rs.next()) {
+                list.add(new BillDTO(
+                        rs.getInt("bill_id"),
+                        rs.getInt("wo_id"),
+                        rs.getInt("customer_id"),
+                        rs.getDouble("total_amount"),
+                        rs.getDate("bill_date")
+                ));
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
-
-    } catch (Exception e) {
-        System.out.println(e.getMessage());
+        return list;
     }
-
-    return list;
-}
 
     public BillDTO SearchByBillID(String id) {
         return SearchByColumn("bill_id", id);
@@ -159,4 +140,34 @@ public class BillDAO {
         return SearchByColumn("customer_id", id);
     }
 
+    // ==========================================
+    // HÀM MỚI: Lấy doanh thu theo từng tháng để vẽ biểu đồ
+    // ==========================================
+    public ArrayList<Double> getMonthlyRevenue() {
+        ArrayList<Double> revenueList = new ArrayList<>();
+        // Khởi tạo 12 tháng với giá trị 0
+        for(int i=0; i<12; i++) {
+            revenueList.add(0.0); 
+        }
+
+        String sql = "SELECT MONTH(bill_date) as Month, SUM(total_amount) as Total "
+                   + "FROM Bill "
+                   + "WHERE YEAR(bill_date) = YEAR(GETDATE()) "
+                   + "GROUP BY MONTH(bill_date)";
+                   
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+             
+            while (rs.next()) {
+                int month = rs.getInt("Month");
+                double total = rs.getDouble("Total");
+                // Index mảng bắt đầu từ 0 (Tháng 1 = index 0)
+                revenueList.set(month - 1, total);
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi load biểu đồ: " + e.getMessage());
+        }
+        return revenueList;
+    }
 }

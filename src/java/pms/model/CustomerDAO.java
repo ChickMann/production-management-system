@@ -119,4 +119,24 @@ public class CustomerDAO {
     public CustomerDTO SearchByCustomerName(String id) {
         return SearchByColumn("customer_name", id);
     }
+    
+    public List<CustomerDTO> getCustomerList() {
+    List<CustomerDTO> list = new ArrayList<>();
+    String sql = "SELECT * FROM Customer"; // Bác kiểm tra lại tên bảng trong SQL nhé (Customer hay Customers)
+    try (Connection conn = DBUtils.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            list.add(new CustomerDTO(
+                rs.getInt("customer_id"),
+                rs.getString("customer_name"),
+                rs.getString("phone"),
+                rs.getString("email")
+            ));
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
 }

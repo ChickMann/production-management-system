@@ -1,3 +1,8 @@
+<%-- 
+    Document   : SearchItem
+    
+--%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -10,7 +15,6 @@
             <input type="hidden" name="action" value="${mode == 'update'?'saveUpdateUser':'saveAddUser'}"/> <br/>
             User id: <input type="text" name="id" value="${mode == 'update'? u.id : index}" readonly /><br/>
             username: <input type="text" name="username" value="${u.username}" required/><br/>
-            Full Name: <input type="text" name="fullName" value="${u.fullName}" required/><br/>
             password: <input type="text" name="password" value="${u.password}" required/><br/>
             role: 
             <select name="role">

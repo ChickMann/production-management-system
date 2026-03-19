@@ -1,11 +1,16 @@
-<%@page import="pms.model.DefectReasonDTO"%>
+<%-- 
+    Document   : updateDefectReason
+    
+--%>
+
+<%@page import="pms.model.DefectDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
     <head><title>Sửa Lỗi</title></head>
     <body>
         <h2>Cập nhật Danh mục Lỗi</h2>
-        <% DefectReasonDTO d = (DefectReasonDTO) request.getAttribute("defectEdit"); if (d != null) { %>
+        <% DefectDTO d = (DefectDTO) request.getAttribute("defectEdit"); if (d != null) { %>
         <form action="MainController" method="POST">
             <input type="hidden" name="action" value="saveUpdateDefectReason">
             <input type="hidden" name="defectId" value="<%= d.getDefectId() %>">

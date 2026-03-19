@@ -51,12 +51,20 @@ public class UserController extends HttpServlet {
         
         UserDAO udao = new UserDAO();
 
+        // Biến để phân biệt: Đăng nhập mới (true) hay Quay lại menu (false)
+        boolean isNewLogin = false;
+
         if (user == null) {
             String username = request.getParameter("txtUsername");
             String password = request.getParameter("txtPassword");
-            user = udao.Login(username, password);
-            if (user != null) {
-                session.setAttribute("user", user);
+            
+            // Chỉ xử lý đăng nhập nếu thực sự có nhập dữ liệu
+            if (username != null && password != null) {
+                user = udao.Login(username, password);
+                if (user != null) {
+                    session.setAttribute("user", user);
+                    isNewLogin = true; // Đánh dấu là vừa đăng nhập thành công
+                }
             }
         }
 
@@ -64,15 +72,29 @@ public class UserController extends HttpServlet {
             if (!user.isStatus()) {
                 url = "Banned.jsp";
             } else {
-                url = "BangDieuKien.jsp";
                 if (user.getRole().equals("admin")) {
                     ArrayList<UserDTO> eList = udao.EmployeeList("employee");
                     session.setAttribute("eList", eList);
                 }
+                
+                // KIỂM TRA CỜ:
+                if (isNewLogin) {
+                    // 1. Nếu là đăng nhập MỚI: nán lại trang login để bật popup xanh
+                    request.setAttribute("loginSuccess", "true");
+                    request.setAttribute("welcomeName", user.getUsername());
+                    request.setAttribute("welcomeRole", user.getRole().toUpperCase());
+                    url = "login.jsp"; 
+                } else {
+                    // 2. Nếu đã đăng nhập từ trước (bấm nút Quay Lại Menu): vào THẲNG Dashboard
+                    url = "Dashboard.jsp"; 
+                }
             }
         } else {
             url = "login.jsp";
-            request.setAttribute("message", "Incorrect User ID or Password");
+            // Chỉ báo lỗi đỏ khi người dùng thực sự có bấm nút Login
+            if (request.getParameter("txtUsername") != null) {
+                request.setAttribute("message", "Incorrect User ID or Password");
+            }
         }
     }
 
@@ -112,9 +134,8 @@ public class UserController extends HttpServlet {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             String role = request.getParameter("role");
-            String fullName = request.getParameter("fullName");
 
-            UserDTO u = new UserDTO(0, username, password, role, fullName, true);
+            UserDTO u = new UserDTO(0, username, password, role, true);
             if (error.isEmpty()) {
                 if (udao.Add(u)) {
                     msg = "Add thanh cong";
@@ -157,8 +178,7 @@ public class UserController extends HttpServlet {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             String role = request.getParameter("role");
-            String fullName = request.getParameter("fullName");
-            u = new UserDTO(id, username, password, role, fullName, true);
+            u = new UserDTO(id, username, password, role, true);
             if (error.isEmpty()) {
                 if (udao.Update(u)) {
                     msg = "update thanh cong";

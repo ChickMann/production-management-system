@@ -1,3 +1,8 @@
+<%-- 
+    Document   : supplier-form
+    
+--%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>

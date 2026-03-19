@@ -1,121 +1,118 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package pms.controllers;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import pms.model.WorkOrderDAO;
-import pms.model.WorkOrderDTO;
+import pms.model.*;
 
-/**
- *
- * @author HP
- */
+@WebServlet(name = "WorkOrderController", urlPatterns = {"/WorkOrderController"})
 public class WorkOrderController extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        WorkOrderDAO dao = new WorkOrderDAO();
+        if (action == null) action = "listWorkOrder";
+
+        WorkOrderDAO woDao = new WorkOrderDAO();
+        CustomerDAO cDao = new CustomerDAO();
+        ItemDAO iDao = new ItemDAO();
+        RoutingDAO rDao = new RoutingDAO();
 
         try {
-            if ("insert".equals(action)) {
-                int product = Integer.parseInt(request.getParameter("product_item_id"));
-                int routing = Integer.parseInt(request.getParameter("routing_id"));
-                int quantity = Integer.parseInt(request.getParameter("order_quantity"));
-                String status = request.getParameter("status");
-
-                WorkOrderDTO wo = new WorkOrderDTO(0, product, routing, quantity, status);
-                dao.insertWorkOrder(wo);
-                response.sendRedirect("workorder.jsp");
-
-            } else if ("update".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("wo_id"));
-                int product = Integer.parseInt(request.getParameter("product_item_id"));
-                int routing = Integer.parseInt(request.getParameter("routing_id"));
-                int quantity = Integer.parseInt(request.getParameter("order_quantity"));
-                String status = request.getParameter("status");
-
-                WorkOrderDTO wo = new WorkOrderDTO(id, product, routing, quantity, status);
-                dao.updateWorkOrder(wo);
-                response.sendRedirect("workorder.jsp");
-
-            } else if ("delete".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("wo_id"));
-                dao.deleteWorkOrder(id);
-                response.sendRedirect("workorder.jsp");
-
-            } else if ("search".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("wo_id"));
-                WorkOrderDTO wo = dao.searchById(id);
-                request.setAttribute("WORKORDER", wo);
-                request.getRequestDispatcher("workorder.jsp").forward(request, response);
-            } else {
-                response.sendRedirect("workorder.jsp");
+            List<WorkOrderDTO> listWO = woDao.getAllWorkOrders();
+            List<CustomerDTO> listC = cDao.getAllCustomers();
+            
+            String keyword = request.getParameter("keyword");
+            
+            if ("searchWorkOrder".equals(action) && keyword != null && !keyword.trim().isEmpty()) {
+                String lowerKeyword = keyword.toLowerCase();
+                List<WorkOrderDTO> filtered = new ArrayList<>();
+                
+                for (WorkOrderDTO wo : listWO) {
+                    String customerName = "";
+                    for (CustomerDTO c : listC) {
+                        if (c.getCustomer_id() == wo.getCustomerID()) {
+                            customerName = c.getCustomer_name().toLowerCase();
+                            break;
+                        }
+                    }
+                    
+                    if (String.valueOf(wo.getWorkOrderID()).contains(lowerKeyword) || 
+                        wo.getStatus().toLowerCase().contains(lowerKeyword) ||
+                        customerName.contains(lowerKeyword)) {
+                        filtered.add(wo);
+                    }
+                }
+                listWO = filtered; 
+                action = "listWorkOrder"; 
             }
 
+            switch (action) {
+                case "listWorkOrder":
+                    request.setAttribute("listWO", listWO);
+                    request.setAttribute("listC", listC);
+                    request.setAttribute("listI", iDao.ItemList());
+                    request.setAttribute("listR", rDao.getAllRouting());
+                    request.getRequestDispatcher("work-order.jsp").forward(request, response);
+                    break;
+
+                case "addWorkOrder":
+                    int cId = Integer.parseInt(request.getParameter("cId"));
+                    int pId = Integer.parseInt(request.getParameter("pId"));
+                    int rId = Integer.parseInt(request.getParameter("rId"));
+                    int qty = Integer.parseInt(request.getParameter("qty"));
+                    String date = LocalDate.now().toString();
+
+                    WorkOrderDTO newWO = new WorkOrderDTO(0, cId, pId, rId, qty, "New", date);
+                    woDao.insertWorkOrder(newWO);
+                    response.sendRedirect("MainController?action=listWorkOrder");
+                    break;
+
+                case "deleteWorkOrder":
+                    int delId = Integer.parseInt(request.getParameter("id"));
+                    woDao.deleteWorkOrder(delId);
+                    response.sendRedirect("MainController?action=listWorkOrder");
+                    break;
+
+                case "loadUpdateWorkOrder":
+                    int editId = Integer.parseInt(request.getParameter("id"));
+                    request.setAttribute("woEdit", woDao.getWorkOrderById(editId));
+                    request.setAttribute("listWO", listWO);
+                    request.setAttribute("listC", listC);
+                    request.setAttribute("listI", iDao.ItemList());
+                    request.setAttribute("listR", rDao.getAllRouting());
+                    request.getRequestDispatcher("work-order.jsp").forward(request, response);
+                    break;
+
+                case "saveUpdateWorkOrder":
+                    int uId = Integer.parseInt(request.getParameter("id"));
+                    int uCId = Integer.parseInt(request.getParameter("cId"));
+                    int uPId = Integer.parseInt(request.getParameter("pId"));
+                    int uRId = Integer.parseInt(request.getParameter("rId"));
+                    int uQty = Integer.parseInt(request.getParameter("qty"));
+                    String uStatus = request.getParameter("status"); 
+                    
+                    WorkOrderDTO updateWO = new WorkOrderDTO(uId, uCId, uPId, uRId, uQty, uStatus, "");
+                    woDao.updateWorkOrder(updateWO);
+                    response.sendRedirect("MainController?action=listWorkOrder");
+                    break;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException { processRequest(request, response); }
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException { processRequest(request, response); }
 }

@@ -11,15 +11,15 @@ public class ItemDAO {
     private ItemDTO SearchByColumn(String column, String value) {
         String sql = "SELECT * FROM Item WHERE " + column + " = ?";
         try (Connection con = DBUtils.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, value);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new ItemDTO(rs.getInt("item_id"),
-                            rs.getString("item_name"),
-                            rs.getString("item_type"),
-                            rs.getInt("stock_quantity"),
-                            rs.getString("image_base64"));
+                        rs.getString("item_name"),
+                        rs.getString("item_type"),
+                        rs.getInt("stock_quantity")
+                    );
                 }
             }
         } catch (Exception e) {
@@ -32,15 +32,15 @@ public class ItemDAO {
         ArrayList<ItemDTO> iList = new ArrayList<>();
         String sql = "SELECT * FROM Item WHERE " + column + " LIKE ?";
         try (Connection con = DBUtils.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, "%" + value + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     iList.add(new ItemDTO(rs.getInt("item_id"),
-                            rs.getString("item_name"),
-                            rs.getString("item_type"),
-                            rs.getInt("stock_quantity"),
-                            rs.getString("image_base64")));
+                        rs.getString("item_name"),
+                        rs.getString("item_type"),
+                        rs.getInt("stock_quantity"))
+                    );
                 }
             }
             return iList;
@@ -65,7 +65,7 @@ public class ItemDAO {
     public Boolean SoftDelete(String id) {
         String sql = "DELETE FROM Item WHERE item_id =?";
         try (Connection conn = DBUtils.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -75,13 +75,12 @@ public class ItemDAO {
     }
 
     public boolean Add(ItemDTO i) {
-        String sql = "INSERT into Item (item_name, item_type, stock_quantity, image_base64) values(?,?,?,?)";
+        String sql = "INSERT into Item (item_name, item_type, stock_quantity) values(?,?,?)";
         try (Connection con = DBUtils.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, i.getItemName());
             ps.setString(2, i.getItemType());
             ps.setInt(3, i.getStockQuantity());
-            ps.setString(4, i.getImageBase64());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,15 +89,14 @@ public class ItemDAO {
     }
 
     public boolean Update(ItemDTO i) {
-        String sql = "Update Item SET item_name = ?, item_type = ?, stock_quantity = ?, image_base64 = ? Where item_id = ?";
-
+        String sql = "Update Item SET item_name = ?, item_type = ?, stock_quantity = ? Where item_id = ?";
         try (Connection con = DBUtils.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setString(1, i.getItemName());
             ps.setString(2, i.getItemType());
             ps.setInt(3, i.getStockQuantity());
-            ps.setString(4, i.getImageBase64());
-            ps.setInt(5, i.getItemID());
+            ps.setInt(4, i.getItemID());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,8 +107,8 @@ public class ItemDAO {
     public int GetCurrentID() {
         String sql = "SELECT MAX(item_id) as max_id FROM item";
         try (Connection con = DBUtils.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt("max_id") + 1;
             }
@@ -124,26 +122,27 @@ public class ItemDAO {
         ArrayList<ItemDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM Item";
         try (Connection con = DBUtils.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new ItemDTO(rs.getInt("item_id"),
                         rs.getString("item_name"),
                         rs.getString("item_type"),
-                        rs.getInt("stock_quantity"),
-                        rs.getString("image_base64")));
+                        rs.getInt("stock_quantity")
+                ));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return list;
     }
+    
+      public void ReseedSQL() {
+        try ( Connection con = DBUtils.getConnection();  
+              PreparedStatement ps = con.prepareStatement("DBCC CHECKIDENT ('item', RESEED, " + GetCurrentID() + ")")) {
 
-    public void ReseedSQL() {
-        try (Connection con = DBUtils.getConnection();
-                PreparedStatement ps = con
-                        .prepareStatement("DBCC CHECKIDENT ('item', RESEED, " + GetCurrentID() + ")")) {
             ps.executeUpdate();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
