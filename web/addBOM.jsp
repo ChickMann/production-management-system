@@ -1,40 +1,63 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Thêm mới BOM</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 50px; }
-            .form-group { margin-bottom: 15px; }
-            label { display: inline-block; width: 150px; font-weight: bold; }
-            input[type="number"] { padding: 5px; width: 200px; }
-            button { padding: 8px 15px; background-color: #008CBA; color: white; border: none; cursor: pointer; }
-        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Create BOM</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+        <%@include file="/WEB-INF/jspf/admin-module-style.jspf" %>
     </head>
     <body>
-        <h2>Thêm Công thức Sản phẩm mới</h2>
-        
-        <form action="MainController" method="POST">
-            <input type="hidden" name="action" value="addBom">
-            
-            <div class="form-group">
-                <label>ID Sản phẩm:</label>
-                <input type="number" name="productItemId" required>
+        <div class="module-shell">
+            <div class="module-container">
+                <section class="module-hero">
+                    <div>
+                        <h1 class="module-title">Create BOM</h1>
+                        <p class="module-subtitle">Enter the information below to create a new BOM record.</p>
+                    </div>
+                    <div class="module-actions">
+                        <a class="app-btn app-btn-secondary" href="MainController?action=listBOM">← Back to BOM list</a>
+                    </div>
+                </section>
+
+                <div class="module-grid single-layout">
+                    <section class="module-grid-main module-panel module-card form-surface">
+                        <div class="toolbar-row">
+                            <div>
+                                <h2 class="panel-title">BOM information</h2>
+                                <p class="panel-note">Fill in the product, material, and quantity before saving.</p>
+                            </div>
+                        </div>
+
+                        <form action="MainController" method="POST">
+                            <input type="hidden" name="action" value="addBom">
+
+                            <div class="app-form-grid">
+                                <div class="app-field-half">
+                                    <label class="app-label" for="productItemId">Product Item ID</label>
+                                    <input class="app-input" id="productItemId" type="number" name="productItemId" required>
+                                </div>
+
+                                <div class="app-field-half">
+                                    <label class="app-label" for="materialItemId">Material Item ID</label>
+                                    <input class="app-input" id="materialItemId" type="number" name="materialItemId" required>
+                                </div>
+
+                                <div class="app-field-half">
+                                    <label class="app-label" for="quantityRequired">Quantity Required</label>
+                                    <input class="app-input" id="quantityRequired" type="number" name="quantityRequired" required>
+                                </div>
+                            </div>
+
+                            <div class="toolbar-stack" style="margin-top: 24px;">
+                                <button class="app-btn app-btn-primary" type="submit">Create BOM</button>
+                                <a class="app-btn app-btn-danger" href="MainController?action=listBOM">Cancel</a>
+                            </div>
+                        </form>
+                    </section>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label>ID Vật tư:</label>
-                <input type="number" name="materialItemId" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Số lượng cần:</label>
-                <input type="number" name="quantityRequired" required>
-            </div>
-            
-            <button type="submit">Lưu vào Database</button>
-            <a href="MainController?action=listBOM" style="margin-left: 10px; text-decoration: none; color: red;">Hủy</a>
-        </form>
+        </div>
     </body>
 </html>

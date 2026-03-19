@@ -1,58 +1,79 @@
 <%@page import="pms.model.BOMDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%
+    BOMDTO bom = (BOMDTO) request.getAttribute("bomEdit");
+%>
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Sửa BOM</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 50px; }
-            .form-group { margin-bottom: 15px; }
-            label { display: inline-block; width: 150px; font-weight: bold; }
-            input[type="number"] { padding: 5px; width: 200px; }
-            button { padding: 8px 15px; background-color: #ff9800; color: white; border: none; cursor: pointer; }
-        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Update BOM</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+        <%@include file="/WEB-INF/jspf/admin-module-style.jspf" %>
     </head>
     <body>
-        <h2>Cập nhật Công thức Sản phẩm</h2>
-        
-        <%
-            // Hứng dữ liệu cũ từ Servlet gửi qua
-            BOMDTO bom = (BOMDTO) request.getAttribute("bomEdit");
-            if (bom != null) {
-        %>
-        
-        <form action="MainController" method="POST">
-            <input type="hidden" name="action" value="saveUpdateBom">
-            <input type="hidden" name="bomId" value="<%= bom.getBomId() %>">
-            
-            <div class="form-group">
-                <label>Mã BOM:</label>
-                <input type="text" value="<%= bom.getBomId() %>" disabled> (Không được sửa mã)
+        <div class="module-shell">
+            <div class="module-container">
+                <section class="module-hero">
+                    <div>
+                        <h1 class="module-title">Update BOM</h1>
+                        <p class="module-subtitle">Review and update the BOM information below.</p>
+                    </div>
+                    <div class="module-actions">
+                        <a class="app-btn app-btn-secondary" href="MainController?action=listBOM">← Back to BOM list</a>
+                    </div>
+                </section>
+
+                <div class="module-grid single-layout">
+                    <section class="module-grid-main module-panel module-card form-surface">
+                        <div class="toolbar-row">
+                            <div>
+                                <h2 class="panel-title">Edit BOM information</h2>
+                                <p class="panel-note">Update the product, material, or quantity, then save your changes.</p>
+                            </div>
+                        </div>
+
+                        <% if (bom != null) { %>
+                        <form action="MainController" method="POST">
+                            <input type="hidden" name="action" value="saveUpdateBom">
+                            <input type="hidden" name="bomId" value="<%= bom.getBomId() %>">
+
+                            <div class="app-form-grid">
+                                <div class="app-field-half">
+                                    <label class="app-label" for="bomIdDisplay">BOM ID</label>
+                                    <input class="app-input" id="bomIdDisplay" type="text" value="<%= bom.getBomId() %>" readonly>
+                                </div>
+
+                                <div class="app-field-half">
+                                    <label class="app-label" for="productItemId">Product Item ID</label>
+                                    <input class="app-input" id="productItemId" type="number" name="productItemId" value="<%= bom.getProductItemId() %>" required>
+                                </div>
+
+                                <div class="app-field-half">
+                                    <label class="app-label" for="materialItemId">Material Item ID</label>
+                                    <input class="app-input" id="materialItemId" type="number" name="materialItemId" value="<%= bom.getMaterialItemId() %>" required>
+                                </div>
+
+                                <div class="app-field-half">
+                                    <label class="app-label" for="quantityRequired">Quantity Required</label>
+                                    <input class="app-input" id="quantityRequired" type="number" name="quantityRequired" value="<%= bom.getQuantityRequired() %>" required>
+                                </div>
+                            </div>
+
+                            <div class="toolbar-stack" style="margin-top: 24px;">
+                                <button class="app-btn app-btn-primary" type="submit">Save update</button>
+                                <a class="app-btn app-btn-danger" href="MainController?action=listBOM">Cancel</a>
+                            </div>
+                        </form>
+                        <% } else { %>
+                        <div class="message-error">Không tìm thấy BOM cần cập nhật.</div>
+                        <a class="app-btn app-btn-secondary" href="MainController?action=listBOM">Return to BOM list</a>
+                        <% } %>
+                    </section>
+
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label>ID Sản phẩm:</label>
-                <input type="number" name="productItemId" value="<%= bom.getProductItemId() %>" required>
-            </div>
-            
-            <div class="form-group">
-                <label>ID Vật tư:</label>
-                <input type="number" name="materialItemId" value="<%= bom.getMaterialItemId() %>" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Số lượng cần:</label>
-                <input type="number" name="quantityRequired" value="<%= bom.getQuantityRequired() %>" required>
-            </div>
-            
-            <button type="submit">Cập nhật vào Database</button>
-            <a href="MainController?action=listBOM" style="margin-left: 10px; text-decoration: none; color: red;">Hủy</a>
-        </form>
-        
-        <% } else { %>
-            <h3 style="color:red;">Không tìm thấy BOM này!</h3>
-            <a href="MainController?action=listBOM">Quay lại danh sách</a>
-        <% } %>
+        </div>
     </body>
 </html>

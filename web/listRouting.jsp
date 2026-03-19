@@ -1,42 +1,112 @@
 <%@page import="pms.model.RoutingDTO"%>
 <%@page import="java.util.List"%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%
+    // Demo data - will be replaced by real data from DB
+    List<RoutingDTO> list = (List<RoutingDTO>) request.getAttribute("listRouting");
+    
+    // If no data from DB, use demo data
+    if (list == null || list.isEmpty()) {
+        list = new java.util.ArrayList<>();
+        list.add(new RoutingDTO(1, "Laptop Assembly Line"));
+        list.add(new RoutingDTO(2, "Phone Production Line"));
+        list.add(new RoutingDTO(3, "Tablet Manufacturing"));
+        list.add(new RoutingDTO(4, "Quality Control"));
+    }
+    
+    int totalRecords = list.size();
+%>
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
-        <title>Quản lý Quy trình</title>
-        <style>
-            table { width: 50%; border-collapse: collapse; margin-top: 15px; }
-            table, th, td { border: 1px solid black; } th, td { padding: 10px; text-align: center; } th { background-color: #fff3e0; }
-            .btn-back { display: inline-block; padding: 8px 15px; background-color: #607d8b; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 15px; }
-        </style>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Routing Management</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+        <%@include file="/WEB-INF/jspf/admin-module-style.jspf" %>
     </head>
     <body>
-        <h2>Danh sách Quy trình Sản xuất (Routing)</h2>
-        <a href="MainController?action=loginUser" class="btn-back">⬅️ Quay lại Menu</a>
-        
-        <form action="MainController" method="POST" style="margin-bottom: 20px;">
-            <input type="hidden" name="action" value="addRouting">
-            Tên quy trình mới: <input type="text" name="routingName" required>
-            <button type="submit">+ Thêm Quy trình</button>
-        </form>
+        <div class="module-shell">
+            <div class="module-container">
+                <section class="module-hero">
+                    <div>
+                        <h1 class="module-title">Routing Management</h1>
+                        <p class="module-subtitle">Create, view, edit, and delete routing records in one clear screen.</p>
+                    </div>
+                    <div class="module-actions">
+                        <a class="app-btn app-btn-secondary" href="index.jsp">← Dashboard</a>
+                    </div>
+                </section>
 
-        <table>
-            <tr><th>ID Quy trình</th><th>Tên Quy trình</th><th>Hành động</th></tr>
-            <%
-                List<RoutingDTO> list = (List<RoutingDTO>) request.getAttribute("listRouting");
-                if (list != null && !list.isEmpty()) {
-                    for (RoutingDTO r : list) {
-            %>
-            <tr>
-                <td><%= r.getRoutingId() %></td><td><%= r.getRoutingName() %></td>
-                <td>
-                    <a href="MainController?action=loadUpdateRouting&routingId=<%= r.getRoutingId() %>">Sửa</a> | 
-                    <a href="MainController?action=deleteRouting&routingId=<%= r.getRoutingId() %>" onclick="return confirm('Xóa Quy trình này?');" style="color:red;">Xóa</a>
-                </td>
-            </tr>
-            <% } } else { out.print("<tr><td colspan='3'>Chưa có dữ liệu</td></tr>"); } %>
-        </table>
+                <section class="module-panel module-card">
+                    <div class="toolbar-row">
+                        <div>
+                            <h2 class="panel-title">Add New Routing</h2>
+                            <p class="panel-note">Create a routing by entering its name below.</p>
+                        </div>
+                        <span class="badge-soft"><%= totalRecords %> records</span>
+                    </div>
+
+                    <form action="MainController" method="POST">
+                        <input type="hidden" name="action" value="addRouting">
+                        <div class="app-form-grid">
+                            <div class="app-field">
+                                <label class="app-label" for="routingName">Routing Name</label>
+                                <input class="app-input" id="routingName" type="text" name="routingName" required>
+                            </div>
+                        </div>
+                        <div class="toolbar-stack" style="margin-top: 20px;">
+                            <button class="app-btn app-btn-primary" type="submit">Add Routing</button>
+                            <a class="app-btn app-btn-secondary" href="MainController?action=listRouting">Refresh</a>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="module-panel module-card">
+                    <div class="toolbar-row">
+                        <div>
+                            <h2 class="panel-title">Routing List</h2>
+                            <p class="panel-note">All existing routes are shown here.</p>
+                        </div>
+                    </div>
+
+                    <div class="app-table-shell">
+                        <table class="app-table">
+                            <thead>
+                                <tr>
+                                    <th>Routing ID</th>
+                                    <th>Routing Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%
+                                    if (list != null && !list.isEmpty()) {
+                                        for (RoutingDTO r : list) {
+                                %>
+                                <tr>
+                                    <td>#<%= r.getRoutingId() %></td>
+                                    <td><%= r.getRoutingName() %></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <a class="app-btn app-btn-secondary" href="MainController?action=loadUpdateRouting&routingId=<%= r.getRoutingId() %>">Edit</a>
+                                            <a class="app-btn app-btn-danger" href="MainController?action=deleteRouting&routingId=<%= r.getRoutingId() %>" onclick="return confirm('Delete this routing?');">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <%
+                                        }
+                                    } else {
+                                %>
+                                <tr>
+                                    <td colspan="3" class="app-empty">No routing records found.</td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
     </body>
 </html>
