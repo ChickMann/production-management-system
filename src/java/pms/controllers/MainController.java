@@ -24,7 +24,7 @@ public class MainController extends HttpServlet {
             url = "ItemController";
         } else if(action.contains("Bom") || action.contains("BOM"))
         {
-            url = "BomController";
+            url = "BOMController";
         } else if(action.contains("Supplier"))
         {
             url = "SupplierController";

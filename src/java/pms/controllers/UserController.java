@@ -21,6 +21,9 @@ public class UserController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
+        if (action == null) {
+            action = "list";
+        }
 
         switch (action) {
             case "loginUser":
@@ -28,6 +31,12 @@ public class UserController extends HttpServlet {
                 break;
             case "logoutUser":
                 DoLogout(request);
+                break;
+            case "list":
+                listUsers(request);
+                break;
+            case "search":
+                searchUsers(request);
                 break;
             case "addUser":
             case "saveAddUser":
@@ -40,15 +49,37 @@ public class UserController extends HttpServlet {
             case "saveUpdateUser":
                 UpdateUser(request);
                 break;
+            case "viewUser":
+                viewUser(request);
+                break;
+            case "lockUser":
+                lockUser(request);
+                break;
+            case "unlockUser":
+                unlockUser(request);
+                break;
+            case "resetPassword":
+                resetPassword(request);
+                break;
+            case "changePassword":
+                changePassword(request);
+                break;
+            case "changeOwnPassword":
+                changeOwnPassword(request);
+                break;
         }
 
-        request.getRequestDispatcher(url).forward(request, response);
+        if (url != null && url.startsWith("redirect:")) {
+            response.sendRedirect(url.substring(9));
+        } else {
+            request.getRequestDispatcher(url).forward(request, response);
+        }
     }
 
     private void DoLogin(HttpServletRequest request) {
         HttpSession session = request.getSession();
         UserDTO user = (UserDTO) session.getAttribute("user");
-        
+
         UserDAO udao = new UserDAO();
 
         if (user == null) {
@@ -57,22 +88,24 @@ public class UserController extends HttpServlet {
             user = udao.Login(username, password);
             if (user != null) {
                 session.setAttribute("user", user);
+            } else {
+                session.setAttribute("loginMessage", "Incorrect User ID or Password");
+                session.setAttribute("loginUsername", username);
             }
         }
 
         if (user != null) {
-            if (!user.isStatus()) {
+            if (!user.isActive()) {
                 url = "Banned.jsp";
             } else {
                 url = "BangDieuKien.jsp";
                 if (user.getRole().equals("admin")) {
-                    ArrayList<UserDTO> eList = udao.EmployeeList("employee");
+                    ArrayList<UserDTO> eList = udao.getUsersByRole("employee");
                     session.setAttribute("eList", eList);
                 }
             }
         } else {
-            url = "login.jsp";
-            request.setAttribute("message", "Incorrect User ID or Password");
+            url = "redirect:login.jsp";
         }
     }
 
@@ -80,25 +113,187 @@ public class UserController extends HttpServlet {
         HttpSession session = request.getSession();
         if (session.getAttribute("user") != null) {
             session.invalidate();
-            url = "login.jsp";
         }
+        url = "redirect:login.jsp";
+    }
+
+    private void listUsers(HttpServletRequest request) {
+        UserDAO udao = new UserDAO();
+        ArrayList<UserDTO> users = udao.getAllUsers();
+        request.setAttribute("users", users);
+        url = "user-list.jsp";
+    }
+
+    private void searchUsers(HttpServletRequest request) {
+        UserDAO udao = new UserDAO();
+        String keyword = request.getParameter("keyword");
+        String role = request.getParameter("role");
+        String status = request.getParameter("status");
+
+        ArrayList<UserDTO> users = udao.getAllUsers();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            users.removeIf(u -> !u.getUsername().toLowerCase().contains(keyword.toLowerCase())
+                    && (u.getFullName() == null || !u.getFullName().toLowerCase().contains(keyword.toLowerCase())));
+        }
+        if (role != null && !role.isEmpty() && !role.equals("all")) {
+            users.removeIf(u -> !u.getRole().equals(role));
+        }
+        if (status != null && !status.isEmpty() && !status.equals("all")) {
+            users.removeIf(u -> !u.getStatus().equals(status));
+        }
+
+        request.setAttribute("users", users);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("roleFilter", role);
+        request.setAttribute("statusFilter", status);
+        url = "user-list.jsp";
+    }
+
+    private void viewUser(HttpServletRequest request) {
+        String s_id = request.getParameter("id");
+        int id = 0;
+        try {
+            id = Integer.parseInt(s_id);
+        } catch (Exception e) {
+            request.setAttribute("error", "Invalid user ID");
+            url = "redirect:UserController?action=list";
+            return;
+        }
+
+        UserDAO udao = new UserDAO();
+        UserDTO user = udao.SearchByID(id);
+        request.setAttribute("user", user);
+        url = "user-detail.jsp";
     }
 
     private void RemoveUser(HttpServletRequest request) {
         String id = request.getParameter("id");
         UserDAO udao = new UserDAO();
 
-        if (!id.isEmpty()) {
-            boolean check = udao.SoftDelete(id);
+        if (id != null && !id.isEmpty()) {
+            boolean check = udao.Delete(Integer.parseInt(id));
             if (check) {
                 request.setAttribute("msg", "Deleted!");
             } else {
-                request.setAttribute("msg", "Error, can not delete: " + id);
+                request.setAttribute("error", "Cannot delete user: " + id);
             }
         }
-        ArrayList<UserDTO> eList = udao.EmployeeList("employee");
-        request.getSession().setAttribute("eList", eList);
-        url = "BangDieuKien.jsp";
+        url = "redirect:UserController?action=list";
+    }
+
+    private void lockUser(HttpServletRequest request) {
+        String s_id = request.getParameter("id");
+        UserDAO udao = new UserDAO();
+
+        try {
+            int id = Integer.parseInt(s_id);
+            boolean success = udao.lockUser(id);
+            if (success) {
+                request.setAttribute("msg", "User locked successfully!");
+            } else {
+                request.setAttribute("error", "Failed to lock user");
+            }
+        } catch (Exception e) {
+            request.setAttribute("error", "Invalid user ID");
+        }
+        url = "redirect:UserController?action=list";
+    }
+
+    private void unlockUser(HttpServletRequest request) {
+        String s_id = request.getParameter("id");
+        UserDAO udao = new UserDAO();
+
+        try {
+            int id = Integer.parseInt(s_id);
+            boolean success = udao.unlockUser(id);
+            if (success) {
+                request.setAttribute("msg", "User unlocked successfully!");
+            } else {
+                request.setAttribute("error", "Failed to unlock user");
+            }
+        } catch (Exception e) {
+            request.setAttribute("error", "Invalid user ID");
+        }
+        url = "redirect:UserController?action=list";
+    }
+
+    private void resetPassword(HttpServletRequest request) {
+        String s_id = request.getParameter("id");
+        UserDAO udao = new UserDAO();
+        String defaultPassword = "123456";
+
+        try {
+            int id = Integer.parseInt(s_id);
+            boolean success = udao.resetPassword(id, defaultPassword);
+            if (success) {
+                request.setAttribute("msg", "Password reset to: " + defaultPassword);
+            } else {
+                request.setAttribute("error", "Failed to reset password");
+            }
+        } catch (Exception e) {
+            request.setAttribute("error", "Invalid user ID");
+        }
+        url = "redirect:UserController?action=list";
+    }
+
+    private void changePassword(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("user");
+
+        if (currentUser == null || !currentUser.getRole().equals("admin")) {
+            request.setAttribute("error", "Unauthorized");
+            url = "redirect:login.jsp";
+            return;
+        }
+
+        String s_id = request.getParameter("id");
+        String newPassword = request.getParameter("newPassword");
+
+        UserDAO udao = new UserDAO();
+
+        try {
+            int id = Integer.parseInt(s_id);
+            boolean success = udao.resetPassword(id, newPassword);
+            if (success) {
+                request.setAttribute("msg", "Password changed successfully!");
+            } else {
+                request.setAttribute("error", "Failed to change password");
+            }
+        } catch (Exception e) {
+            request.setAttribute("error", "Invalid user ID");
+        }
+        url = "redirect:UserController?action=list";
+    }
+
+    private void changeOwnPassword(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("user");
+
+        if (currentUser == null) {
+            url = "redirect:login.jsp";
+            return;
+        }
+
+        String oldPassword = request.getParameter("oldPassword");
+        String newPassword = request.getParameter("newPassword");
+        String confirmPassword = request.getParameter("confirmPassword");
+
+        if (!newPassword.equals(confirmPassword)) {
+            request.setAttribute("error", "New passwords do not match");
+            url = "change-password.jsp";
+            return;
+        }
+
+        UserDAO udao = new UserDAO();
+        boolean success = udao.changePassword(currentUser.getId(), oldPassword, newPassword);
+
+        if (success) {
+            request.setAttribute("msg", "Password changed successfully!");
+        } else {
+            request.setAttribute("error", "Old password is incorrect");
+        }
+        url = "change-password.jsp";
     }
 
     private void AddUser(HttpServletRequest request) {
@@ -108,30 +303,39 @@ public class UserController extends HttpServlet {
         UserDAO udao = new UserDAO();
         String action = request.getParameter("action");
         request.setAttribute("mode", "add");
+
         if (action.equals("saveAddUser")) {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             String role = request.getParameter("role");
             String fullName = request.getParameter("fullName");
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
+            String status = request.getParameter("status") != null ? request.getParameter("status") : "active";
 
-            UserDTO u = new UserDTO(0, username, password, role, fullName, true);
-            if (error.isEmpty()) {
+            if (udao.isUsernameExists(username, null)) {
+                error = "Username already exists";
+            } else {
+                UserDTO u = new UserDTO();
+                u.setUsername(username);
+                u.setPassword(password);
+                u.setRole(role);
+                u.setFullName(fullName);
+                u.setEmail(email);
+                u.setPhone(phone);
+                u.setStatus(status);
+
                 if (udao.Add(u)) {
-                    msg = "Add thanh cong";
+                    msg = "User added successfully!";
                 } else {
-                    error = "Add that bai";
+                    error = "Failed to add user";
                     udao.ReseedSQL();
                 }
             }
 
-            request.setAttribute("user", u);
+            request.setAttribute("user", request.getParameter("username"));
             request.setAttribute("msg", msg);
             request.setAttribute("error", error);
-        }
-        int index = udao.GetCurrentID()+1;
-
-        if (index > 0) {
-            request.setAttribute("index", index);
         }
 
         url = "user-form.jsp";
@@ -149,29 +353,49 @@ public class UserController extends HttpServlet {
         try {
             id = Integer.parseInt(s_id);
         } catch (Exception e) {
-            error += "id phai la so nguyen duong";
+            error += "ID must be a number";
         }
-        UserDTO u = udao.SearchByID(id);
+
+        UserDTO existingUser = udao.SearchByID(id);
         request.setAttribute("mode", "update");
+        request.setAttribute("u", existingUser);
+
         if (action.equals("saveUpdateUser")) {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             String role = request.getParameter("role");
             String fullName = request.getParameter("fullName");
-            u = new UserDTO(id, username, password, role, fullName, true);
-            if (error.isEmpty()) {
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
+            String status = request.getParameter("status");
+
+            if (udao.isUsernameExists(username, id)) {
+                error = "Username already exists";
+            } else {
+                UserDTO u = new UserDTO();
+                u.setId(id);
+                u.setUsername(username);
+                u.setPassword(password != null && !password.isEmpty() ? password : existingUser.getPassword());
+                u.setRole(role);
+                u.setFullName(fullName);
+                u.setEmail(email);
+                u.setPhone(phone);
+                u.setStatus(status);
+
                 if (udao.Update(u)) {
-                    msg = "update thanh cong";
+                    msg = "User updated successfully!";
                 } else {
-                    error = "update that bai";
+                    error = "Failed to update user";
                 }
             }
 
             request.setAttribute("msg", msg);
             request.setAttribute("error", error);
+            UserDTO u = new UserDTO();
+            u.setUsername(username);
+            request.setAttribute("u", u);
         }
 
-        request.setAttribute("u", u);
         url = "user-form.jsp";
     }
 
@@ -191,5 +415,4 @@ public class UserController extends HttpServlet {
     public String getServletInfo() {
         return "User Controller";
     }
-
 }
