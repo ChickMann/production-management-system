@@ -1,164 +1,474 @@
-<%-- item-list.jsp - Danh sách vật phẩm --%>
 <%@page import="pms.model.ItemDTO"%>
-<%@page import="pms.model.ItemDAO"%>
 <%@page import="java.util.ArrayList"%>
+<%@page import="pms.model.UserDTO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%!
+    String getStockStatusClass(ItemDTO currentItem) {
+        if (currentItem != null && currentItem.isLowStock()) {
+            return "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-300";
+        }
+        return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
+    }
+
+    String getStockStatusText(ItemDTO currentItem) {
+        if (currentItem != null && currentItem.isLowStock()) {
+            return "Tồn kho thấp";
+        }
+        return "Bình thường";
+    }
+%>
 <%
     ArrayList<ItemDTO> items = (ArrayList<ItemDTO>) request.getAttribute("items");
-    if (items == null) {
-        ItemDAO dao = new ItemDAO();
-        items = dao.getAllItems();
+    UserDTO user = (UserDTO) session.getAttribute("user");
+    String msg = (String) request.getAttribute("msg");
+    if (msg == null || msg.trim().isEmpty()) {
+        msg = request.getParameter("msg");
     }
+    String error = (String) request.getAttribute("error");
+    String keyword = request.getParameter("keyword");
+    String typeFilter = request.getParameter("type");
     Boolean lowStockOnly = (Boolean) request.getAttribute("lowStockOnly");
+
+    if (items == null) items = new ArrayList<>();
+
+    Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
+    boolean isDarkMode = sessionDark != null ? sessionDark : false;
+
+    String lang = session.getAttribute("lang") != null ? (String) session.getAttribute("lang") : "vi";
+    String activePage = "item";
+    String pageTitle = "Quản lý vật tư / sản phẩm";
+    request.setAttribute("activePage", activePage);
+    request.setAttribute("pageTitle", pageTitle);
+
+    int totalItems = items.size();
+    int productCount = 0, materialCount = 0, lowStockCount = 0;
+    for (ItemDTO item : items) {
+        if ("SanPham".equals(item.getItemType())) productCount++;
+        else if ("VatTu".equals(item.getItemType())) materialCount++;
+        if (item.isLowStock()) lowStockCount++;
+    }
 %>
 <!DOCTYPE html>
-<html>
+<html lang="<%= lang %>" class="<%= isDarkMode ? "dark" : "" %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý vật phẩm</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Quản lý vật tư - PMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { background-color: #f5f6fa; }
-        .sidebar { min-height: 100vh; background: #2c3e50; color: white; }
-        .sidebar a { color: white; text-decoration: none; padding: 12px 20px; display: block; }
-        .sidebar a:hover { background: #34495e; }
-        .table-responsive { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .low-stock { background-color: #fff3cd; }
+        body { font-family: Inter, "Segoe UI", Arial, sans-serif; }
+        .sidebar { box-shadow: 24px 0 48px rgba(15, 23, 42, 0.16); }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.48); z-index: 20; }
+        .form-input {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            color: #0f172a;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+        }
+        .dark .form-input {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        .dark .form-input::placeholder {
+            color: #64748b;
+        }
+        .sidebar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 40;
+        }
+        .sidebar-header {
+            position: sticky;
+            top: 0;
+            background: #0f172a;
+            z-index: 10;
+        }
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: #1e293b; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
+        .sidebar-footer {
+            position: sticky;
+            bottom: 0;
+            background: #0f172a;
+            z-index: 10;
+        }
+        .main-wrapper {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+        @media (min-width: 1024px) {
+            .main-wrapper { margin-left: 280px; }
+        }
+        .kpi-card { transition: all 0.2s ease; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08); }
+        .dark .kpi-card:hover { box-shadow: 0 20px 45px rgba(2, 6, 23, 0.45); }
+        .section-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+        }
+        .dark .section-card {
+            background: rgba(15,23,42,0.92);
+        }
+        .modal-backdrop {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(6px);
+        }
     </style>
+    <script src="js/common.js"></script>
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2 sidebar p-0">
-                <div class="text-center py-3 border-bottom">
-                    <h5>PMS</h5>
+<body class="bg-slate-100 text-slate-900 min-h-screen antialiased <%= isDarkMode ? "dark dark-mode-init" : "" %>">
+    <div class="min-h-screen flex">
+        <jsp:include page="components/shared-sidebar.jsp" />
+        
+        <!-- Main Content -->
+        <div id="mainWrapper" class="main-wrapper flex-1 flex flex-col min-h-screen min-w-0">
+            <jsp:include page="components/shared-header.jsp" />
+            
+            <main class="flex-1 overflow-y-auto p-4 lg:p-6 bg-slate-100 dark:bg-slate-900">
+                <!-- Page Header -->
+                <div class="mb-6 rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-teal-50/70 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-teal-950/30">
+                    <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="max-w-3xl">
+                            <div class="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-teal-700 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300">
+                                Danh mục kho
+                            </div>
+                            <h1 class="mt-3 text-2xl font-semibold text-slate-900 dark:text-slate-100">Quản lý vật tư / sản phẩm</h1>
+                            <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">Theo dõi danh mục vật tư, sản phẩm và cảnh báo tồn kho ngay trên một màn hình. Bạn có thể thêm nhanh vật tư mới mà không cần rời khỏi trang danh sách.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <% if (lowStockCount > 0) { %>
+                            <a href="ItemController?action=lowStock" class="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-red-500/30 transition-all hover:-translate-y-0.5 hover:bg-red-700">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                Tồn kho thấp (<%= lowStockCount %>)
+                            </a>
+                            <% } %>
+                            <button type="button" onclick="openAddItemModal()" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:-translate-y-0.5 hover:bg-teal-700">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Thêm vật tư
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <a href="BangDieuKien.jsp"><i class="fas fa-home me-2"></i> Trang chủ</a>
-                <a href="UserController?action=list"><i class="fas fa-users me-2"></i> Người dùng</a>
-                <a href="ItemController?action=list" class="active"><i class="fas fa-box me-2"></i> Vật phẩm</a>
-                <a href="BOMController?action=list"><i class="fas fa-clipboard-list me-2"></i> BOM</a>
-                <a href="RoutingController?action=list"><i class="fas fa-route me-2"></i> Quy trình</a>
-                <a href="WorkOrderController?action=list"><i class="fas fa-industry me-2"></i> Lệnh sản xuất</a>
-                <a href="SupplierController?action=list"><i class="fas fa-truck me-2"></i> Nhà cung cấp</a>
-                <a href="CustomerController?action=list"><i class="fas fa-user-tie me-2"></i> Khách hàng</a>
-            </div>
 
-            <div class="col-md-10 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="fas fa-box me-2"></i>Quản lý vật phẩm</h2>
-                    <div>
-                        <a href="ItemController?action=lowStock" class="btn btn-warning me-2">
-                            <i class="fas fa-exclamation-triangle me-2"></i>Tồn kho thấp
-                        </a>
-                        <a href="ItemController?action=addItem" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Thêm vật phẩm
-                        </a>
+                <!-- Alerts -->
+                <% if (msg != null && !msg.trim().isEmpty()) { %>
+                <div class="mb-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-center gap-3 shadow-sm">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <%= msg %>
+                </div>
+                <% } %>
+                <% if (error != null && !error.trim().isEmpty()) { %>
+                <div class="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-300 flex items-center gap-3 shadow-sm">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <%= error %>
+                </div>
+                <% } %>
+
+                <!-- Stats Cards -->
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+                    <div class="kpi-card rounded-2xl border border-blue-200 border-t-4 border-t-blue-500 bg-white p-5 shadow-sm dark:border-blue-500/30 dark:bg-slate-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tổng vật tư</p>
+                                <p class="mt-2 text-3xl font-bold text-slate-800 dark:text-slate-100"><%= totalItems %></p>
+                            </div>
+                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 text-2xl">&#128230;</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card rounded-2xl border border-violet-200 border-t-4 border-t-violet-500 bg-white p-5 shadow-sm dark:border-violet-500/30 dark:bg-slate-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sản phẩm</p>
+                                <p class="mt-2 text-3xl font-bold text-violet-600 dark:text-violet-300"><%= productCount %></p>
+                            </div>
+                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-50 text-2xl text-violet-600 dark:bg-violet-500/10 dark:text-violet-300">&#128722;</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card rounded-2xl border border-teal-200 border-t-4 border-t-teal-500 bg-white p-5 shadow-sm dark:border-teal-500/30 dark:bg-slate-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Vật tư</p>
+                                <p class="mt-2 text-3xl font-bold text-teal-600 dark:text-teal-300"><%= materialCount %></p>
+                            </div>
+                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-300 text-2xl">&#9881;</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card rounded-2xl border border-red-200 border-t-4 border-t-red-500 bg-white p-5 shadow-sm dark:border-red-500/30 dark:bg-slate-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tồn kho thấp</p>
+                                <p class="mt-2 text-3xl font-bold text-red-600 dark:text-red-300"><%= lowStockCount %></p>
+                            </div>
+                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-300 text-2xl">&#9888;</div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Search & Filter -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <form method="get" action="ItemController" class="row g-3">
-                            <input type="hidden" name="action" value="search">
-                            <div class="col-md-5">
-                                <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm...">
-                            </div>
-                            <div class="col-md-3">
-                                <select name="type" class="form-select">
-                                    <option value="all">Tất cả loại</option>
-                                    <option value="SanPham">Sản phẩm</option>
-                                    <option value="VatTu">Vật tư</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-secondary w-100">
-                                    <i class="fas fa-search"></i> Tìm
-                                </button>
-                            </div>
-                        </form>
+                <div class="section-card mb-6 rounded-3xl border border-slate-200 p-4 shadow-sm dark:border-slate-700">
+                    <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">Bộ lọc danh sách</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Tìm nhanh theo tên vật tư và loại sản phẩm trong kho.</p>
+                        </div>
+                        <% if (Boolean.TRUE.equals(lowStockOnly)) { %>
+                        <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-500/10 dark:text-red-300">Đang xem danh sách tồn kho thấp</span>
+                        <% } %>
                     </div>
+                    <form method="get" action="ItemController" class="flex flex-col gap-4 xl:flex-row">
+                        <input type="hidden" name="action" value="search">
+                        <div class="flex-1 relative">
+                            <input type="text" name="keyword" value="<%= keyword != null ? keyword : "" %>"
+                                   placeholder="Tìm kiếm theo mã hoặc tên..."
+                                   class="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 form-input transition-all">
+                            <svg class="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <select name="type" class="px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 form-input transition-all">
+                            <option value="">Tất cả loại</option>
+                            <option value="SanPham" <%= "SanPham".equals(typeFilter) ? "selected" : "" %>>Sản phẩm</option>
+                            <option value="VatTu" <%= "VatTu".equals(typeFilter) ? "selected" : "" %>>Vật tư</option>
+                        </select>
+                        <button type="submit" class="px-6 py-3 rounded-2xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all shadow-sm shadow-teal-500/30">
+                            Tìm kiếm
+                        </button>
+                        <a href="ItemController?action=list" class="px-6 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            Đặt lại
+                        </a>
+                    </form>
                 </div>
 
-                <!-- Messages -->
-                <% if (request.getAttribute("msg") != null) { %>
-                    <div class="alert alert-success alert-dismissible fade show">
-                        <%= request.getAttribute("msg") %>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <!-- Items Table -->
+                <div class="section-card rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mã VT</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tên vật tư</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Loại</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tồn kho</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tối thiểu</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Đơn vị</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trạng thái</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (items.isEmpty()) { %>
+                                <tr>
+                                    <td colspan="8" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
+                                        <div class="mx-auto flex max-w-md flex-col items-center gap-3">
+                                            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                                                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p class="text-base font-semibold text-slate-700 dark:text-slate-200">Chưa có vật tư nào</p>
+                                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Bắt đầu bằng cách thêm vật tư hoặc sản phẩm mới trực tiếp trên trang này.</p>
+                                            </div>
+                                            <button type="button" onclick="openAddItemModal()" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                </svg>
+                                                Thêm vật tư đầu tiên
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% } else { %>
+                                    <% for (ItemDTO item : items) { %>
+                                    <tr class="border-b border-slate-50 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors <%= item.isLowStock() ? "bg-red-50/50 dark:bg-red-500/5" : "" %>">
+                                        <td class="px-4 py-3">
+                                            <span class="font-bold text-slate-700 dark:text-slate-200">#<%= item.getItemID() %></span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-200 font-bold text-sm">
+                                                    <%= item.getItemName() != null ? item.getItemName().substring(0, 1).toUpperCase() : "?" %>
+                                                </div>
+                                                <span class="font-medium text-slate-700 dark:text-slate-200"><%= item.getItemName() != null ? item.getItemName() : "-" %></span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <%= "SanPham".equals(item.getItemType()) ? "bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300" : "bg-teal-100 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300" %>">
+                                                <%= "SanPham".equals(item.getItemType()) ? "Sản phẩm" : "Vật tư" %>
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-right">
+                                            <span class="font-bold <%= item.isLowStock() ? "text-red-600 dark:text-red-300" : "text-slate-700 dark:text-slate-200" %>"><%= item.getStockQuantity() %></span>
+                                        </td>
+                                        <td class="px-4 py-3 text-right text-slate-500 dark:text-slate-400"><%= item.getMinStockLevel() %></td>
+                                        <td class="px-4 py-3 text-center text-slate-500 dark:text-slate-400"><%= item.getUnit() != null ? item.getUnit() : "-" %></td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <%= getStockStatusClass(item) %>">
+                                                <% if (item.isLowStock()) { %>
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                                </svg>
+                                                <% } else { %>
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                <% } %>
+                                                <%= getStockStatusText(item) %>
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <a href="ItemController?action=editItem&id=<%= item.getItemID() %>" 
+                                                   class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-amber-100 dark:hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-300 transition-colors" title="Chỉnh sửa">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                </a>
+                                                <a href="ItemController?action=deleteItem&id=<%= item.getItemID() %>" 
+                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa vật tư này?')"
+                                                   class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-red-100 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors" title="Xóa">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                <% } %>
+                            </tbody>
+                        </table>
                     </div>
-                <% } %>
-
-                <!-- Item List -->
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Mã</th>
-                                <th>Tên vật phẩm</th>
-                                <th>Loại</th>
-                                <th>Tồn kho</th>
-                                <th>Tối thiểu</th>
-                                <th>Đơn vị</th>
-                                <th>Trạng thái</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <%
-                                if (items != null && !items.isEmpty()) {
-                                    int stt = 1;
-                                    for (ItemDTO item : items) {
-                                        boolean isLowStock = item.isLowStock();
-                            %>
-                            <tr class="<%= isLowStock ? "low-stock" : "" %>">
-                                <td><%= stt++ %></td>
-                                <td><strong><%= item.getItemID() %></strong></td>
-                                <td><%= item.getItemName() %></td>
-                                <td>
-                                    <% if ("SanPham".equals(item.getItemType())) { %>
-                                        <span class="badge bg-primary">Sản phẩm</span>
-                                    <% } else { %>
-                                        <span class="badge bg-info">Vật tư</span>
-                                    <% } %>
-                                </td>
-                                <td><strong><%= item.getStockQuantity() %></strong></td>
-                                <td><%= item.getMinStockLevel() %></td>
-                                <td><%= item.getUnit() != null ? item.getUnit() : "" %></td>
-                                <td>
-                                    <% if (isLowStock) { %>
-                                        <span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Thấp</span>
-                                    <% } else { %>
-                                        <span class="text-success"><i class="fas fa-check"></i> Bình thường</span>
-                                    <% } %>
-                                </td>
-                                <td>
-                                    <a href="ItemController?action=editItem&id=<%= item.getItemID() %>" class="btn btn-warning btn-sm" title="Sửa">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="ItemController?action=deleteItem&id=<%= item.getItemID() %>" 
-                                       class="btn btn-danger btn-sm" title="Xóa"
-                                       onclick="return confirm('Xóa vật phẩm này?')">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <% 
-                                    }
-                                } else {
-                            %>
-                            <tr>
-                                <td colspan="9" class="text-center text-muted">Không có vật phẩm nào</td>
-                            </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
+                    <% if (!items.isEmpty()) { %>
+                    <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-sm text-slate-500 dark:text-slate-400">
+                        Tổng cộng: <span class="font-semibold"><%= items.size() %></span> vật tư
+                    </div>
+                    <% } %>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div id="addItemModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="w-full max-w-3xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-600 dark:text-teal-300">Thao tác nhanh</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Thêm vật tư mới</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tạo vật tư hoặc sản phẩm mới trực tiếp từ danh sách kho.</p>
+                </div>
+                <button type="button" onclick="closeAddItemModal()" class="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form action="ItemController" method="post" class="space-y-5 px-6 py-6">
+                <input type="hidden" name="action" value="saveAddItem">
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Tên vật tư <span class="text-red-500">*</span></label>
+                        <input type="text" name="itemName" required class="form-input w-full rounded-2xl border px-4 py-3" placeholder="Nhập tên vật tư hoặc sản phẩm">
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Loại <span class="text-red-500">*</span></label>
+                        <select name="itemType" required class="form-input w-full rounded-2xl border px-4 py-3">
+                            <option value="">Chọn loại</option>
+                            <option value="SanPham">Sản phẩm</option>
+                            <option value="VatTu">Vật tư</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Đơn vị tính</label>
+                        <input type="text" name="unit" class="form-input w-full rounded-2xl border px-4 py-3" placeholder="Ví dụ: cái, kg, m">
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Số lượng tồn kho</label>
+                        <input type="number" name="stockQuantity" min="0" value="0" class="form-input w-full rounded-2xl border px-4 py-3">
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Tồn kho tối thiểu</label>
+                        <input type="number" name="minStockLevel" min="0" value="0" class="form-input w-full rounded-2xl border px-4 py-3">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Mô tả</label>
+                        <textarea name="description" rows="4" class="form-input w-full rounded-2xl border px-4 py-3" placeholder="Mô tả ngắn về vật tư hoặc sản phẩm"></textarea>
+                    </div>
+                </div>
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end dark:border-slate-700">
+                    <button type="button" onclick="closeAddItemModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                    <button type="submit" class="rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition hover:bg-teal-700">Lưu vật tư</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" onclick="toggleSidebar()"></div>
+    <script src="js/common.js"></script>
+    <script>
+        const addItemModal = document.getElementById('addItemModal');
+
+        function openAddItemModal() {
+            if (!addItemModal) return;
+            addItemModal.classList.remove('hidden');
+            addItemModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeAddItemModal() {
+            if (!addItemModal) return;
+            addItemModal.classList.add('hidden');
+            addItemModal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        if (addItemModal) {
+            addItemModal.addEventListener('click', function (event) {
+                if (event.target === addItemModal) {
+                    closeAddItemModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeAddItemModal();
+            }
+        });
+    </script>
 </body>
 </html>
