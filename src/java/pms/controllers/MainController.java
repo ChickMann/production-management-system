@@ -18,7 +18,11 @@ public class MainController extends HttpServlet {
         
         String url = "login.jsp";
         String action = request.getParameter("action");
-        if(action.contains("User")){
+        if (action == null) {
+            request.getRequestDispatcher(url).forward(request, response);
+            return;
+        }
+        if (action.contains("User")) {
             url = "UserController";
         }else if(action.contains("Item")){
             url = "ItemController";
@@ -37,21 +41,25 @@ public class MainController extends HttpServlet {
         } else if (action.contains("Routing")) 
         {
             url = "RoutingController";
-        } else if (action.contains("DefectReason")) 
-        {
-            url = "DefectReasonController";
+        } else if (action.contains("DefectReason") || action.contains("listDefectReason") || action.contains("Defect") || action.contains("listDefect")) {
+            url = "DefectController";
         } else if (action.contains("Bill")) 
         {
             url = "BillController";
         } else if (action.contains("Customer")) 
         {
             url = "CustomerController";
-        } else if (action.contains("Production")) 
-        {
+        } else if (action.contains("Production") || action.contains("listLog")) {
             url = "ProductionLogController";
-        } else if (action.contains("WorkOrder")) 
+        } else if (action.contains("WorkOrder"))
         {
             url = "WorkOrderController";
+        } else if (action.contains("Payment"))
+        {
+            url = "PaymentController";
+        } else if (action.contains("File"))
+        {
+            url = "FileController";
         }
         
         request.getRequestDispatcher(url).forward(request, response);

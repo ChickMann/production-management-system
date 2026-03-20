@@ -63,9 +63,10 @@ public class BOMDAO {
         try (Connection conn = DBUtils.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, productItemId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(mapBOM(rs));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapBOM(rs));
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,9 +84,10 @@ public class BOMDAO {
         try (Connection conn = DBUtils.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(mapBOM(rs));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapBOM(rs));
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -123,9 +125,10 @@ public class BOMDAO {
         try (Connection conn = DBUtils.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, bomId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(mapBOMDetail(rs));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapBOMDetail(rs));
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,9 +146,10 @@ public class BOMDAO {
             ps.setString(4, bom.getNotes());
             int rows = ps.executeUpdate();
             if (rows > 0) {
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    bom.setBomId(rs.getInt(1));
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        bom.setBomId(rs.getInt(1));
+                    }
                 }
                 return true;
             }
@@ -172,24 +176,25 @@ public class BOMDAO {
     }
 
     public boolean deleteBOM(int bomId) {
-        String sql = "DELETE FROM BOM_Detail WHERE bom_id = ?";
+        String sqlDetail = "DELETE FROM BOM_Detail WHERE bom_id = ?";
         try (Connection conn = DBUtils.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sqlDetail)) {
             ps.setInt(1, bomId);
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
 
-        sql = "DELETE FROM BOM WHERE bom_id = ?";
+        String sqlBom = "DELETE FROM BOM WHERE bom_id = ?";
         try (Connection conn = DBUtils.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sqlBom)) {
             ps.setInt(1, bomId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public boolean addBOMDetail(BOMDetailDTO detail) {

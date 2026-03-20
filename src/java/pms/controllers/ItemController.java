@@ -115,7 +115,6 @@ public class ItemController extends HttpServlet {
     }
 
     private void addItem(HttpServletRequest request) {
-        String msg = "";
         String error = "";
 
         try {
@@ -124,13 +123,15 @@ public class ItemController extends HttpServlet {
             int stockQuantity = 0;
             try {
                 stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             String unit = request.getParameter("unit");
             String description = request.getParameter("description");
             int minStockLevel = 0;
             try {
                 minStockLevel = Integer.parseInt(request.getParameter("minStockLevel"));
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
 
             ItemDTO item = new ItemDTO();
             item.setItemName(itemName);
@@ -142,16 +143,17 @@ public class ItemController extends HttpServlet {
 
             ItemDAO dao = new ItemDAO();
             if (dao.Add(item)) {
-                msg = "Item added successfully!";
+                url = "redirect:ItemController?action=list&msg="
+                        + java.net.URLEncoder.encode("Thêm vật tư thành công", "UTF-8");
+                return;
             } else {
-                error = "Failed to add item";
+                error = "Không thể thêm vật tư";
                 dao.ReseedSQL();
             }
         } catch (Exception e) {
-            error = "Error: " + e.getMessage();
+            error = "Lỗi: " + e.getMessage();
         }
 
-        request.setAttribute("msg", msg);
         request.setAttribute("error", error);
         request.setAttribute("mode", "add");
         url = "item-form.jsp";

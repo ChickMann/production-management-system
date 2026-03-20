@@ -67,6 +67,15 @@ public class UserController extends HttpServlet {
             case "changeOwnPassword":
                 changeOwnPassword(request);
                 break;
+            case "updateProfile":
+                updateProfile(request);
+                break;
+            case "viewProfile":
+                viewProfile(request);
+                break;
+            case "changePasswordForm":
+                doChangePassword(request, response);
+                return;
         }
 
         if (url != null && url.startsWith("redirect:")) {
@@ -414,5 +423,121 @@ public class UserController extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "User Controller";
+    }
+
+    // ========== PROFILE METHODS ==========
+    
+    private void viewProfile(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        UserDTO user = (UserDTO) session.getAttribute("user");
+        if (user == null) {
+            url = "redirect:login.jsp";
+            return;
+        }
+        // Refresh user data from DB
+        UserDAO udao = new UserDAO();
+        UserDTO freshUser = udao.SearchByID(user.getId());
+        if (freshUser != null) {
+            session.setAttribute("user", freshUser);
+        }
+        url = "profile.jsp";
+    }
+    
+    private void updateProfile(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("user");
+        if (currentUser == null) {
+            url = "redirect:login.jsp";
+            return;
+        }
+        
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String phone = request.getParameter("phone");
+        
+        UserDAO udao = new UserDAO();
+        UserDTO u = new UserDTO();
+        u.setId(currentUser.getId());
+        u.setUsername(currentUser.getUsername());
+        u.setPassword(currentUser.getPassword()); // Keep existing password
+        u.setRole(currentUser.getRole());
+        u.setStatus(currentUser.getStatus());
+        u.setFullName(fullName);
+        u.setEmail(email);
+        u.setPhone(phone);
+        
+        boolean success = udao.Update(u);
+        
+        if (success) {
+            // Refresh session with updated user
+            UserDTO updatedUser = udao.SearchByID(currentUser.getId());
+            if (updatedUser != null) {
+                session.setAttribute("user", updatedUser);
+            }
+            request.setAttribute("success", "Cap nhat thong tin thanh cong!");
+        } else {
+            request.setAttribute("error", "Loi khi cap nhat thong tin!");
+        }
+        
+        url = "profile.jsp";
+    }
+    
+    private void doChangePassword(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("user");
+        
+        if (currentUser == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        
+        String currentPassword = request.getParameter("currentPassword");
+        String newPassword = request.getParameter("newPassword");
+        String confirmPassword = request.getParameter("confirmPassword");
+        
+        // Validate
+        if (currentPassword == null || newPassword == null || confirmPassword == null ||
+            currentPassword.isEmpty() || newPassword.isEmpty()) {
+            request.setAttribute("error", "Vui long nhap day du thong tin!");
+            url = "profile.jsp";
+            request.getRequestDispatcher(url).forward(request, response);
+            return;
+        }
+        
+        if (!newPassword.equals(confirmPassword)) {
+            request.setAttribute("error", "Mat khau moi khong khop!");
+            url = "profile.jsp";
+            request.getRequestDispatcher(url).forward(request, response);
+            return;
+        }
+        
+        if (newPassword.length() < 6) {
+            request.setAttribute("error", "Mat khau moi phai it nhat 6 ky tu!");
+            url = "profile.jsp";
+            request.getRequestDispatcher(url).forward(request, response);
+            return;
+        }
+        
+        // Verify current password
+        UserDAO udao = new UserDAO();
+        if (!udao.verifyPassword(currentUser.getId(), currentPassword)) {
+            request.setAttribute("error", "Mat khau hien tai khong dung!");
+            url = "profile.jsp";
+            request.getRequestDispatcher(url).forward(request, response);
+            return;
+        }
+        
+        // Change password
+        boolean success = udao.resetPassword(currentUser.getId(), newPassword);
+        
+        if (success) {
+            request.setAttribute("success", "Doi mat khau thanh cong!");
+        } else {
+            request.setAttribute("error", "Loi khi doi mat khau!");
+        }
+        
+        url = "profile.jsp";
+        request.getRequestDispatcher(url).forward(request, response);
     }
 }

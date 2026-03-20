@@ -6,13 +6,15 @@ package pms.controllers;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import pms.model.ProductionLogDAO;
 import pms.model.ProductionLogDTO;
+import pms.model.WorkOrderDAO;
+import pms.model.RoutingStepDAO;
+import pms.model.DefectDAO;
 
 /**
  *
@@ -34,16 +36,53 @@ public class ProductionLogController extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-        
+
         String action = request.getParameter("action");
+        if (action == null || action.trim().isEmpty()) {
+            action = "listLog";
+        }
+
         ProductionLogDAO dao = new ProductionLogDAO();
+        WorkOrderDAO woDao = new WorkOrderDAO();
+        RoutingStepDAO stepDao = new RoutingStepDAO();
+        DefectDAO defectDao = new DefectDAO();
+
         try {
-            if (action == null || action.equals("list")) {
-                List<ProductionLogDTO> list = dao.getAllLogs();
-                request.setAttribute("logs", list);
+            if ("listLog".equals(action) || "list".equals(action)) {
+                request.setAttribute("listLogs", dao.getAllLogs());
+                request.setAttribute("listWO", woDao.getAllWorkOrders());
+                request.setAttribute("listSteps", stepDao.getAllRoutingStep());
+                request.setAttribute("listDefects", defectDao.getAllDefects());
                 request.getRequestDispatcher("productionlog.jsp").forward(request, response);
+                return;
             }
-            if (action.equals("insert")) {
+
+            if ("addLog".equals(action)) {
+                int woId = Integer.parseInt(request.getParameter("workOrderId"));
+                int stepId = Integer.parseInt(request.getParameter("stepId"));
+                int quantityDone = Integer.parseInt(request.getParameter("quantityDone"));
+                int quantityDefective = Integer.parseInt(request.getParameter("quantityDefective"));
+                int defectId = Integer.parseInt(request.getParameter("defectId"));
+
+                ProductionLogDTO log = new ProductionLogDTO();
+                log.setWoId(woId);
+                log.setStepId(stepId);
+                log.setWorkerUserId(0);
+                log.setQuantityDone(quantityDone);
+                log.setQuantityDefective(quantityDefective);
+                if (defectId > 0) {
+                    log.setDefectId(defectId);
+                } else {
+                    log.setDefectId(null);
+                }
+                log.setLogDate(new java.sql.Date(System.currentTimeMillis()));
+                dao.insertLog(log);
+                response.sendRedirect("MainController?action=listLog");
+                return;
+            }
+
+            // BACKWARD COMPAT: Goi truc tiep ProductionLogController (khong qua Main)
+            if ("insert".equals(action)) {
                 int woId = Integer.parseInt(request.getParameter("woId"));
                 int stepId = Integer.parseInt(request.getParameter("stepId"));
                 int workerUserId = Integer.parseInt(request.getParameter("workerUserId"));
@@ -60,9 +99,10 @@ public class ProductionLogController extends HttpServlet {
                 log.setProducedQuantity(quantity);
                 log.setDefectId(defectId);
                 dao.insertLog(log);
-                response.sendRedirect("ProductionLogController");
+                response.sendRedirect("ProductionLogController?action=listLog");
+                return;
             }
-            if (action.equals("update")) {
+            if ("update".equals(action)) {
                 int logId = Integer.parseInt(request.getParameter("logId"));
                 int quantity = Integer.parseInt(request.getParameter("producedQuantity"));
                 String defectStr = request.getParameter("defectId");
@@ -75,15 +115,19 @@ public class ProductionLogController extends HttpServlet {
                 log.setProducedQuantity(quantity);
                 log.setDefectId(defectId);
                 dao.updateLog(log);
-                response.sendRedirect("ProductionLogController");
+                response.sendRedirect("ProductionLogController?action=listLog");
+                return;
             }
-            if (action.equals("delete")) {
+            if ("delete".equals(action)) {
                 int logId = Integer.parseInt(request.getParameter("logId"));
                 dao.deleteLog(logId);
-                response.sendRedirect("ProductionLogController");
+                response.sendRedirect("ProductionLogController?action=listLog");
+                return;
             }
+
+            response.sendRedirect("ProductionLogController?action=listLog");
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new ServletException("Lỗi xử lý nhật ký sản xuất", e);
         }
     }
 

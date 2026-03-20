@@ -194,6 +194,22 @@ public class UserDAO {
         }
         return false;
     }
+    
+    public boolean verifyPassword(int userId, String password) {
+        String sql = "SELECT COUNT(*) FROM Users WHERE user_id = ? AND password_hash = ?";
+        try (Connection con = DBUtils.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     public boolean Delete(int userId) {
         String sql = "DELETE FROM Users WHERE user_id = ?";

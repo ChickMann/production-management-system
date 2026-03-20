@@ -23,12 +23,13 @@ public class BOMController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null) {
+        if (action == null || action.trim().isEmpty()) {
             action = "list";
         }
 
         switch (action) {
             case "list":
+            case "listBOM":
                 listBOMs(request);
                 break;
             case "search":
@@ -70,6 +71,9 @@ public class BOMController extends HttpServlet {
             case "deleteDetail":
                 deleteDetail(request);
                 break;
+            default:
+                url = "redirect:BOMController?action=list";
+                break;
         }
 
         if (url != null && url.startsWith("redirect:")) {
@@ -81,17 +85,22 @@ public class BOMController extends HttpServlet {
 
     private void listBOMs(HttpServletRequest request) {
         BOMDAO dao = new BOMDAO();
+        ItemDAO itemDao = new ItemDAO();
         List<BOMDTO> boms = dao.getAllBOMS();
+        List<ItemDTO> products = itemDao.getProducts();
         request.setAttribute("boms", boms);
+        request.setAttribute("products", products);
         url = "bom-list.jsp";
     }
 
     private void searchBOMs(HttpServletRequest request) {
         BOMDAO dao = new BOMDAO();
+        ItemDAO itemDao = new ItemDAO();
         String keyword = request.getParameter("keyword");
         String status = request.getParameter("status");
 
         List<BOMDTO> boms = dao.getAllBOMS();
+        List<ItemDTO> products = itemDao.getProducts();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             boms.removeIf(b -> b.getProductName() == null || !b.getProductName().toLowerCase().contains(keyword.toLowerCase()));
@@ -101,6 +110,7 @@ public class BOMController extends HttpServlet {
         }
 
         request.setAttribute("boms", boms);
+        request.setAttribute("products", products);
         url = "bom-list.jsp";
     }
 
@@ -170,20 +180,20 @@ public class BOMController extends HttpServlet {
 
             BOMDAO dao = new BOMDAO();
             if (dao.insertBOM(bom)) {
-                msg = "BOM added successfully!";
-                url = "redirect:BOMController?action=viewBOM&id=" + bom.getBomId();
+                url = "redirect:BOMController?action=list&msg=T%E1%BA%A1o%20BOM%20m%E1%BB%9Bi%20th%C3%A0nh%20c%C3%B4ng";
                 return;
             } else {
-                error = "Failed to add BOM";
+                error = "Không thể tạo BOM mới";
             }
         } catch (Exception e) {
-            error = "Error: " + e.getMessage();
+            error = "Lỗi: " + e.getMessage();
         }
 
         request.setAttribute("msg", msg);
         request.setAttribute("error", error);
+        request.setAttribute("products", new ItemDAO().getProducts());
         request.setAttribute("mode", "add");
-        url = "bom-form.jsp";
+        url = "bom-list.jsp";
     }
 
     private void updateBOM(HttpServletRequest request) {

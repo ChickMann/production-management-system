@@ -74,14 +74,15 @@ public class CustomerController extends HttpServlet {
             String email = request.getParameter("email");
             CustomerDTO c = new CustomerDTO(0, name, phone, email);
             if (cdao.insertCustomer(c)) {
-                msg = "Insert successfully";
+                msg = "Thêm khách hàng thành công";
             } else {
-                error = "Insert failed";
+                error = "Không thể thêm khách hàng";
+                request.setAttribute("customer", c);
             }
-            request.setAttribute("customer", c);
             request.setAttribute("msg", msg);
             request.setAttribute("error", error);
         }
+        request.setAttribute("customerList", cdao.getAllCustomers());
         url = "customer.jsp";
     }
 
