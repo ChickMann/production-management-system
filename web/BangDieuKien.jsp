@@ -208,10 +208,50 @@
                     <div class="flex items-center gap-3">
                         <button id="themeToggle" class="toolbar-btn hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100 sm:flex" title="Theme" type="button">☼</button>
                         <button id="languageToggle" class="toolbar-btn hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100 sm:flex" title="Language" type="button">🌐</button>
-                        <button class="toolbar-btn relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100" title="Notifications" type="button">
-                            🔔
-                            <span id="notifBadge" class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white">5</span>
+                        <button id="notifBtn" onclick="toggleNotificationPanel()" class="toolbar-btn relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100" title="Notifications" type="button">
+                            <span class="text-lg">&#128276;</span>
+                            <span id="notifBadge" class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white hidden">0</span>
                         </button>
+                        <!-- User Dropdown -->
+                        <div class="relative">
+                            <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-600 flex items-center justify-center text-sm font-bold">
+                                    <%= userInitial %>
+                                </div>
+                                <span class="text-sm font-medium text-slate-700 hidden sm:block"><%= userName %></span>
+                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div id="userDropdown" class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 hidden z-50">
+                                <div class="p-3 border-b border-slate-100">
+                                    <p class="font-semibold text-slate-900"><%= userName %></p>
+                                    <p class="text-sm text-slate-500"><%= userRole %></p>
+                                </div>
+                                <div class="p-2">
+                                    <a href="UserController?action=viewProfile" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        </svg>
+                                        <span class="text-sm text-slate-700">Trang Ca Nhan</span>
+                                    </a>
+                                    <a href="profile.jsp" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        <span class="text-sm text-slate-700">Chinh Sua</span>
+                                    </a>
+                                    <div class="border-t border-slate-100 my-2"></div>
+                                    <a href="MainController?action=logoutUser" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors group">
+                                        <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                        </svg>
+                                        <span class="text-sm text-rose-600 font-medium">Dang Xuat</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                         <div class="toolbar-user hidden text-right sm:block">
                             <p class="text-xs text-slate-500">Welcome,</p>
                             <p id="headerUser" class="text-sm font-semibold text-slate-800"><%= userName %></p>
@@ -237,6 +277,12 @@
                         </div>
 
                         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            <a href="DashboardController" class="legacy-link rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700">Dashboard</a>
+                            <a href="kanban.jsp" class="legacy-link rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700">Kanban Board</a>
+                            <a href="QcController?action=list" class="legacy-link rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700">Kiem Tra Chat Luong</a>
+                            <a href="InventoryController?action=list" class="legacy-link rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700">Ton Kho</a>
+                            <a href="ExportController?type=dashboard" class="legacy-link rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700">Export Bao Cao</a>
+                            <a href="TenantController?action=list" class="legacy-link rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700">Quan ly Tenant</a>
                             <% if (isAdmin) { %>
                                 <a href="MainController?action=addUser" class="legacy-link rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700">Add employee</a>
                             <% } %>
@@ -258,6 +304,32 @@
         </div>
 
         <div id="sidebarOverlay" class="sidebar-overlay hidden lg:hidden"></div>
+
+        <!-- Notification Panel -->
+        <div id="notifPanel" class="fixed top-16 right-4 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 hidden">
+            <div class="flex items-center justify-between p-4 border-b border-slate-100">
+                <h3 class="font-semibold text-slate-900">Thong Bao</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="markAllAsRead()" class="text-xs text-teal-600 hover:text-teal-700 font-medium">Dan dau doc</button>
+                    <button onclick="toggleNotificationPanel()" class="text-slate-400 hover:text-slate-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="notifList" class="max-h-96 overflow-y-auto">
+                <div class="p-8 text-center text-slate-400">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.83 6 11a6 6 0 004.5 5.5H6a2 2 0 012 2z"/>
+                    </svg>
+                    <p class="text-sm">Chua co thong bao nao</p>
+                </div>
+            </div>
+            <div class="p-3 border-t border-slate-100 text-center">
+                <a href="NotificationServlet?action=list" class="text-sm text-teal-600 hover:text-teal-700 font-medium">Xem tat ca thong bao</a>
+            </div>
+        </div>
 
         <script>
             window.PMS_ADMIN = {
@@ -743,6 +815,224 @@
             };
 
             window.PMS_ADMIN.bootstrap();
+            window.PMS_ADMIN.bootstrap();
+
+            // Auto-complete global search
+            (function() {
+                var searchInput = document.getElementById("searchInput");
+                var notifBadge = document.getElementById("notifBadge");
+                var debounceTimer = null;
+                var lastResults = null;
+
+                if (searchInput) {
+                    searchInput.addEventListener("input", function() {
+                        var q = this.value.trim();
+                        if (q.length < 2) {
+                            closeDropdown();
+                            return;
+                        }
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(function() {
+                            fetchResults(q);
+                        }, 300);
+                    });
+
+                    searchInput.addEventListener("focus", function() {
+                        var q = this.value.trim();
+                        if (q.length >= 2 && lastResults) {
+                            showDropdown(lastResults);
+                        }
+                    });
+
+                    document.addEventListener("click", function(e) {
+                        if (!searchInput.contains(e.target)) {
+                            closeDropdown();
+                        }
+                    });
+                }
+
+                function fetchResults(q) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("GET", "AutoCompleteSearch?q=" + encodeURIComponent(q), true);
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            try {
+                                lastResults = JSON.parse(xhr.responseText);
+                                showDropdown(lastResults);
+                            } catch(e) {}
+                        }
+                    };
+                    xhr.send();
+                }
+
+                function showDropdown(results) {
+                    closeDropdown();
+                    if (!results || results.length === 0) return;
+                    var dropdown = document.createElement("div");
+                    dropdown.id = "globalSearchDropdown";
+                    dropdown.style.cssText = "position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,0.12);z-index:1000;max-height:400px;overflow-y:auto;";
+                    var typeGroups = {};
+                    results.forEach(function(item) {
+                        if (!typeGroups[item.type]) typeGroups[item.type] = [];
+                        typeGroups[item.type] = typeGroups[item.type].concat(item);
+                    });
+                    Object.keys(typeGroups).forEach(function(type) {
+                        var typeNames = { item: "Vat tu / San pham", customer: "Khach hang", supplier: "Nha cung cap", workorder: "Lenh San Xuat", bom: "BOM" };
+                        var groupDiv = document.createElement("div");
+                        groupDiv.style.cssText = "padding:6px 12px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;border-bottom:1px solid #f1f5f9;";
+                        groupDiv.textContent = typeNames[type] || type;
+                        dropdown.appendChild(groupDiv);
+                        typeGroups[type].forEach(function(item) {
+                            var a = document.createElement("a");
+                            a.href = item.url;
+                            a.style.cssText = "display:flex;flex-direction:column;gap:1px;padding:10px 14px;text-decoration:none;border-bottom:1px solid #f8fafc;transition:background 0.1s;";
+                            a.addEventListener("mouseenter", function() { this.style.background = "#f8fafc"; });
+                            a.addEventListener("mouseleave", function() { this.style.background = ""; });
+                            var label = document.createElement("span");
+                            label.style.cssText = "font-size:14px;font-weight:500;color:#1e293b;";
+                            label.textContent = item.label;
+                            var sublabel = document.createElement("span");
+                            sublabel.style.cssText = "font-size:12px;color:#94a3b8;";
+                            sublabel.textContent = item.sublabel || "";
+                            a.appendChild(label);
+                            a.appendChild(sublabel);
+                            dropdown.appendChild(a);
+                        });
+                    });
+                    searchInput.parentElement.style.position = "relative";
+                    searchInput.parentElement.appendChild(dropdown);
+                }
+
+                function closeDropdown() {
+                    var d = document.getElementById("globalSearchDropdown");
+                    if (d) d.remove();
+                }
+
+                // Real-time notification count polling
+                if (notifBadge) {
+                    setInterval(function() {
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("POST", "NotificationServlet?action=getCount", true);
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                        xhr.onreadystatechange = function() {
+                            if (xhr.readyState === 4 && xhr.status === 200) {
+                                try {
+                                    var json = JSON.parse(xhr.responseText);
+                                    if (json.count > 0) {
+                                        notifBadge.textContent = json.count > 99 ? "99+" : json.count;
+                                        notifBadge.style.display = "flex";
+                                    } else {
+                                        notifBadge.style.display = "none";
+                                    }
+                                } catch(e) {}
+                            }
+                        };
+                        xhr.send();
+                    }, 10000);
+                }
+            })();
+
+            // Notification Panel Functions
+            function toggleNotificationPanel() {
+                var panel = document.getElementById('notifPanel');
+                var dropdown = document.getElementById('userDropdown');
+                // Close user dropdown if open
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+                if (panel.classList.contains('hidden')) {
+                    panel.classList.remove('hidden');
+                    loadNotifications();
+                } else {
+                    panel.classList.add('hidden');
+                }
+            }
+
+            function toggleUserDropdown() {
+                var dropdown = document.getElementById('userDropdown');
+                var panel = document.getElementById('notifPanel');
+                // Close notification panel if open
+                if (panel && !panel.classList.contains('hidden')) {
+                    panel.classList.add('hidden');
+                }
+                dropdown.classList.toggle('hidden');
+            }
+
+            function loadNotifications() {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'NotificationServlet?action=list&format=json', true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            renderNotifications(data);
+                        } catch(e) {
+                            console.log('Notification parse error:', e);
+                        }
+                    }
+                };
+                xhr.send();
+            }
+
+            function renderNotifications(data) {
+                var list = document.getElementById('notifList');
+                if (!data || !data.notifications || data.notifications.length === 0) {
+                    list.innerHTML = '<div class="p-8 text-center text-slate-400"><svg class="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.83 6 11a6 6 0 004.5 5.5H6a2 2 0 012 2z"/></svg><p class="text-sm">Chua co thong bao nao</p></div>';
+                    return;
+                }
+                var html = '';
+                data.notifications.forEach(function(n) {
+                    var iconClass = n.type === 'error' ? 'bg-red-100 text-red-600' : 
+                                   n.type === 'warning' ? 'bg-amber-100 text-amber-600' : 
+                                   'bg-blue-100 text-blue-600';
+                    var icon = n.type === 'error' ? '&#10006;' : 
+                               n.type === 'warning' ? '&#9888;' : '&#10004;';
+                    var isUnread = n.isRead === false || n.isRead === 'false';
+                    html += '<div class="flex gap-3 p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors ' + (isUnread ? 'bg-blue-50/50' : '') + '">';
+                    html += '<div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ' + iconClass + '">' + icon + '</div>';
+                    html += '<div class="flex-1 min-w-0">';
+                    html += '<p class="text-sm font-medium text-slate-900">' + (n.title || 'Thong bao') + '</p>';
+                    html += '<p class="text-xs text-slate-500 mt-1">' + (n.message || n.content || '') + '</p>';
+                    html += '<p class="text-xs text-slate-400 mt-1">' + (n.timeAgo || n.createdAt || '') + '</p>';
+                    html += '</div>';
+                    if (isUnread) {
+                        html += '<div class="flex-shrink-0"><span class="w-2 h-2 rounded-full bg-blue-500"></span></div>';
+                    }
+                    html += '</div>';
+                });
+                list.innerHTML = html;
+            }
+
+            function markAllAsRead() {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'NotificationServlet?action=markAllRead', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        loadNotifications();
+                        if (notifBadge) {
+                            notifBadge.style.display = 'none';
+                        }
+                    }
+                };
+                xhr.send();
+            }
+
+            // Close panels when clicking outside
+            document.addEventListener('click', function(e) {
+                // Close notification panel
+                var panel = document.getElementById('notifPanel');
+                var notifBtn = document.getElementById('notifBtn');
+                if (panel && !panel.contains(e.target) && !notifBtn.contains(e.target)) {
+                    panel.classList.add('hidden');
+                }
+                // Close user dropdown
+                var userBtn = e.target.closest('[onclick="toggleUserDropdown()"]');
+                var userDropdown = document.getElementById('userDropdown');
+                if (userDropdown && !userDropdown.contains(e.target) && !userBtn) {
+                    userDropdown.classList.add('hidden');
+                }
+            });
         </script>
     </body>
 </html>
