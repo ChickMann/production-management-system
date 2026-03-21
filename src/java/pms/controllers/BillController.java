@@ -90,6 +90,7 @@ public class BillController extends HttpServlet {
             request.setAttribute("billList", allList);
         }
         
+        request.setAttribute("activePage", "bill");
         request.setAttribute("keyword", keyword);
         url = "bill.jsp";
     }
@@ -147,6 +148,7 @@ public class BillController extends HttpServlet {
         String keyword = request.getParameter("keyword");
         BillDAO dao = new BillDAO();
         ArrayList<BillDTO> list = dao.searchBill(keyword);
+        request.setAttribute("activePage", "bill");
         request.setAttribute("billList", list);
         url = "bill.jsp";
     }

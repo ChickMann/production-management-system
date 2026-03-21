@@ -69,18 +69,21 @@ public class PaymentController extends HttpServlet {
 
     private void listPayments(HttpServletRequest request) {
         ArrayList<PaymentDTO> list = paymentService.getAllPayments();
+        request.setAttribute("activePage", "payment");
         request.setAttribute("paymentList", list);
         url = "payment-list.jsp";
     }
 
     private void listPendingPayments(HttpServletRequest request) {
         ArrayList<PaymentDTO> list = paymentService.getPendingPayments();
+        request.setAttribute("activePage", "payment");
         request.setAttribute("paymentList", list);
         url = "payment-list.jsp";
     }
 
     private void listPaidPayments(HttpServletRequest request) {
         ArrayList<PaymentDTO> list = paymentService.getPaidPayments();
+        request.setAttribute("activePage", "payment");
         request.setAttribute("paymentList", list);
         url = "payment-list.jsp";
     }
@@ -213,6 +216,7 @@ public class PaymentController extends HttpServlet {
     private void searchPayments(HttpServletRequest request) {
         String keyword = request.getParameter("keyword");
         ArrayList<PaymentDTO> list = paymentService.searchPayments(keyword);
+        request.setAttribute("activePage", "payment");
         request.setAttribute("paymentList", list);
         request.setAttribute("keyword", keyword);
         url = "payment-list.jsp";

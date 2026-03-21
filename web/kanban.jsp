@@ -19,7 +19,7 @@
     Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
     boolean isAdmin = "admin".equalsIgnoreCase(userRole);
     boolean isDarkMode = sessionDark != null ? sessionDark : false;
-    String activePage = "kanban";
+    request.setAttribute("activePage", "kanban");
     String pageTitle = "Bảng tiến độ";
     String lang = session.getAttribute("lang") != null ? (String) session.getAttribute("lang") : "vi";
     int unreadCount = session.getAttribute("unreadCount") != null ? (Integer) session.getAttribute("unreadCount") : 0;

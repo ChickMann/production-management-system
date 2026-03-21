@@ -162,6 +162,7 @@ public class ProductionLogController extends HttpServlet {
             }
         }
         
+        request.setAttribute("activePage", "productionlog");
         request.setAttribute("listLogs", allLogs);
         request.setAttribute("listWO", woDao.getAllWorkOrders());
         request.setAttribute("listSteps", stepDao.getAllRoutingStep());

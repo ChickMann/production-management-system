@@ -135,6 +135,7 @@ public class WorkOrderController extends HttpServlet {
         List<ItemDTO> items = itemDao.getAllItems();
         List<RoutingDTO> routings = routingDao.getAllRouting();
 
+        request.setAttribute("activePage", "workorder");
         request.setAttribute("workOrders", workOrders != null ? workOrders : new ArrayList<WorkOrderDTO>());
         request.setAttribute("items", items != null ? items : new ArrayList<ItemDTO>());
         request.setAttribute("routings", routings != null ? routings : new ArrayList<RoutingDTO>());

@@ -77,6 +77,7 @@ public class TenantController extends HttpServlet {
     private void listTenants(HttpServletRequest request) {
         TenantDAO dao = new TenantDAO();
         List<TenantDTO> list = dao.getAllTenants();
+        request.setAttribute("activePage", "tenant");
         request.setAttribute("tenants", list);
     }
 
