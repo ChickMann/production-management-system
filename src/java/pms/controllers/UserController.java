@@ -107,7 +107,7 @@ public class UserController extends HttpServlet {
             if (!user.isActive()) {
                 url = "Banned.jsp";
             } else {
-                url = "BangDieuKien.jsp";
+                url = "DashboardController";
                 if (user.getRole().equals("admin")) {
                     ArrayList<UserDTO> eList = udao.getUsersByRole("employee");
                     session.setAttribute("eList", eList);

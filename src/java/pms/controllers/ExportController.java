@@ -55,13 +55,13 @@ public class ExportController extends HttpServlet {
                     exportDashboard(request, response);
                     break;
                 default:
-                    response.sendRedirect("BangDieuKien.jsp");
+                    response.sendRedirect("DashboardController");
                     break;
             }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Loi xuat file: " + e.getMessage());
-            request.getRequestDispatcher("BangDieuKien.jsp").forward(request, response);
+            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
         }
     }
 
