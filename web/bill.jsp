@@ -224,8 +224,8 @@
                             <thead>
                                 <tr class="border-b border-slate-100 bg-slate-50 dark:bg-slate-700/50 dark:border-slate-700">
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mã HD</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">WO</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Khách Hàng</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sản Phẩm</th>
                                     <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tổng Tiền</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trạng Thái</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Ngày Lập</th>
@@ -265,9 +265,11 @@
                                 <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors dark:border-slate-700 dark:hover:bg-slate-700/50">
                                     <td class="px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300">#<%= b.getBill_id() %></td>
                                     <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                                        <a href="MainController?action=listWorkOrder" class="text-teal-600 hover:text-teal-800 font-semibold dark:text-teal-400">WO-<%= b.getWo_id() %></a>
+                                        <%= b.getCustomerName() != null ? b.getCustomerName() : "ID: " + b.getCustomer_id() %>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400"><%= b.getCustomer_id() > 0 ? "KH-" + b.getCustomer_id() : "-" %></td>
+                                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                                        <a href="MainController?action=listWorkOrder" class="text-teal-600 hover:text-teal-800 font-semibold dark:text-teal-400"><%= b.getProductName() != null ? b.getProductName() : "WO-" + b.getWo_id() %></a>
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-right font-semibold text-teal-600 dark:text-teal-400"><%= df.format(b.getTotal_amount()) %> VND</td>
                                     <td class="px-4 py-3">
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold <%= statusClass %>">

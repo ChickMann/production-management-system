@@ -17,6 +17,8 @@ public class BillDTO {
     private double total_amount;
     private Date bill_date;
     private String status = "pending"; // default status
+    private String customerName;
+    private String productName;
     
     public BillDTO() {
     }
@@ -37,6 +39,17 @@ public class BillDTO {
         this.total_amount = total_amount;
         this.bill_date = bill_date;
         this.status = status != null ? status : "pending";
+    }
+
+    public BillDTO(int bill_id, int wo_id, int customer_id, double total_amount, Date bill_date, String status, String customerName, String productName) {
+        this.bill_id = bill_id;
+        this.wo_id = wo_id;
+        this.customer_id = customer_id;
+        this.total_amount = total_amount;
+        this.bill_date = bill_date;
+        this.status = status != null ? status : "pending";
+        this.customerName = customerName;
+        this.productName = productName;
     }
 
     public int getBill_id() {
@@ -85,6 +98,22 @@ public class BillDTO {
 
     public void setStatus(String status) {
         this.status = status != null ? status : "pending";
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
     
     

@@ -49,7 +49,7 @@ public class MainController extends HttpServlet {
         } else if (action.contains("Customer")) 
         {
             url = "CustomerController";
-        } else if (action.contains("Production") || action.contains("listLog")) {
+        } else if (action.contains("Production") || action.contains("Log")) {
             url = "ProductionLogController";
         } else if (action.contains("WorkOrder"))
         {

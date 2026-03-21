@@ -99,18 +99,24 @@ public class ProductionLogController extends HttpServlet {
             if ("insert".equals(action)) {
                 int woId = Integer.parseInt(request.getParameter("woId"));
                 int stepId = Integer.parseInt(request.getParameter("stepId"));
-                int workerUserId = Integer.parseInt(request.getParameter("workerUserId"));
-                int quantity = Integer.parseInt(request.getParameter("producedQuantity"));
+                int quantityDone = Integer.parseInt(request.getParameter("quantityDone"));
+                int quantityDefective = Integer.parseInt(request.getParameter("quantityDefective"));
                 String defectStr = request.getParameter("defectId");
-                Integer defectId = null;
-                if (defectStr != null && !defectStr.isEmpty()) {
-                    defectId = Integer.parseInt(defectStr);
+                Integer defectId = (defectStr != null && !defectStr.equals("0")) ? Integer.parseInt(defectStr) : null;
+                
+                pms.model.UserDTO user = (pms.model.UserDTO) request.getSession().getAttribute("user");
+                if (user == null) {
+                    response.sendRedirect("login.jsp");
+                    return;
                 }
+                int workerUserId = user.getId();
+                
                 ProductionLogDTO log = new ProductionLogDTO();
                 log.setWoId(woId);
                 log.setStepId(stepId);
                 log.setWorkerUserId(workerUserId);
-                log.setProducedQuantity(quantity);
+                log.setQuantityDone(quantityDone);
+                log.setQuantityDefective(quantityDefective);
                 log.setDefectId(defectId);
                 dao.insertLog(log);
                 response.sendRedirect("ProductionLogController?action=listLog");

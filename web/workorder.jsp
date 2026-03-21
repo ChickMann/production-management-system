@@ -453,6 +453,65 @@
         </div>
     </div>
 
+    <!-- Edit Work Order Modal -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+        <div class="section-card max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-slate-200 shadow-2xl dark:border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Chỉnh sửa lệnh sản xuất</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Cập nhật thông tin cho lệnh #WO-<%= wo != null ? wo.getWo_id() : "" %></p>
+                </div>
+                <button onclick="closeEditModal()" class="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form action="WorkOrderController" method="post" class="space-y-5 p-6">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="wo_id" value="<%= wo != null ? wo.getWo_id() : "" %>">
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Sản phẩm</label>
+                    <select name="product_item_id" required class="form-input">
+                        <option value="">-- Chọn sản phẩm --</option>
+                        <% for (ItemDTO item : items) { %>
+                        <option value="<%= item.getItemID() %>" <%= (wo != null && wo.getProduct_item_id() == item.getItemID()) ? "selected" : "" %>><%= item.getItemName() %> (ID: <%= item.getItemID() %>)</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Quy trình sản xuất</label>
+                    <select name="routing_id" required class="form-input">
+                        <option value="">-- Chọn quy trình --</option>
+                        <% for (RoutingDTO r : routings) { %>
+                        <option value="<%= r.getRoutingId() %>" <%= (wo != null && wo.getRouting_id() == r.getRoutingId()) ? "selected" : "" %>><%= r.getRoutingName() %> (ID: <%= r.getRoutingId() %>)</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Số lượng</label>
+                    <input type="number" name="order_quantity" value="<%= wo != null ? wo.getOrder_quantity() : "" %>" required min="1" placeholder="VD: 100" class="form-input">
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Trạng thái</label>
+                    <select name="status" required class="form-input">
+                        <option value="New" <%= (wo != null && "New".equalsIgnoreCase(wo.getStatus())) ? "selected" : "" %>>Mới</option>
+                        <option value="In Progress" <%= (wo != null && ("In Progress".equalsIgnoreCase(wo.getStatus()) || "InProgress".equalsIgnoreCase(wo.getStatus()))) ? "selected" : "" %>>Đang sản xuất</option>
+                        <option value="Completed" <%= (wo != null && "Completed".equalsIgnoreCase(wo.getStatus())) ? "selected" : "" %>>Hoàn thành</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 rounded-2xl bg-teal-600 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">Lưu thay đổi</button>
+                    <button type="button" onclick="closeEditModal()" class="rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                    <% if (isAdmin && wo != null) { %>
+                    <a href="WorkOrderController?action=delete&wo_id=<%= wo.getWo_id() %>" onclick="return confirm('Xóa lệnh sản xuất này?')" class="rounded-2xl bg-red-100 px-4 py-3 text-sm font-semibold text-red-600 transition-colors hover:bg-red-200 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </a>
+                    <% } %>
+                </div>
+            </form>
+        </div>
+
     <script>
         // User Dropdown
         function toggleUserDropdown() {
@@ -508,9 +567,33 @@
             document.getElementById('addModal').classList.remove('flex');
         }
 
+        function openEditModal() {
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
+            // Xóa tham số search trên URL để tránh refresh lại mở modal
+            if (window.location.search.includes('search=') || window.location.search.includes('wo_id=')) {
+                window.history.replaceState({}, document.title, window.location.pathname + "?action=listWorkOrder");
+            }
+        }
+
+        // Tự động mở modal nếu có dữ liệu WORKORDER
+        if (<%= wo != null %>) {
+            document.addEventListener('DOMContentLoaded', function() {
+                openEditModal();
+            });
+        }
+
         // Close modal on backdrop click
         document.getElementById('addModal').addEventListener('click', function(e) {
             if (e.target === this) closeAddModal();
+        });
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
         });
     </script>
 </body>

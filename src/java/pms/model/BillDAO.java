@@ -23,7 +23,7 @@ public class BillDAO {
             ps.setString(1, value);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new BillDTO(
+                    BillDTO bill = new BillDTO(
                             rs.getInt("bill_id"),
                             rs.getInt("wo_id"),
                             rs.getInt("customer_id"),
@@ -31,6 +31,11 @@ public class BillDAO {
                             rs.getDate("bill_date"),
                             rs.getString("status")
                     );
+                    try {
+                        bill.setCustomerName(rs.getString("customer_name"));
+                        bill.setProductName(rs.getString("item_name"));
+                    } catch (Exception e) {}
+                    return bill;
                 }
             }
         } catch (Exception e) {
@@ -41,19 +46,27 @@ public class BillDAO {
 
     public ArrayList<BillDTO> getAllBill() {
         ArrayList<BillDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Bill";
+        String sql = "SELECT b.*, c.customer_name, i.item_name FROM Bill b "
+                   + "LEFT JOIN Customer c ON b.customer_id = c.customer_id "
+                   + "LEFT JOIN Work_Order wo ON b.wo_id = wo.wo_id "
+                   + "LEFT JOIN Item i ON wo.product_item_id = i.item_id";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(new BillDTO(
+                BillDTO b = new BillDTO(
                         rs.getInt("bill_id"),
                         rs.getInt("wo_id"),
                         rs.getInt("customer_id"),
                         rs.getDouble("total_amount"),
                         rs.getDate("bill_date"),
                         rs.getString("status")
-                ));
+                );
+                try {
+                    b.setCustomerName(rs.getString("customer_name"));
+                    b.setProductName(rs.getString("item_name"));
+                } catch (Exception e) {}
+                list.add(b);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -120,20 +133,30 @@ public class BillDAO {
 
     public ArrayList<BillDTO> searchBill(String keyword) {
         ArrayList<BillDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Bill WHERE bill_id LIKE ?";
+        String sql = "SELECT b.*, c.customer_name, i.item_name FROM Bill b "
+                   + "LEFT JOIN Customer c ON b.customer_id = c.customer_id "
+                   + "LEFT JOIN Work_Order wo ON b.wo_id = wo.wo_id "
+                   + "LEFT JOIN Item i ON wo.product_item_id = i.item_id "
+                   + "WHERE b.bill_id LIKE ? OR c.customer_name LIKE ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(new BillDTO(
+                    BillDTO b = new BillDTO(
                             rs.getInt("bill_id"),
                             rs.getInt("wo_id"),
                             rs.getInt("customer_id"),
                             rs.getDouble("total_amount"),
                             rs.getDate("bill_date"),
                             rs.getString("status")
-                    ));
+                    );
+                    try {
+                        b.setCustomerName(rs.getString("customer_name"));
+                        b.setProductName(rs.getString("item_name"));
+                    } catch (Exception e) {}
+                    list.add(b);
                 }
             }
         } catch (Exception e) {
