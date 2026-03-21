@@ -110,6 +110,10 @@
         <servlet-class>pms.controllers.RoutingStepController</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>RoutingController</servlet-name>
+        <servlet-class>pms.controllers.RoutingController</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>DashboardController</servlet-name>
         <servlet-class>pms.controllers.DashboardController</servlet-class>
     </servlet>
@@ -202,6 +206,10 @@
     <servlet-mapping>
         <servlet-name>RoutingStepController</servlet-name>
         <url-pattern>/RoutingStepController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RoutingController</servlet-name>
+        <url-pattern>/RoutingController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>DashboardController</servlet-name>

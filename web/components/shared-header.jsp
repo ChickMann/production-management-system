@@ -145,7 +145,7 @@
         <a href="profile.jsp" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             <span class="text-sm text-slate-700 dark:text-slate-200">Hồ Sơ Cá Nhân</span>
         </a>
-        <a href="UserController?action=logout" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+        <a href="UserController?action=logoutUser" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
             <span class="text-sm text-red-600 font-medium">Đăng Xuất</span>
         </a>
     </div>
