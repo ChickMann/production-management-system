@@ -95,7 +95,7 @@
     <div class="max-w-5xl mx-auto px-4 py-8">
         <!-- Header -->
         <div class="flex items-center gap-4 mb-8">
-            <a href="BangDieuKien.jsp" class="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
+            <a href="DashboardController" class="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
@@ -293,7 +293,7 @@
                                     </svg>
                                     Luu Thay Doi
                                 </button>
-                                <a href="BangDieuKien.jsp" class="px-6 py-3 rounded-xl font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+                                <a href="DashboardController" class="px-6 py-3 rounded-xl font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                                     Huy Bo
                                 </a>
                             </div>

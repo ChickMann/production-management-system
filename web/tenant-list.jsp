@@ -52,7 +52,7 @@
                 <p class="text-sm text-slate-500 mt-1">Quan ly cac tenant trong he thong</p>
             </div>
             <div class="flex items-center gap-3">
-                <a href="BangDieuKien.jsp" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+                <a href="DashboardController" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>

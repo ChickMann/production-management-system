@@ -36,6 +36,10 @@
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
             Bảng điều khiển
         </a>
+        <a href="ExportController?type=dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl <%= "export".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-semibold shadow-inner shadow-teal-900/30 ring-1 ring-teal-400/20" : "text-slate-300 hover:bg-slate-800/90 hover:text-white" %> transition-all duration-200">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Export Báo Cáo
+        </a>
         
         <p class="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mt-4">Sản Xuất</p>
         <a href="MainController?action=listWorkOrder" class="flex items-center gap-3 px-3 py-2.5 rounded-xl <%= "workorder".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-semibold shadow-inner shadow-teal-900/30 ring-1 ring-teal-400/20" : "text-slate-300 hover:bg-slate-800/90 hover:text-white" %> transition-all duration-200">
@@ -82,6 +86,10 @@
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
             Vật Tư / Sản Phẩm
         </a>
+        <a href="InventoryController?action=list" class="flex items-center gap-3 px-3 py-2.5 rounded-xl <%= "inventory".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-semibold shadow-inner shadow-teal-900/30 ring-1 ring-teal-400/20" : "text-slate-300 hover:bg-slate-800/90 hover:text-white" %> transition-all duration-200">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            Tồn Kho
+        </a>
         <a href="customer.jsp" class="flex items-center gap-3 px-3 py-2.5 rounded-xl <%= "customer".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-semibold shadow-inner shadow-teal-900/30 ring-1 ring-teal-400/20" : "text-slate-300 hover:bg-slate-800/90 hover:text-white" %> transition-all duration-200">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             Khách Hàng
@@ -93,6 +101,10 @@
         <a href="listRouting.jsp" class="flex items-center gap-3 px-3 py-2.5 rounded-xl <%= "routing".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-semibold shadow-inner shadow-teal-900/30 ring-1 ring-teal-400/20" : "text-slate-300 hover:bg-slate-800/90 hover:text-white" %> transition-all duration-200">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
             Quy Trình (Routing)
+        </a>
+        <a href="MainController?action=listRoutingStep" class="flex items-center gap-3 px-3 py-2.5 rounded-xl <%= "routingStep".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-semibold shadow-inner shadow-teal-900/30 ring-1 ring-teal-400/20" : "text-slate-300 hover:bg-slate-800/90 hover:text-white" %> transition-all duration-200">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Công Đoạn
         </a>
         <a href="listDefectReason.jsp" class="flex items-center gap-3 px-3 py-2.5 rounded-xl <%= "defect".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-semibold shadow-inner shadow-teal-900/30 ring-1 ring-teal-400/20" : "text-slate-300 hover:bg-slate-800/90 hover:text-white" %> transition-all duration-200">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>

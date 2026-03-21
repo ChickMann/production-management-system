@@ -40,10 +40,7 @@
                             <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/20 text-sm">&#128200;</span>
                             <span class="nav-label">Dashboard</span>
                         </a>
-                        <a href="BangDieuKien.jsp" class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium bg-teal-500/20 text-white shadow-sm">
-                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/20 text-sm">&#9881;</span>
-                            <span class="nav-label">Man hinh chinh</span>
-                        </a>
+
                     </div>
                 </section>
                 <section class="space-y-3">
