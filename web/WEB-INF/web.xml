@@ -90,10 +90,6 @@
         <servlet-class>pms.controllers.PaymentController</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>FileController</servlet-name>
-        <servlet-class>pms.controllers.FileController</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>DefectController</servlet-name>
         <servlet-class>pms.controllers.DefectController</servlet-class>
     </servlet>
@@ -186,10 +182,6 @@
     <servlet-mapping>
         <servlet-name>PaymentController</servlet-name>
         <url-pattern>/PaymentController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>FileController</servlet-name>
-        <url-pattern>/FileController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>DefectController</servlet-name>

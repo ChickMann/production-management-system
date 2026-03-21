@@ -57,9 +57,6 @@ public class MainController extends HttpServlet {
         } else if (action.contains("Payment"))
         {
             url = "PaymentController";
-        } else if (action.contains("File"))
-        {
-            url = "FileController";
         }
         
         request.getRequestDispatcher(url).forward(request, response);

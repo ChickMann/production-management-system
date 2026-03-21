@@ -73,9 +73,16 @@
     <div class="flex items-center gap-2">
         <!-- Language Toggle -->
         <div class="flex items-center rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 h-10 bg-white dark:bg-slate-800">
-            <a href="?lang=vi" class="px-3 py-1.5 text-xs font-medium flex items-center <%= "vi".equals(lang) ? "bg-teal-500 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700" %>">VI</a>
-            <a href="?lang=en" class="px-3 py-1.5 text-xs font-medium flex items-center <%= "en".equals(lang) ? "bg-teal-500 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700" %>">EN</a>
+            <button onclick="switchLang('vi')" class="px-3 py-1.5 text-xs font-medium flex items-center <%= "vi".equals(lang) ? "bg-teal-500 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700" %>">VI</button>
+            <button onclick="switchLang('en')" class="px-3 py-1.5 text-xs font-medium flex items-center <%= "en".equals(lang) ? "bg-teal-500 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700" %>">EN</button>
         </div>
+        <script>
+        function switchLang(lang) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('lang', lang);
+            window.location.href = url.toString();
+        }
+        </script>
         
         <!-- Dark Mode Toggle -->
         <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chế độ tối">
