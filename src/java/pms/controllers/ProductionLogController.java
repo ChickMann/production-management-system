@@ -50,48 +50,44 @@ public class ProductionLogController extends HttpServlet {
 
         try {
             if ("listLog".equals(action) || "list".equals(action)) {
-                String searchWoId = request.getParameter("searchWoId");
-                List<ProductionLogDTO> allLogs = dao.getAllLogs();
-                
-                if (searchWoId != null && !searchWoId.trim().isEmpty()) {
-                    try {
-                        int filterWoId = Integer.parseInt(searchWoId.trim());
-                        allLogs.removeIf(log -> log.getWoId() != filterWoId);
-                        request.setAttribute("searchWoId", searchWoId);
-                    } catch (NumberFormatException e) {
-                        request.setAttribute("error", "Mã LSX không hợp lệ");
-                    }
-                }
-                
-                request.setAttribute("listLogs", allLogs);
-                request.setAttribute("listWO", woDao.getAllWorkOrders());
-                request.setAttribute("listSteps", stepDao.getAllRoutingStep());
-                request.setAttribute("listDefects", defectDao.getAllDefects());
-                request.getRequestDispatcher("productionlog.jsp").forward(request, response);
+                listLogs(request, response, dao, woDao, stepDao, defectDao);
                 return;
             }
 
             if ("addLog".equals(action)) {
-                int woId = Integer.parseInt(request.getParameter("workOrderId"));
-                int stepId = Integer.parseInt(request.getParameter("stepId"));
-                int quantityDone = Integer.parseInt(request.getParameter("quantityDone"));
-                int quantityDefective = Integer.parseInt(request.getParameter("quantityDefective"));
-                int defectId = Integer.parseInt(request.getParameter("defectId"));
+                try {
+                    int woId = Integer.parseInt(request.getParameter("workOrderId"));
+                    int stepId = Integer.parseInt(request.getParameter("stepId"));
+                    int quantityDone = Integer.parseInt(request.getParameter("quantityDone"));
+                    int quantityDefective = Integer.parseInt(request.getParameter("quantityDefective"));
+                    String defectStr = request.getParameter("defectId");
+                    Integer defectId = (defectStr != null && !defectStr.equals("0")) ? Integer.parseInt(defectStr) : null;
 
-                ProductionLogDTO log = new ProductionLogDTO();
-                log.setWoId(woId);
-                log.setStepId(stepId);
-                log.setWorkerUserId(0);
-                log.setQuantityDone(quantityDone);
-                log.setQuantityDefective(quantityDefective);
-                if (defectId > 0) {
+                    pms.model.UserDTO user = (pms.model.UserDTO) request.getSession().getAttribute("user");
+                    if (user == null) {
+                        response.sendRedirect("login.jsp");
+                        return;
+                    }
+                    int workerUserId = user.getId();
+
+                    ProductionLogDTO log = new ProductionLogDTO();
+                    log.setWoId(woId);
+                    log.setStepId(stepId);
+                    log.setWorkerUserId(workerUserId);
+                    log.setQuantityDone(quantityDone);
+                    log.setQuantityDefective(quantityDefective);
                     log.setDefectId(defectId);
-                } else {
-                    log.setDefectId(null);
+                    log.setLogDate(new java.sql.Date(System.currentTimeMillis()));
+
+                    if (dao.insertLog(log)) {
+                        request.setAttribute("msg", "Tạo báo cáo thành công!");
+                    } else {
+                        request.setAttribute("error", "Không thể lưu báo cáo vào cơ sở dữ liệu.");
+                    }
+                } catch (Exception e) {
+                    request.setAttribute("error", "Lỗi dữ liệu: " + e.getMessage());
                 }
-                log.setLogDate(new java.sql.Date(System.currentTimeMillis()));
-                dao.insertLog(log);
-                response.sendRedirect("MainController?action=listLog");
+                listLogs(request, response, dao, woDao, stepDao, defectDao);
                 return;
             }
 
@@ -145,10 +141,32 @@ public class ProductionLogController extends HttpServlet {
                 return;
             }
 
-            response.sendRedirect("ProductionLogController?action=listLog");
+            response.sendRedirect("MainController?action=listLog");
         } catch (Exception e) {
             throw new ServletException("Lỗi xử lý nhật ký sản xuất", e);
         }
+    }
+
+    private void listLogs(HttpServletRequest request, HttpServletResponse response, ProductionLogDAO dao, WorkOrderDAO woDao, RoutingStepDAO stepDao, DefectDAO defectDao) 
+            throws ServletException, IOException {
+        String searchWoId = request.getParameter("searchWoId");
+        List<ProductionLogDTO> allLogs = dao.getAllLogs();
+        
+        if (searchWoId != null && !searchWoId.trim().isEmpty()) {
+            try {
+                int filterWoId = Integer.parseInt(searchWoId.trim());
+                allLogs.removeIf(log -> log.getWoId() != filterWoId);
+                request.setAttribute("searchWoId", searchWoId);
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "Mã LSX không hợp lệ");
+            }
+        }
+        
+        request.setAttribute("listLogs", allLogs);
+        request.setAttribute("listWO", woDao.getAllWorkOrders());
+        request.setAttribute("listSteps", stepDao.getAllRoutingStep());
+        request.setAttribute("listDefects", defectDao.getAllDefects());
+        request.getRequestDispatcher("productionlog.jsp").forward(request, response);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
