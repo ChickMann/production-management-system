@@ -13,15 +13,13 @@ import pms.model.ItemDAO;
 import pms.model.ItemDTO;
 
 public class BOMController extends HttpServlet {
-
-    String url = "";
-
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
+        String url = "";
         String action = request.getParameter("action");
         if (action == null || action.trim().isEmpty()) {
             action = "list";
@@ -30,46 +28,46 @@ public class BOMController extends HttpServlet {
         switch (action) {
             case "list":
             case "listBOM":
-                listBOMs(request);
+                url = listBOMs(request);
                 break;
             case "search":
-                searchBOMs(request);
+                url = searchBOMs(request);
                 break;
             case "addBOM":
-                showAddForm(request);
+                url = showAddForm(request);
                 break;
             case "saveAddBOM":
-                addBOM(request);
+                url = addBOM(request);
                 break;
             case "editBOM":
-                showEditForm(request);
+                url = showEditForm(request);
                 break;
             case "saveUpdateBOM":
-                updateBOM(request);
+                url = updateBOM(request);
                 break;
             case "viewBOM":
-                viewBOM(request);
+                url = viewBOM(request);
                 break;
             case "cloneBOM":
-                cloneBOM(request);
+                url = cloneBOM(request);
                 break;
             case "deleteBOM":
-                deleteBOM(request);
+                url = deleteBOM(request);
                 break;
             case "activateBOM":
-                activateBOM(request);
+                url = activateBOM(request);
                 break;
             case "deactivateBOM":
-                deactivateBOM(request);
+                url = deactivateBOM(request);
                 break;
             case "addDetail":
-                addDetail(request);
+                url = addDetail(request);
                 break;
             case "updateDetail":
-                updateDetail(request);
+                url = updateDetail(request);
                 break;
             case "deleteDetail":
-                deleteDetail(request);
+                url = deleteDetail(request);
                 break;
             default:
                 url = "redirect:BOMController?action=list";
@@ -78,22 +76,22 @@ public class BOMController extends HttpServlet {
 
         if (url != null && url.startsWith("redirect:")) {
             response.sendRedirect(url.substring(9));
-        } else {
+        } else if (url != null && !url.isEmpty()) {
             request.getRequestDispatcher(url).forward(request, response);
         }
     }
 
-    private void listBOMs(HttpServletRequest request) {
+    private String listBOMs(HttpServletRequest request) {
         BOMDAO dao = new BOMDAO();
         ItemDAO itemDao = new ItemDAO();
         List<BOMDTO> boms = dao.getAllBOMS();
         List<ItemDTO> products = itemDao.getProducts();
         request.setAttribute("boms", boms);
         request.setAttribute("products", products);
-        url = "bom-list.jsp";
+        return "bom-list.jsp";
     }
 
-    private void searchBOMs(HttpServletRequest request) {
+    private String searchBOMs(HttpServletRequest request) {
         BOMDAO dao = new BOMDAO();
         ItemDAO itemDao = new ItemDAO();
         String keyword = request.getParameter("keyword");
@@ -111,61 +109,66 @@ public class BOMController extends HttpServlet {
 
         request.setAttribute("boms", boms);
         request.setAttribute("products", products);
-        url = "bom-list.jsp";
+        return "bom-list.jsp";
     }
 
-    private void viewBOM(HttpServletRequest request) {
+    private String viewBOM(HttpServletRequest request) {
         String s_id = request.getParameter("id");
         int id = 0;
         try {
             id = Integer.parseInt(s_id);
         } catch (Exception e) {
             request.setAttribute("error", "Invalid BOM ID");
-            url = "redirect:BOMController?action=list";
-            return;
+            return "redirect:BOMController?action=list";
         }
 
         BOMDAO dao = new BOMDAO();
         BOMDTO bom = dao.getBOMById(id);
+        if (bom == null) {
+            request.setAttribute("error", "BOM not found");
+            return "redirect:BOMController?action=list";
+        }
         request.setAttribute("bom", bom);
-        url = "bom-detail.jsp";
+        return "bom-detail.jsp";
     }
 
-    private void showAddForm(HttpServletRequest request) {
+    private String showAddForm(HttpServletRequest request) {
         ItemDAO itemDao = new ItemDAO();
         List<ItemDTO> products = itemDao.getProducts();
         request.setAttribute("products", products);
         request.setAttribute("mode", "add");
-        url = "bom-form.jsp";
+        return "bom-form.jsp";
     }
 
-    private void showEditForm(HttpServletRequest request) {
+    private String showEditForm(HttpServletRequest request) {
         String s_id = request.getParameter("id");
         int id = 0;
         try {
             id = Integer.parseInt(s_id);
         } catch (Exception e) {
             request.setAttribute("error", "Invalid BOM ID");
-            url = "redirect:BOMController?action=list";
-            return;
+            return "redirect:BOMController?action=list";
         }
 
         BOMDAO dao = new BOMDAO();
         ItemDAO itemDao = new ItemDAO();
         
         BOMDTO bom = dao.getBOMById(id);
+        if (bom == null) {
+            request.setAttribute("error", "BOM not found");
+            return "redirect:BOMController?action=list";
+        }
         List<ItemDTO> products = itemDao.getProducts();
         
         request.setAttribute("bom", bom);
         request.setAttribute("products", products);
         request.setAttribute("mode", "update");
-        url = "bom-form.jsp";
+        return "bom-form.jsp";
     }
 
-    private void addBOM(HttpServletRequest request) {
+    private String addBOM(HttpServletRequest request) {
         String msg = "";
         String error = "";
-
         try {
             int productItemId = Integer.parseInt(request.getParameter("productItemId"));
             String version = request.getParameter("version");
@@ -182,26 +185,23 @@ public class BOMController extends HttpServlet {
 
             BOMDAO dao = new BOMDAO();
             if (dao.insertBOM(bom)) {
-                url = "redirect:BOMController?action=list&msg=T%E1%BA%A1o%20BOM%20m%E1%BB%9Bi%20th%C3%A0nh%20c%C3%B4ng";
-                return;
+                return "redirect:BOMController?action=list&msg=Success";
             } else {
-                error = "Không thể tạo BOM mới";
+                error = "Failed to create BOM";
             }
         } catch (Exception e) {
-            error = "Lỗi: " + e.getMessage();
+            error = "Error: " + e.getMessage();
         }
 
         request.setAttribute("msg", msg);
         request.setAttribute("error", error);
         request.setAttribute("products", new ItemDAO().getProducts());
         request.setAttribute("mode", "add");
-        url = "bom-list.jsp";
+        return "bom-list.jsp";
     }
 
-    private void updateBOM(HttpServletRequest request) {
-        String msg = "";
+    private String updateBOM(HttpServletRequest request) {
         String error = "";
-
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             int productItemId = Integer.parseInt(request.getParameter("productItemId"));
@@ -220,7 +220,7 @@ public class BOMController extends HttpServlet {
 
             BOMDAO dao = new BOMDAO();
             if (dao.updateBOM(bom)) {
-                msg = "BOM updated successfully!";
+                return "redirect:BOMController?action=viewBOM&id=" + id;
             } else {
                 error = "Failed to update BOM";
             }
@@ -228,55 +228,35 @@ public class BOMController extends HttpServlet {
             error = "Error: " + e.getMessage();
         }
 
-        request.setAttribute("msg", msg);
         request.setAttribute("error", error);
         request.setAttribute("mode", "update");
-        url = "redirect:BOMController?action=viewBOM&id=" + request.getParameter("id");
+        return "bom-form.jsp";
     }
 
-    private void cloneBOM(HttpServletRequest request) {
+    private String cloneBOM(HttpServletRequest request) {
         String s_id = request.getParameter("id");
         String newVersion = request.getParameter("newVersion");
-
         try {
             int id = Integer.parseInt(s_id);
             BOMDAO dao = new BOMDAO();
-            
-            if (newVersion == null || newVersion.trim().isEmpty()) {
-                BOMDTO existing = dao.getBOMById(id);
-                String currentVersion = existing.getBomVersion();
-                if (currentVersion != null && currentVersion.startsWith("v")) {
-                    try {
-                        int verNum = Integer.parseInt(currentVersion.substring(1).split("\\.")[0]);
-                        newVersion = "v" + (verNum + 1) + ".0";
-                    } catch (Exception ex) {
-                        newVersion = "v2.0";
-                    }
-                } else {
-                    newVersion = "v2.0";
-                }
-            }
-            
-            boolean success = dao.cloneBOM(id, newVersion);
+            boolean success = dao.cloneBOM(id, newVersion != null ? newVersion : "v2.0");
             if (success) {
-                request.setAttribute("msg", "BOM cloned successfully as version " + newVersion);
+                request.setAttribute("msg", "BOM cloned successfully!");
             } else {
                 request.setAttribute("error", "Failed to clone BOM");
             }
         } catch (Exception e) {
             request.setAttribute("error", "Error: " + e.getMessage());
         }
-
-        url = "redirect:BOMController?action=list";
+        return "redirect:BOMController?action=list";
     }
 
-    private void deleteBOM(HttpServletRequest request) {
+    private String deleteBOM(HttpServletRequest request) {
         String s_id = request.getParameter("id");
         try {
             int id = Integer.parseInt(s_id);
             BOMDAO dao = new BOMDAO();
-            boolean success = dao.deleteBOM(id);
-            if (success) {
+            if (dao.deleteBOM(id)) {
                 request.setAttribute("msg", "BOM deleted successfully!");
             } else {
                 request.setAttribute("error", "Failed to delete BOM");
@@ -284,44 +264,42 @@ public class BOMController extends HttpServlet {
         } catch (Exception e) {
             request.setAttribute("error", "Error: " + e.getMessage());
         }
-        url = "redirect:BOMController?action=list";
+        return "redirect:BOMController?action=list";
     }
 
-    private void activateBOM(HttpServletRequest request) {
+    private String activateBOM(HttpServletRequest request) {
         String s_id = request.getParameter("id");
         try {
             int id = Integer.parseInt(s_id);
             BOMDAO dao = new BOMDAO();
-            boolean success = dao.activateBOM(id);
-            if (success) {
-                request.setAttribute("msg", "BOM activated successfully!");
+            if (dao.activateBOM(id)) {
+                request.setAttribute("msg", "BOM activated!");
             } else {
                 request.setAttribute("error", "Failed to activate BOM");
             }
         } catch (Exception e) {
             request.setAttribute("error", "Error: " + e.getMessage());
         }
-        url = "redirect:BOMController?action=list";
+        return "redirect:BOMController?action=list";
     }
 
-    private void deactivateBOM(HttpServletRequest request) {
+    private String deactivateBOM(HttpServletRequest request) {
         String s_id = request.getParameter("id");
         try {
             int id = Integer.parseInt(s_id);
             BOMDAO dao = new BOMDAO();
-            boolean success = dao.deactivateBOM(id);
-            if (success) {
-                request.setAttribute("msg", "BOM deactivated successfully!");
+            if (dao.deactivateBOM(id)) {
+                request.setAttribute("msg", "BOM deactivated!");
             } else {
                 request.setAttribute("error", "Failed to deactivate BOM");
             }
         } catch (Exception e) {
             request.setAttribute("error", "Error: " + e.getMessage());
         }
-        url = "redirect:BOMController?action=list";
+        return "redirect:BOMController?action=list";
     }
 
-    private void addDetail(HttpServletRequest request) {
+    private String addDetail(HttpServletRequest request) {
         String s_bomId = request.getParameter("bomId");
         try {
             int bomId = Integer.parseInt(s_bomId);
@@ -329,33 +307,22 @@ public class BOMController extends HttpServlet {
             double quantity = Double.parseDouble(request.getParameter("quantity"));
             String unit = request.getParameter("unit");
             double wastePercent = 0;
-            try {
-                wastePercent = Double.parseDouble(request.getParameter("wastePercent"));
-            } catch (Exception e) {}
+            try { wastePercent = Double.parseDouble(request.getParameter("wastePercent")); } catch (Exception e) {}
             String notes = request.getParameter("notes");
 
-            BOMDetailDTO detail = new BOMDetailDTO();
-            detail.setBomId(bomId);
-            detail.setMaterialItemId(materialItemId);
-            detail.setQuantityRequired(quantity);
-            detail.setUnit(unit);
-            detail.setWastePercent(wastePercent);
-            detail.setNotes(notes);
-
-            BOMDAO dao = new BOMDAO();
-            boolean success = dao.addBOMDetail(detail);
-            if (success) {
-                request.setAttribute("msg", "Material added successfully!");
+            BOMDetailDTO detail = new BOMDetailDTO(0, bomId, materialItemId, "", quantity, unit, wastePercent, notes);
+            if (new BOMDAO().addBOMDetail(detail)) {
+                request.setAttribute("msg", "Material added!");
             } else {
                 request.setAttribute("error", "Failed to add material");
             }
         } catch (Exception e) {
             request.setAttribute("error", "Error: " + e.getMessage());
         }
-        url = "redirect:BOMController?action=viewBOM&id=" + s_bomId;
+        return "redirect:BOMController?action=viewBOM&id=" + s_bomId;
     }
 
-    private void updateDetail(HttpServletRequest request) {
+    private String updateDetail(HttpServletRequest request) {
         String s_bomId = request.getParameter("bomId");
         try {
             int detailId = Integer.parseInt(request.getParameter("detailId"));
@@ -365,43 +332,31 @@ public class BOMController extends HttpServlet {
             double wastePercent = Double.parseDouble(request.getParameter("wastePercent"));
             String notes = request.getParameter("notes");
 
-            BOMDetailDTO detail = new BOMDetailDTO();
-            detail.setBomDetailId(detailId);
-            detail.setMaterialItemId(materialItemId);
-            detail.setQuantityRequired(quantity);
-            detail.setUnit(unit);
-            detail.setWastePercent(wastePercent);
-            detail.setNotes(notes);
-
-            BOMDAO dao = new BOMDAO();
-            boolean success = dao.updateBOMDetail(detail);
-            if (success) {
-                request.setAttribute("msg", "Material updated successfully!");
+            BOMDetailDTO detail = new BOMDetailDTO(detailId, 0, materialItemId, "", quantity, unit, wastePercent, notes);
+            if (new BOMDAO().updateBOMDetail(detail)) {
+                request.setAttribute("msg", "Material updated!");
             } else {
                 request.setAttribute("error", "Failed to update material");
             }
         } catch (Exception e) {
             request.setAttribute("error", "Error: " + e.getMessage());
         }
-        url = "redirect:BOMController?action=viewBOM&id=" + s_bomId;
+        return "redirect:BOMController?action=viewBOM&id=" + s_bomId;
     }
 
-    private void deleteDetail(HttpServletRequest request) {
+    private String deleteDetail(HttpServletRequest request) {
         String s_bomId = request.getParameter("bomId");
-        String s_id = request.getParameter("id");
         try {
-            int detailId = Integer.parseInt(s_id);
-            BOMDAO dao = new BOMDAO();
-            boolean success = dao.deleteBOMDetail(detailId);
-            if (success) {
-                request.setAttribute("msg", "Material deleted successfully!");
+            int detailId = Integer.parseInt(request.getParameter("id"));
+            if (new BOMDAO().deleteBOMDetail(detailId)) {
+                request.setAttribute("msg", "Material deleted!");
             } else {
                 request.setAttribute("error", "Failed to delete material");
             }
         } catch (Exception e) {
             request.setAttribute("error", "Error: " + e.getMessage());
         }
-        url = "redirect:BOMController?action=viewBOM&id=" + s_bomId;
+        return "redirect:BOMController?action=viewBOM&id=" + s_bomId;
     }
 
     @Override
@@ -414,10 +369,5 @@ public class BOMController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
-    }
-
-    @Override
-    public String getServletInfo() {
-        return "BOM Controller";
     }
 }

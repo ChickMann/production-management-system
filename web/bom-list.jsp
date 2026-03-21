@@ -154,7 +154,7 @@
                 <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                         <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Quản lý định mức (BOM)</h1>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Theo dõi cấu trúc nguyên vật liệu, phiên bản áp dụng và trạng thái sử dụng cho từng sản phẩm.</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Theo dõi cấu trúc nguyên vật liệu cho từng sản phẩm.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3">
                         <a href="BOMController?action=list" class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
@@ -253,8 +253,6 @@
                                 <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mã BOM</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sản phẩm</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Phiên bản</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trạng thái</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Ngày tạo</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
                                 </tr>
@@ -262,7 +260,7 @@
                             <tbody>
                                 <% if (boms.isEmpty()) { %>
                                 <tr>
-                                    <td colspan="6" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
+                                    <td colspan="4" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
                                         <div class="mx-auto flex max-w-md flex-col items-center gap-3">
                                             <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                                                 <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,16 +296,6 @@
                                                     <p class="text-xs text-slate-400 dark:text-slate-500">Mã sản phẩm: <%= bom.getProductItemId() %></p>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium">
-                                                <%= bom.getBomVersion() != null ? bom.getBomVersion() : "v1.0" %>
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <%= getStatusClass(bom.getStatus()) %>">
-                                                <%= getStatusText(bom.getStatus()) %>
-                                            </span>
                                         </td>
                                         <td class="px-4 py-3 text-slate-500 dark:text-slate-400">
                                             <%= bom.getCreatedDate() != null ? sdf.format(bom.getCreatedDate()) : "-" %>

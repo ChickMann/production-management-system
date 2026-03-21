@@ -105,11 +105,12 @@ public class CustomerController extends HttpServlet {
             int id = Integer.parseInt(s_id);
             c = new CustomerDTO(id, name, phone, email);
             if (cdao.updateCustomer(c)) {
-                msg = "Update successfully";
+                // Redirect to list after successful update
+                response.sendRedirect("CustomerController?action=listCustomer");
+                return;
             } else {
-                error = "Update failed";
+                error = "Cập nhật thất bại";
             }
-            request.setAttribute("msg", msg);
             request.setAttribute("error", error);
         }
         request.setAttribute("customer", c);

@@ -394,10 +394,7 @@
                         <input type="number" name="stockQuantity" min="0" value="0" class="form-input w-full rounded-2xl border px-4 py-3">
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Mô tả</label>
-                        <textarea name="description" rows="4" class="form-input w-full rounded-2xl border px-4 py-3" placeholder="Mô tả ngắn về vật tư hoặc sản phẩm"></textarea>
-                    </div>
+
                 </div>
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end dark:border-slate-700">
                     <button type="button" onclick="closeAddItemModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>

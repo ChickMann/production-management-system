@@ -94,10 +94,6 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Mô tả</label>
-                            <textarea name="description" class="form-control" rows="3"><%= item != null && item.getDescription() != null ? item.getDescription() : "" %></textarea>
-                        </div>
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
