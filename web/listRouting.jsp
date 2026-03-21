@@ -121,7 +121,7 @@
         <jsp:include page="components/shared-sidebar.jsp" />
         
         <!-- Main Content -->
-        <div class="main-wrapper flex-1 flex flex-col min-h-screen min-w-0">
+        <div id="mainWrapper" class="main-wrapper flex-1 flex flex-col min-h-screen min-w-0">
             <jsp:include page="components/shared-header.jsp" />
             
             <main class="flex-1 overflow-y-auto bg-slate-100 p-4 dark:bg-slate-900 sm:p-6 lg:p-8">

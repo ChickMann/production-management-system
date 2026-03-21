@@ -20,6 +20,7 @@ public class EmailService implements Serializable {
     private String smtpPort;
     private String smtpUser;
     private String smtpPassword;
+    private String lastError;
 
     public EmailService() {
     }
@@ -32,8 +33,10 @@ public class EmailService implements Serializable {
     }
 
     public boolean sendEmail(String to, String subject, String body) {
+        lastError = null;
         if (to == null || to.trim().isEmpty()) {
-            System.err.println("EmailService: Email nhan (to) khong duoc de trong.");
+            lastError = "Email nhận không được để trống.";
+            System.err.println("EmailService: " + lastError);
             return false;
         }
         if (subject == null) subject = "(Khong co tieu de)";
@@ -45,7 +48,6 @@ public class EmailService implements Serializable {
             session = createSession();
             message = new MimeMessage(session);
 
-            // Dat dinh dang ten nguoi gui co dau tieng Viet
             InternetAddress fromAddress = new InternetAddress();
             fromAddress.setAddress(smtpUser.trim());
             fromAddress.setPersonal("PMS System", "UTF-8");
@@ -60,12 +62,15 @@ public class EmailService implements Serializable {
             System.out.println("Email da gui thanh cong den: " + to);
             return true;
         } catch (UnsupportedEncodingException e) {
+            lastError = "Lỗi mã hóa email: " + e.getMessage();
             System.err.println("Email encoding error to " + to + ": " + e.getMessage());
             return false;
         } catch (MessagingException e) {
+            lastError = buildMessagingError(e);
             System.err.println("Email send failed to " + to + ": " + e.getMessage());
             return false;
         } catch (Exception e) {
+            lastError = "Lỗi không xác định khi gửi mail: " + e.getMessage();
             System.err.println("Email send unexpected error to " + to + ": " + e.getMessage());
             return false;
         }
@@ -391,24 +396,42 @@ public class EmailService implements Serializable {
         String port = smtpPort;
 
         if (host == null || host.trim().isEmpty()) {
-            throw new IllegalStateException("SMTP host chua duoc cau hinh. Vui long kiem tra SystemConfig.");
+            throw new IllegalStateException("SMTP host chưa được cấu hình.");
         }
         if (user == null || user.trim().isEmpty()) {
-            throw new IllegalStateException("SMTP user chua duoc cau hinh.");
+            throw new IllegalStateException("SMTP user chưa được cấu hình.");
+        }
+        if (smtpPassword == null || smtpPassword.trim().isEmpty()) {
+            throw new IllegalStateException("SMTP password/App Password không được để trống.");
         }
 
+        String normalizedHost = host.trim();
+        String normalizedPort = (port != null && !port.trim().isEmpty()) ? port.trim() : "587";
+        boolean useSsl = "465".equals(normalizedPort);
+
         Properties props = new Properties();
-        props.put("mail.smtp.host", host.trim());
-        props.put("mail.smtp.port", (port != null ? port.trim() : "587"));
+        props.put("mail.smtp.host", normalizedHost);
+        props.put("mail.smtp.port", normalizedPort);
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.ssl.trust", host.trim());
+        props.put("mail.smtp.ssl.trust", normalizedHost);
         props.put("mail.smtp.connectiontimeout", "10000");
         props.put("mail.smtp.timeout", "10000");
         props.put("mail.smtp.writetimeout", "10000");
 
+        if (useSsl) {
+            props.put("mail.smtp.ssl.enable", "true");
+            props.put("mail.smtp.starttls.enable", "false");
+            props.put("mail.smtp.socketFactory.port", normalizedPort);
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            props.put("mail.smtp.socketFactory.fallback", "false");
+        } else {
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            props.put("mail.smtp.ssl.enable", "false");
+        }
+
         final String smtpUserFinal = user.trim();
-        final String smtpPassFinal = (smtpPassword != null ? smtpPassword : "");
+        final String smtpPassFinal = smtpPassword;
 
         Authenticator auth = new Authenticator() {
             @Override
@@ -418,6 +441,25 @@ public class EmailService implements Serializable {
         };
 
         return Session.getInstance(props, auth);
+    }
+
+    private String buildMessagingError(MessagingException e) {
+        String message = e != null ? e.getMessage() : null;
+        String lower = message != null ? message.toLowerCase() : "";
+
+        if (lower.contains("authentication") || lower.contains("auth") || lower.contains("535") || lower.contains("username and password not accepted")) {
+            return "Xác thực SMTP thất bại. Nếu dùng Gmail, hãy dùng App Password 16 ký tự thay cho mật khẩu đăng nhập thường.";
+        }
+        if (lower.contains("couldn't connect") || lower.contains("could not connect") || lower.contains("connect timed out") || lower.contains("connection timed out")) {
+            return "Không kết nối được tới máy chủ SMTP. Hãy kiểm tra lại SMTP Host và Port.";
+        }
+        if (lower.contains("ssl") || lower.contains("tls") || lower.contains("handshake")) {
+            return "Kết nối bảo mật SMTP thất bại. Port 587 dùng TLS, còn port 465 dùng SSL.";
+        }
+        if (message == null || message.trim().isEmpty()) {
+            return "Gửi email thất bại do lỗi SMTP không xác định.";
+        }
+        return "Lỗi SMTP: " + message;
     }
 
     private String buildOrderCompletionEmail(String orderCode, String customerName,
@@ -565,6 +607,7 @@ public class EmailService implements Serializable {
 
     public String getSmtpHost() { return smtpHost; }
     public String getSmtpUser() { return smtpUser; }
+    public String getLastError() { return lastError; }
 
     public boolean isConfigured() {
         return smtpHost != null && !smtpHost.trim().isEmpty()

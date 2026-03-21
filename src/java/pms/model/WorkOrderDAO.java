@@ -11,11 +11,10 @@ public class WorkOrderDAO {
 
     public List<WorkOrderDTO> getAllWorkOrders() {
         List<WorkOrderDTO> result = new ArrayList<>();
-        String sql = "SELECT wo.*, i.item_name, r.routing_name, c.customer_name "
+        String sql = "SELECT wo.*, i.item_name, r.routing_name "
                    + "FROM Work_Order wo "
                    + "LEFT JOIN Item i ON wo.product_item_id = i.item_id "
                    + "LEFT JOIN Routing r ON wo.routing_id = r.routing_id "
-                   + "LEFT JOIN Customer c ON wo.customer_id = c.customer_id "
                    + "ORDER BY wo.wo_id DESC";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -29,7 +28,7 @@ public class WorkOrderDAO {
                 wo.setStatus(rs.getString("status"));
                 wo.setProductName(rs.getString("item_name"));
                 wo.setRoutingName(rs.getString("routing_name"));
-                wo.setCustomerName(rs.getString("customer_name"));
+                try { wo.setCustomerName(rs.getString("customer_name")); } catch (Exception e) {}
                 try { wo.setCustomerId(rs.getInt("customer_id")); } catch (Exception e) {}
                 try { wo.setStart_date(rs.getString("start_date")); } catch (Exception e) {}
                 try { wo.setDue_date(rs.getString("due_date")); } catch (Exception e) {}
@@ -103,11 +102,10 @@ public class WorkOrderDAO {
     }
 
     public WorkOrderDTO searchById(int id) {
-        String sql = "SELECT wo.*, i.item_name, r.routing_name, c.customer_name "
+        String sql = "SELECT wo.*, i.item_name, r.routing_name "
                    + "FROM Work_Order wo "
                    + "LEFT JOIN Item i ON wo.product_item_id = i.item_id "
                    + "LEFT JOIN Routing r ON wo.routing_id = r.routing_id "
-                   + "LEFT JOIN Customer c ON wo.customer_id = c.customer_id "
                    + "WHERE wo.wo_id = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -122,7 +120,7 @@ public class WorkOrderDAO {
                     wo.setStatus(rs.getString("status"));
                     wo.setProductName(rs.getString("item_name"));
                     wo.setRoutingName(rs.getString("routing_name"));
-                    wo.setCustomerName(rs.getString("customer_name"));
+                    try { wo.setCustomerName(rs.getString("customer_name")); } catch (Exception e) {}
                     try { wo.setCustomerId(rs.getInt("customer_id")); } catch (Exception e) {}
                     try { wo.setStart_date(rs.getString("start_date")); } catch (Exception e) {}
                     try { wo.setDue_date(rs.getString("due_date")); } catch (Exception e) {}

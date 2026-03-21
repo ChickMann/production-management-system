@@ -318,7 +318,7 @@
                                         </td>
                                         <td class="px-4 py-4 align-top text-center">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="payment-qr.jsp?payment_id=<%= p.getPaymentId() %>" 
+                                                <a href="payment-qr.jsp?payment_id=<%= p.getPaymentId() %>"
                                                    class="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/30">
                                                     Xem QR
                                                 </a>

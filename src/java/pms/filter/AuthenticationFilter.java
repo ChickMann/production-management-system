@@ -60,29 +60,30 @@ public class AuthenticationFilter implements Filter {
     }
 
     private boolean isPublicPath(String path) {
-        return path.equals("/") ||
-               path.equals("/login.jsp") ||
-               path.equals("/login") ||
-               path.equals("/Banned.jsp") ||
-               path.equals("/index.jsp") ||
+        String lowerPath = path != null ? path.toLowerCase() : "";
+        return "/".equals(path) ||
+               "/login.jsp".equals(path) ||
+               "/login".equals(path) ||
+               "/Banned.jsp".equals(path) ||
+               "/index.jsp".equals(path) ||
                path.startsWith("/css/") ||
                path.startsWith("/js/") ||
                path.startsWith("/img/") ||
                path.startsWith("/ui/") ||
                path.contains("/AutoCompleteSearch") ||
                path.contains("/NotificationServlet") ||
-               path.contains(".css") ||
-               path.contains(".js") ||
-               path.contains(".png") ||
-               path.contains(".jpg") ||
-               path.contains(".jpeg") ||
-               path.contains(".gif") ||
-               path.contains(".svg") ||
-               path.contains(".ico") ||
-               path.contains(".woff") ||
-               path.contains(".woff2") ||
-               path.contains(".ttf") ||
-               path.contains(".eot");
+               lowerPath.endsWith(".css") ||
+               lowerPath.endsWith(".js") ||
+               lowerPath.endsWith(".png") ||
+               lowerPath.endsWith(".jpg") ||
+               lowerPath.endsWith(".jpeg") ||
+               lowerPath.endsWith(".gif") ||
+               lowerPath.endsWith(".svg") ||
+               lowerPath.endsWith(".ico") ||
+               lowerPath.endsWith(".woff") ||
+               lowerPath.endsWith(".woff2") ||
+               lowerPath.endsWith(".ttf") ||
+               lowerPath.endsWith(".eot");
     }
 
     @Override

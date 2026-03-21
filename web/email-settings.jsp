@@ -107,9 +107,10 @@
                     <button type="submit" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all">
                         Lưu cấu hình
                     </button>
-                    <button type="button" onclick="testEmail()" class="ml-3 w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all">
-                        Gửi email thử
+                    <button id="testEmailBtn" type="button" onclick="testEmail()" class="ml-3 w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-slate-100">
+                        <span id="testEmailBtnText">Gửi email thử</span>
                     </button>
+                    <p id="testEmailStatus" class="mt-3 text-sm text-slate-500 hidden">Đang gửi email thử, vui lòng chờ...</p>
                 </div>
             </form>
             
@@ -123,7 +124,7 @@
                         <h4 class="font-semibold text-blue-800">Hướng dẫn cấu hình Gmail</h4>
                         <ol class="mt-2 text-sm text-blue-700 space-y-1 list-decimal list-inside">
                             <li>Bật xác minh 2 bước (2-Step Verification) trong Tài khoản Google</li>
-                            <li>Đi đến App Passwords (https://myaccount.google.com/security)</li>
+                            <li>Đi đến App Passwords https://myaccount.google.com/apppasswords</li>
                             <li>Tạo App Password mới cho "Mail"</li>
                             <li>Sao chép App Password vào ô "Mật khẩu"</li>
                         </ol>
@@ -134,30 +135,87 @@
     </div>
 
     <script>
+        var testEmailSubmitting = false;
+
+        function setTestEmailLoading(isLoading) {
+            var btn = document.getElementById('testEmailBtn');
+            var btnText = document.getElementById('testEmailBtnText');
+            var status = document.getElementById('testEmailStatus');
+
+            if (!btn || !btnText || !status) {
+                return;
+            }
+
+            btn.disabled = isLoading;
+            btnText.textContent = isLoading ? 'Đang gửi...' : 'Gửi email thử';
+            status.classList.toggle('hidden', !isLoading);
+        }
+
         function testEmail() {
-            var email = document.querySelector('input[name="smtp_user"]').value;
-            if (!email) {
-                alert('Vui lòng nhập email trước!');
+            if (testEmailSubmitting) {
                 return;
             }
-            if (!email.includes('@')) {
-                alert('Email không hợp lệ!');
+
+            var smtpHost = document.querySelector('input[name="smtp_host"]').value.trim();
+            var smtpPort = document.querySelector('input[name="smtp_port"]').value.trim();
+            var smtpUser = document.querySelector('input[name="smtp_user"]').value.trim();
+            var smtpPassword = document.querySelector('input[name="smtp_password"]').value;
+
+            if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
+                alert('Vui lòng nhập đầy đủ SMTP Host, Port, Email gửi và App Password trước khi gửi thử.');
                 return;
             }
-            
+            if (!smtpUser.includes('@')) {
+                alert('Email gửi không hợp lệ!');
+                return;
+            }
+
+            function normalizeErrorMessage(responseText, status) {
+                var text = (responseText || '').trim();
+                var lower = text.toLowerCase();
+
+                if (!text) {
+                    return 'Gửi email thử thất bại. Mã lỗi HTTP: ' + status;
+                }
+
+                if (lower.indexOf('<!doctype html') !== -1 || lower.indexOf('<html') !== -1 || lower.indexOf('http status 500') !== -1) {
+                    return 'Máy chủ đang báo lỗi khi gửi email thử. Kiểm tra lại SMTP Host, Port, Email gửi và App Password Gmail rồi thử lại.';
+                }
+
+                return text;
+            }
+
+            testEmailSubmitting = true;
+            setTestEmailLoading(true);
+
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'AdminController', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
+                    testEmailSubmitting = false;
+                    setTestEmailLoading(false);
+
                     if (xhr.status === 200) {
-                        alert('Email thử đã được gửi! Kiểm tra hộp thư của bạn.');
+                        alert(xhr.responseText || 'Email thử đã được gửi! Kiểm tra hộp thư của bạn.');
                     } else {
-                        alert('Lỗi gửi email: ' + xhr.responseText);
+                        alert(normalizeErrorMessage(xhr.responseText, xhr.status));
                     }
                 }
             };
-            xhr.send('action=sendTestEmail&test_email=' + encodeURIComponent(email));
+            xhr.onerror = function() {
+                testEmailSubmitting = false;
+                setTestEmailLoading(false);
+                alert('Không thể kết nối tới máy chủ để gửi email thử.');
+            };
+            xhr.send(
+                'action=sendTestEmail'
+                + '&test_email=' + encodeURIComponent(smtpUser)
+                + '&smtp_host=' + encodeURIComponent(smtpHost)
+                + '&smtp_port=' + encodeURIComponent(smtpPort)
+                + '&smtp_user=' + encodeURIComponent(smtpUser)
+                + '&smtp_password=' + encodeURIComponent(smtpPassword)
+            );
         }
     </script>
 </body>

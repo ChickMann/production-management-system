@@ -84,7 +84,7 @@ public class WorkOrderController extends HttpServlet {
                 request.getRequestDispatcher("workorder.jsp").forward(request, response);
                 return;
 
-            } else if ("listWorkOrder".equals(action) || "loadUpdate".equals(action)) {
+            } else if ("listWorkOrder".equals(action) || "list".equals(action) || "loadUpdate".equals(action)) {
                 String searchKeyword = request.getParameter("keyword");
                 String filterStatus = request.getParameter("status");
                 String searchId = request.getParameter("search");
