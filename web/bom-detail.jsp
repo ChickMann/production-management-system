@@ -111,7 +111,6 @@
                                     <th>Nguyên liệu</th>
                                     <th>Số lượng</th>
                                     <th>Đơn vị tính</th>
-                                    <th>Hao hụt (%)</th>
                                     <th>Ghi chú</th>
                                     <th>Thao tác</th>
                                 </tr>
@@ -127,7 +126,6 @@
                                     <td><%= detail.getMaterialName() != null ? detail.getMaterialName() : "ID: " + detail.getMaterialItemId() %></td>
                                     <td><%= detail.getQuantityRequired() %></td>
                                     <td><%= detail.getUnit() != null ? detail.getUnit() : "" %></td>
-                                    <td><%= detail.getWastePercent() %>%</td>
                                     <td><%= detail.getNotes() != null ? detail.getNotes() : "" %></td>
                                     <td>
                                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" 
@@ -140,12 +138,58 @@
                                         </a>
                                     </td>
                                 </tr>
+
+                                <!-- Modal Sửa nguyên liệu -->
+                                <div class="modal fade" id="editMaterialModal<%= detail.getBomDetailId() %>" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="post" action="BOMController">
+                                                <input type="hidden" name="action" value="updateDetail">
+                                                <input type="hidden" name="bomId" value="<%= bom.getBomId() %>">
+                                                <input type="hidden" name="detailId" value="<%= detail.getBomDetailId() %>">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Sửa nguyên liệu</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Nguyên liệu <span class="text-danger">*</span></label>
+                                                        <select name="materialItemId" class="form-select" required>
+                                                            <jsp:include page="item-options.jsp">
+                                                                <jsp:param name="type" value="VatTu"/>
+                                                                <jsp:param name="selectedId" value="<%= detail.getMaterialItemId() %>"/>
+                                                            </jsp:include>
+                                                        </select>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">Số lượng <span class="text-danger">*</span></label>
+                                                            <input type="number" name="quantity" class="form-control" step="0.01" value="<%= detail.getQuantityRequired() %>" required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label class="form-label">Đơn vị tính</label>
+                                                            <input type="text" name="unit" class="form-control" value="<%= detail.getUnit() != null ? detail.getUnit() : "" %>">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Ghi chú</label>
+                                                        <input type="text" name="notes" class="form-control" value="<%= detail.getNotes() != null ? detail.getNotes() : "" %>">
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                                 <% 
                                         }
                                     } else {
                                 %>
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted">Chưa có nguyên liệu nào</td>
+                                    <td colspan="6" class="text-center text-muted">Chưa có nguyên liệu nào</td>
                                 </tr>
                                 <% } %>
                             </tbody>
@@ -187,15 +231,9 @@
                                 <input type="text" name="unit" class="form-control" placeholder="VD: cái, kg, m...">
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Hao hụt (%)</label>
-                                <input type="number" name="wastePercent" class="form-control" step="0.01" value="0">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Ghi chú</label>
-                                <input type="text" name="notes" class="form-control">
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ghi chú</label>
+                            <input type="text" name="notes" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">

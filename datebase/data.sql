@@ -19,7 +19,8 @@ VALUES
 (N'Bàn gỗ', 'SanPham', 10, N'Cái'), 
 (N'Ghế gỗ', 'SanPham', 20, N'Cái'),
 (N'Gỗ công nghiệp', 'VatTu', 100, N'Tấm'), 
-(N'Ốc vít', 'VatTu', 500, N'Hộp');
+(N'Ốc vít', 'VatTu', 500, N'Hộp'),
+(N'Đinh', 'VatTu', 200, N'Kg');
 GO
 
 -- 3. Thêm Nhà cung cấp 🏭

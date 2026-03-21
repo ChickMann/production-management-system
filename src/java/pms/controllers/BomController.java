@@ -307,7 +307,10 @@ public class BOMController extends HttpServlet {
             double quantity = Double.parseDouble(request.getParameter("quantity"));
             String unit = request.getParameter("unit");
             double wastePercent = 0;
-            try { wastePercent = Double.parseDouble(request.getParameter("wastePercent")); } catch (Exception e) {}
+            String swp = request.getParameter("wastePercent");
+            if (swp != null && !swp.isEmpty()) {
+                try { wastePercent = Double.parseDouble(swp); } catch (Exception e) {}
+            }
             String notes = request.getParameter("notes");
 
             BOMDetailDTO detail = new BOMDetailDTO(0, bomId, materialItemId, "", quantity, unit, wastePercent, notes);
@@ -329,7 +332,11 @@ public class BOMController extends HttpServlet {
             int materialItemId = Integer.parseInt(request.getParameter("materialItemId"));
             double quantity = Double.parseDouble(request.getParameter("quantity"));
             String unit = request.getParameter("unit");
-            double wastePercent = Double.parseDouble(request.getParameter("wastePercent"));
+            double wastePercent = 0;
+            String swp = request.getParameter("wastePercent");
+            if (swp != null && !swp.isEmpty()) {
+                try { wastePercent = Double.parseDouble(swp); } catch (Exception e) {}
+            }
             String notes = request.getParameter("notes");
 
             BOMDetailDTO detail = new BOMDetailDTO(detailId, 0, materialItemId, "", quantity, unit, wastePercent, notes);
