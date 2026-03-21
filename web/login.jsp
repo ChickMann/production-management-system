@@ -35,10 +35,13 @@
                 --text-muted: #6b7280;
                 --text-inverse: #ffffff;
                 --primary: #2563eb;
+                --primary-hover: #1d4ed8;
                 --primary-soft: #dbeafe;
                 --danger: #dc2626;
                 --danger-soft: #fee2e2;
                 --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+                --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.1);
+                --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.12);
                 --radius-sm: 10px;
                 --radius-md: 16px;
                 font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
@@ -78,19 +81,19 @@
             }
 
             .auth-card {
-                width: min(100%, 960px);
+                width: min(100%, 820px);
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 overflow: hidden;
                 background: var(--surface);
                 border: 1px solid var(--border);
                 border-radius: var(--radius-md);
-                box-shadow: var(--shadow-sm);
+                box-shadow: var(--shadow-lg);
             }
 
             .auth-visual,
             .auth-form {
-                padding: 36px;
+                padding: 48px 40px;
             }
 
             .auth-visual {
@@ -101,7 +104,7 @@
             }
 
             .auth-visual img {
-                width: min(100%, 260px);
+                width: min(100%, 180px);
                 height: auto;
                 object-fit: contain;
             }
@@ -116,32 +119,87 @@
                 margin: 8px 0 0;
                 color: var(--text-muted);
                 line-height: 1.6;
+                font-size: 0.95rem;
             }
 
             form {
                 display: grid;
-                gap: 16px;
-                margin-top: 24px;
+                gap: 20px;
+                margin-top: 28px;
             }
 
-            label {
+            .field-group {
+                position: relative;
+            }
+
+            .field-label {
                 display: block;
                 margin-bottom: 8px;
                 font-weight: 600;
+                font-size: 0.9rem;
+                color: var(--text);
+            }
+
+            .input-wrapper {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .input-icon {
+                position: absolute;
+                left: 14px;
+                color: var(--text-muted);
+                pointer-events: none;
+                transition: color 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .input {
                 width: 100%;
-                padding: 12px 14px;
-                border: 1px solid var(--border);
+                padding: 13px 14px 13px 44px;
+                border: 1.5px solid var(--border);
                 border-radius: var(--radius-sm);
                 background: var(--surface);
                 color: var(--text);
+                font-size: 0.95rem;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .input::placeholder {
+                color: #9ca3af;
             }
 
             .input:focus {
-                outline: 2px solid var(--primary-soft);
+                outline: none;
                 border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            }
+
+            .input:focus + .input-icon,
+            .input:focus ~ .input-icon {
+                color: var(--primary);
+            }
+
+            .toggle-password {
+                position: absolute;
+                right: 12px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--text-muted);
+                padding: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 4px;
+                transition: color 0.2s ease;
+            }
+
+            .toggle-password:hover {
+                color: var(--text);
             }
 
             .auth-meta {
@@ -149,8 +207,37 @@
                 justify-content: space-between;
                 align-items: center;
                 gap: 12px;
+                font-size: 0.9rem;
+            }
+
+            .checkbox-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+            }
+
+            .checkbox-wrapper input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+                accent-color: var(--primary);
+                cursor: pointer;
+            }
+
+            .checkbox-label {
                 color: var(--text-muted);
-                font-size: 0.95rem;
+                user-select: none;
+            }
+
+            .forgot-link {
+                color: var(--primary);
+                font-weight: 500;
+                transition: color 0.2s ease;
+            }
+
+            .forgot-link:hover {
+                color: var(--primary-hover);
+                text-decoration: underline;
             }
 
             .btn {
@@ -158,19 +245,29 @@
                 align-items: center;
                 justify-content: center;
                 gap: 8px;
-                padding: 12px 16px;
+                padding: 13px 20px;
                 border-radius: var(--radius-sm);
                 border: 1px solid transparent;
                 cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transition: all 0.25s ease;
             }
 
             .btn-primary {
-                background: var(--primary);
+                background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
                 color: var(--text-inverse);
+                box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
             }
 
             .btn-primary:hover {
-                background: #1d4ed8;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+            }
+
+            .btn-primary:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
             }
 
             .form-alert {
@@ -281,6 +378,11 @@
                     border-right: 0;
                     border-bottom: 1px solid var(--border);
                 }
+
+                .auth-visual,
+                .auth-form {
+                    padding: 36px 28px;
+                }
             }
         </style>
     </head>
@@ -293,7 +395,7 @@
 
                 <div class="auth-form">
                     <h1 class="section-title">Sign in</h1>
-                    <p class="section-subtitle">Access the system with a simple and clear login form.</p>
+                    <p class="section-subtitle">Enter your credentials to access your account.</p>
 
                     <form action="MainController" method="post">
                         <input type="hidden" name="action" value="loginUser"/>
@@ -302,34 +404,65 @@
                             <div class="form-alert"><%= message %></div>
                         <% } %>
 
-                        <div>
-                            <label for="txtUsername">Username</label>
-                            <input
-                                id="txtUsername"
-                                class="input"
-                                type="text"
-                                name="txtUsername"
-                                placeholder="Enter your username"
-                                value="<%= usernameValue %>"
-                                required
-                            />
+                        <div class="field-group">
+                            <label class="field-label" for="txtUsername">Username</label>
+                            <div class="input-wrapper">
+                                <input
+                                    id="txtUsername"
+                                    class="input"
+                                    type="text"
+                                    name="txtUsername"
+                                    placeholder="Enter your username"
+                                    value="<%= usernameValue %>"
+                                    required
+                                    autocomplete="username"
+                                />
+                                <span class="input-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
 
-                        <div>
-                            <label for="txtPassword">Password</label>
-                            <input
-                                id="txtPassword"
-                                class="input"
-                                type="password"
-                                name="txtPassword"
-                                placeholder="Enter your password"
-                                required
-                            />
+                        <div class="field-group">
+                            <label class="field-label" for="txtPassword">Password</label>
+                            <div class="input-wrapper">
+                                <input
+                                    id="txtPassword"
+                                    class="input"
+                                    type="password"
+                                    name="txtPassword"
+                                    placeholder="Enter your password"
+                                    required
+                                    autocomplete="current-password"
+                                />
+                                <span class="input-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </span>
+                                <button class="toggle-password" type="button" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility">
+                                    <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg id="eyeOffIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="auth-meta">
-                            <span>Use your existing account to continue.</span>
-                            <a href="index.jsp">Back to home</a>
+                            <label class="checkbox-wrapper">
+                                <input type="checkbox" name="rememberMe" id="rememberMe" />
+                                <span class="checkbox-label">Remember me</span>
+                            </label>
+                            <a href="#" class="forgot-link">Forgot password?</a>
                         </div>
 
                         <button class="btn btn-primary" type="submit">Sign in</button>
@@ -359,6 +492,22 @@
         <% } %>
 
         <script>
+            function togglePasswordVisibility() {
+                var passwordInput = document.getElementById('txtPassword');
+                var eyeIcon = document.getElementById('eyeIcon');
+                var eyeOffIcon = document.getElementById('eyeOffIcon');
+
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    eyeIcon.style.display = 'none';
+                    eyeOffIcon.style.display = 'block';
+                } else {
+                    passwordInput.type = 'password';
+                    eyeIcon.style.display = 'block';
+                    eyeOffIcon.style.display = 'none';
+                }
+            }
+
             (function () {
                 var popup = document.getElementById('loginErrorPopup');
                 var closeButton = document.getElementById('loginPopupClose');

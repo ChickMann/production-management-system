@@ -191,7 +191,15 @@ public class BillController extends HttpServlet {
         }
 
         for (BillDTO bill : billList) {
-            latestPaymentMap.put(bill.getBill_id(), paymentDAO.getLatestPaymentByBillId(bill.getBill_id()));
+            PaymentDTO latestPayment = paymentDAO.getLatestPaymentByBillId(bill.getBill_id());
+            if (latestPayment != null
+                    && latestPayment.getExpiresAt() != null
+                    && !"PAID".equalsIgnoreCase(latestPayment.getStatus())
+                    && latestPayment.getExpiresAt().before(new java.util.Date())) {
+                paymentDAO.updatePaymentStatus(latestPayment.getPaymentId(), "EXPIRED", null);
+                latestPayment.setStatus("EXPIRED");
+            }
+            latestPaymentMap.put(bill.getBill_id(), latestPayment);
         }
 
         request.setAttribute("billList", billList);

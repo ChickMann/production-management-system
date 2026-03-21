@@ -28,7 +28,18 @@ public class PaymentController extends HttpServlet {
         request.setAttribute("__httpResponse", response);
  
         String action = request.getParameter("action");
-        if (action == null) {
+        boolean ajax = isAjaxRequest(request);
+        String source = request.getParameter("source");
+
+        if (action != null) {
+            action = action.trim();
+        }
+
+        if ((action == null || action.isEmpty()) && ajax && "bill".equalsIgnoreCase(source)) {
+            action = "createQr";
+        }
+
+        if (action == null || action.isEmpty()) {
             action = "list";
         }
 
@@ -37,7 +48,7 @@ public class PaymentController extends HttpServlet {
                 listPayments(request);
                 break;
             case "createQr":
-                createQrPayment(request);
+                createQrPayment(request, response);
                 break;
             case "refreshQr":
                 refreshQrPayment(request);
@@ -90,8 +101,14 @@ public class PaymentController extends HttpServlet {
         url = "payment-list.jsp";
     }
 
-    private void createQrPayment(HttpServletRequest request) {
+    private void createQrPayment(HttpServletRequest request, HttpServletResponse response) {
+        boolean ajax = isAjaxRequest(request);
+        String source = request.getParameter("source");
         try {
+            if (ajax) {
+                response.setCharacterEncoding("UTF-8");
+                response.setContentType("application/json;charset=UTF-8");
+            }
             int billId = Integer.parseInt(request.getParameter("bill_id"));
             double amount = Double.parseDouble(request.getParameter("amount"));
             int expireMinutes = 15;
@@ -101,8 +118,6 @@ public class PaymentController extends HttpServlet {
             }
             String customerName = request.getParameter("customer_name");
             String customerEmail = request.getParameter("customer_email");
-            String source = request.getParameter("source");
-            boolean ajax = "1".equals(request.getParameter("ajax")) || "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"));
 
             if (customerName == null) customerName = "Khach hang";
             if (customerEmail == null) customerEmail = "";
@@ -111,9 +126,9 @@ public class PaymentController extends HttpServlet {
 
             if (payment != null) {
                 if ("bill".equalsIgnoreCase(source) && ajax) {
-                    responseQrJson(request, payment, payment.getPaymentId() > 0
+                    writeQrJson(response, true, payment, payment.getPaymentId() > 0
                             ? "QR code da duoc tao thanh cong!"
-                            : "Da tao QR tam thoi. He thong se hien thi QR ngay ca khi CSDL chua co bang Payment.");
+                            : "Da tao QR tam thoi. He thong se hien thi QR ngay ca khi CSDL chua co bang Payment.", 200);
                     return;
                 }
                 if ("bill".equalsIgnoreCase(source)) {
@@ -132,7 +147,7 @@ public class PaymentController extends HttpServlet {
                 return;
             } else {
                 if ("bill".equalsIgnoreCase(source) && ajax) {
-                    responseQrError(request, "Khong the tao QR thanh toan!");
+                    writeQrJson(response, false, null, "Khong the tao QR thanh toan!", 500);
                     return;
                 }
                 if ("bill".equalsIgnoreCase(source)) {
@@ -143,12 +158,14 @@ public class PaymentController extends HttpServlet {
             }
         } catch (Exception e) {
             String errorMessage = "Loi: " + e.getMessage();
-            boolean ajax = "1".equals(request.getParameter("ajax")) || "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"));
-            if ("bill".equalsIgnoreCase(request.getParameter("source"))) {
-                if (ajax) {
-                    responseQrError(request, errorMessage);
-                    return;
+            if (ajax) {
+                try {
+                    writeQrJson(response, false, null, errorMessage, 500);
+                } catch (Exception ignored) {
                 }
+                return;
+            }
+            if ("bill".equalsIgnoreCase(source)) {
                 try {
                     url = "redirect:MainController?action=listBill&error=" + java.net.URLEncoder.encode(errorMessage, "UTF-8");
                 } catch (Exception encodeEx) {
@@ -162,13 +179,22 @@ public class PaymentController extends HttpServlet {
         listPayments(request);
     }
 
-    private void responseQrJson(HttpServletRequest request, PaymentDTO payment, String message) {
-        try {
-            javax.servlet.http.HttpServletResponse response = (javax.servlet.http.HttpServletResponse) request.getAttribute("__httpResponse");
-            if (response == null) {
-                return;
-            }
-            response.setContentType("application/json;charset=UTF-8");
+    private boolean isAjaxRequest(HttpServletRequest request) {
+        return "1".equals(request.getParameter("ajax"))
+                || "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"));
+    }
+
+    private void writeQrJson(HttpServletResponse response, boolean success, PaymentDTO payment, String message, int statusCode) throws IOException {
+        response.reset();
+        response.setStatus(statusCode);
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+
+        StringBuilder json = new StringBuilder("{");
+        json.append("\"success\":").append(success);
+        json.append(",\"message\":\"").append(escapeJson(message)).append("\"");
+
+        if (payment != null) {
             String qrData = payment.getQrCodeData() != null ? payment.getQrCodeData() : "";
             String qrImageBase64 = qrData;
             String qrVietQrUrl = "";
@@ -177,9 +203,6 @@ public class PaymentController extends HttpServlet {
                 qrImageBase64 = parts.length > 0 ? parts[0] : "";
                 qrVietQrUrl = parts.length > 1 ? parts[1] : "";
             }
-            StringBuilder json = new StringBuilder("{");
-            json.append("\"success\":true");
-            json.append(",\"message\":\"").append(escapeJson(message)).append("\"");
             json.append(",\"paymentId\":").append(payment.getPaymentId());
             json.append(",\"billId\":").append(payment.getBillId());
             json.append(",\"amount\":").append(payment.getAmount());
@@ -190,28 +213,14 @@ public class PaymentController extends HttpServlet {
             json.append(",\"bankAccount\":\"").append(escapeJson(payment.getBankAccount())).append("\"");
             json.append(",\"bankAccountName\":\"").append(escapeJson(payment.getBankAccountName())).append("\"");
             json.append(",\"expiresAt\":\"").append(payment.getExpiresAt() != null ? escapeJson(payment.getExpiresAt().toString()) : "").append("\"");
+            json.append(",\"paidAt\":\"").append(payment.getPaidAt() != null ? escapeJson(payment.getPaidAt().toString()) : "").append("\"");
             json.append(",\"qrImageBase64\":\"").append(escapeJson(qrImageBase64)).append("\"");
             json.append(",\"qrVietQrUrl\":\"").append(escapeJson(qrVietQrUrl)).append("\"");
-            json.append("}");
-            response.getWriter().write(json.toString());
-            response.getWriter().flush();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-    }
 
-    private void responseQrError(HttpServletRequest request, String message) {
-        try {
-            javax.servlet.http.HttpServletResponse response = (javax.servlet.http.HttpServletResponse) request.getAttribute("__httpResponse");
-            if (response == null) {
-                return;
-            }
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"success\":false,\"message\":\"" + escapeJson(message) + "\"}");
-            response.getWriter().flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        json.append("}");
+        response.getWriter().write(json.toString());
+        response.getWriter().flush();
     }
 
     private String escapeJson(String value) {
@@ -279,20 +288,36 @@ public class PaymentController extends HttpServlet {
     }
 
     private void confirmPayment(HttpServletRequest request) {
+        boolean ajax = isAjaxRequest(request);
+        String source = request.getParameter("source");
         try {
             int paymentId = Integer.parseInt(request.getParameter("payment_id"));
             String transactionId = request.getParameter("transaction_id");
             if (transactionId == null) transactionId = "";
-
+ 
             boolean success = paymentService.confirmPayment(paymentId, transactionId);
-            String source = request.getParameter("source");
             if (success) {
+                PaymentDTO payment = paymentService.getPaymentInfo(paymentId);
+                if (ajax) {
+                    try {
+                        writeQrJson(responseFrom(request), true, payment, "Xac nhan thanh toan thanh cong!", 200);
+                    } catch (IOException ignored) {
+                    }
+                    return;
+                }
                 if ("bill".equalsIgnoreCase(source)) {
                     url = "redirect:MainController?action=listBill&msg=" + java.net.URLEncoder.encode("Xac nhan thanh toan thanh cong!", "UTF-8");
                     return;
                 }
                 request.setAttribute("msg", "Xac nhan thanh toan thanh cong!");
             } else {
+                if (ajax) {
+                    try {
+                        writeQrJson(responseFrom(request), false, null, "Xac nhan thanh toan that bai! QR co the da het han.", 400);
+                    } catch (IOException ignored) {
+                    }
+                    return;
+                }
                 if ("bill".equalsIgnoreCase(source)) {
                     url = "redirect:MainController?action=listBill&error=" + java.net.URLEncoder.encode("Xac nhan thanh toan that bai! QR co the da het han.", "UTF-8");
                     return;
@@ -300,10 +325,22 @@ public class PaymentController extends HttpServlet {
                 request.setAttribute("error", "Xac nhan thanh toan that bai! QR co the da het han.");
             }
         } catch (Exception e) {
+            if (ajax) {
+                try {
+                    writeQrJson(responseFrom(request), false, null, "Loi: " + e.getMessage(), 500);
+                } catch (IOException ignored) {
+                }
+                return;
+            }
             request.setAttribute("error", "Loi: " + e.getMessage());
             e.printStackTrace();
         }
         listPayments(request);
+    }
+
+    private HttpServletResponse responseFrom(HttpServletRequest request) {
+        Object responseObject = request.getAttribute("__httpResponse");
+        return responseObject instanceof HttpServletResponse ? (HttpServletResponse) responseObject : null;
     }
 
     private void cancelPayment(HttpServletRequest request) {
