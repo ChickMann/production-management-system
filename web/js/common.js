@@ -1,6 +1,17 @@
 // PMS Common JavaScript Utilities
 // ===============================
 
+// ============ CRITICAL: Prevent Dark Mode Flash (FOUC) ============
+// This MUST run synchronously before body renders.
+// Since common.js is loaded via <script> in <head>, this executes
+// before any body content is painted to screen.
+(function() {
+    var saved = localStorage.getItem('pms_dark_mode');
+    if (saved === '1') {
+        document.documentElement.classList.add('dark');
+    }
+})();
+
 // ============ Mobile Bottom Navigation ============
 function initMobileNavigation() {
     const currentPath = window.location.pathname;
