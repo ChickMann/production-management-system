@@ -28,8 +28,8 @@
     List<PurchaseOrderDTO> listPO = (List<PurchaseOrderDTO>) request.getAttribute("listPO");
     List<ItemDTO> listItems = (List<ItemDTO>) request.getAttribute("listItems");
     UserDTO user = (UserDTO) session.getAttribute("user");
-    String msg = (String) request.getAttribute("msg");
-    String error = (String) request.getAttribute("error");
+    String msg = request.getAttribute("msg") != null ? (String) request.getAttribute("msg") : request.getParameter("msg");
+    String error = request.getAttribute("error") != null ? (String) request.getAttribute("error") : request.getParameter("error");
 
     if (listPO == null) {
         listPO = new java.util.ArrayList<>();
@@ -40,6 +40,10 @@
 
     String userName = user != null ? user.getUsername() : "User";
     String userRole = user != null ? user.getRole() : "user";
+    boolean isAdmin = "admin".equalsIgnoreCase(userRole);
+    boolean isWorker = "employee".equalsIgnoreCase(userRole)
+            || "worker".equalsIgnoreCase(userRole)
+            || "user".equalsIgnoreCase(userRole);
     Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
     boolean isDarkMode = sessionDark != null ? sessionDark : false;
     String activePage = "purchaseorder";
@@ -174,12 +178,14 @@
                                 Theo dõi nhu cầu mua vật tư, cập nhật trạng thái xử lý và tạo mới đề nghị nhập hàng trực tiếp trên cùng một màn hình.
                             </p>
                         </div>
+                        <% if (isAdmin || isWorker) { %>
                         <button type="button" onclick="openPurchaseOrderModal()" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-cyan-500/30 transition-all hover:-translate-y-0.5 hover:bg-cyan-700">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
                             Tạo đề nghị mới
                         </button>
+                        <% } %>
                     </div>
                 </div>
 
@@ -320,23 +326,29 @@
                                         </td>
                                         <td class="px-6 py-4 text-center align-middle">
                                             <div class="flex items-center justify-center gap-2">
+                                                <% if (isAdmin) { %>
                                                 <form action="MainController" method="post" class="inline">
                                                     <input type="hidden" name="action" value="updateStatusPurchaseOrder">
                                                     <input type="hidden" name="poId" value="<%= po.getPoId() %>">
                                                     <select name="status" onchange="if(confirm('Cập nhật trạng thái đề nghị này?')){this.form.submit();}else{location.reload();}"
                                                             class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
                                                         <option value="Pending" <%= "Pending".equals(po.getStatus()) ? "selected" : "" %>>Chờ duyệt</option>
-                                                        <option value="Ordered" <%= "Ordered".equals(po.getStatus()) ? "selected" : "" %>>Đã duyệt</option>
-                                                        <option value="Received" <%= "Received".equals(po.getStatus()) ? "selected" : "" %>>Đã nhập kho</option>
+                                                        <option value="Ordered" <%= "Ordered".equals(po.getStatus()) ? "selected" : "" %>>Đang nhập</option>
+                                                        <option value="Received" <%= "Received".equals(po.getStatus()) ? "selected" : "" %>>Đã nhập</option>
                                                     </select>
                                                 </form>
-                                                <a href="MainController?action=deletePurchaseOrder&poId=<%= po.getPoId() %>"
-                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa đề nghị này?')"
-                                                   class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300" title="Xóa">
+                                                <button type="button"
+                                                        data-po-id="<%= po.getPoId() %>"
+                                                        data-po-name="Đề nghị #<%= po.getPoId() %>"
+                                                        onclick="openDeletePurchaseOrderModal(this)"
+                                                        class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300" title="Xóa">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
-                                                </a>
+                                                </button>
+                                                <% } else { %>
+                                                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Chỉ quản lý được duyệt/xóa</span>
+                                                <% } %>
                                             </div>
                                         </td>
                                     </tr>
@@ -355,6 +367,7 @@
         </div>
     </div>
 
+    <% if (isAdmin || isWorker) { %>
     <div id="purchaseOrderModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
         <div class="w-full max-w-xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40">
             <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-700">
@@ -400,12 +413,37 @@
             </form>
         </div>
     </div>
+    <% } %>
 
+    <div id="deletePurchaseOrderModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-600 dark:text-rose-300">Xác nhận xóa</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Xóa đề nghị nhập vật tư?</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">Bạn sắp xóa <span id="deletePurchaseOrderName" class="font-semibold text-slate-700 dark:text-slate-200"></span>. Thao tác này không thể hoàn tác.</p>
+                </div>
+            </div>
+            <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button type="button" onclick="closeDeletePurchaseOrderModal()" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                <a id="confirmDeletePurchaseOrderBtn" href="#" class="inline-flex items-center justify-center rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition hover:bg-rose-700">Xóa đề nghị</a>
+            </div>
+        </div>
+    </div>
+ 
     <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" onclick="toggleSidebar()"></div>
-
+ 
     <script>
         const purchaseOrderModal = document.getElementById('purchaseOrderModal');
         const purchaseItemSelect = document.getElementById('itemId');
+        const deletePurchaseOrderModal = document.getElementById('deletePurchaseOrderModal');
+        const deletePurchaseOrderName = document.getElementById('deletePurchaseOrderName');
+        const confirmDeletePurchaseOrderBtn = document.getElementById('confirmDeletePurchaseOrderBtn');
 
         function openPurchaseOrderModal() {
             if (!purchaseOrderModal) return;
@@ -424,6 +462,26 @@
             document.body.classList.remove('overflow-hidden');
         }
 
+        function openDeletePurchaseOrderModal(button) {
+            if (!deletePurchaseOrderModal || !deletePurchaseOrderName || !confirmDeletePurchaseOrderBtn || !button) return;
+            const poId = button.getAttribute('data-po-id');
+            const poName = button.getAttribute('data-po-name');
+            deletePurchaseOrderName.textContent = poName || ('Đề nghị #' + poId);
+            confirmDeletePurchaseOrderBtn.href = 'MainController?action=deletePurchaseOrder&poId=' + poId;
+            deletePurchaseOrderModal.classList.remove('hidden');
+            deletePurchaseOrderModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeDeletePurchaseOrderModal() {
+            if (!deletePurchaseOrderModal) return;
+            deletePurchaseOrderModal.classList.add('hidden');
+            deletePurchaseOrderModal.classList.remove('flex');
+            if (!purchaseOrderModal || purchaseOrderModal.classList.contains('hidden')) {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+ 
         if (purchaseOrderModal) {
             purchaseOrderModal.addEventListener('click', function (event) {
                 if (event.target === purchaseOrderModal) {
@@ -432,9 +490,20 @@
             });
         }
 
+        if (deletePurchaseOrderModal) {
+            deletePurchaseOrderModal.addEventListener('click', function (event) {
+                if (event.target === deletePurchaseOrderModal) {
+                    closeDeletePurchaseOrderModal();
+                }
+            });
+        }
+ 
         document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape' && purchaseOrderModal && purchaseOrderModal.classList.contains('flex')) {
-                closePurchaseOrderModal();
+            if (event.key === 'Escape') {
+                closeDeletePurchaseOrderModal();
+                if (purchaseOrderModal && purchaseOrderModal.classList.contains('flex')) {
+                    closePurchaseOrderModal();
+                }
             }
         });
     </script>

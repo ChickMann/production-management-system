@@ -1,33 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.ArrayList, pms.model.UserDTO, java.text.SimpleDateFormat"%>
-<%!
-    class FileRecordWrapper {
-        public int fileId;
-        public String originalName;
-        public String fileExtension;
-        public String fileSize;
-        public String uploaderName;
-        public String description;
-        public String uploadedAt;
-        public String relatedTable;
-        public int relatedId;
-        public String contentType;
-
-        public FileRecordWrapper(int fileId, String originalName, String fileExtension,
-                String fileSize, String uploaderName, String description,
-                String uploadedAt, String relatedTable, int relatedId, String contentType) {
-            this.fileId = fileId;
-            this.originalName = originalName;
-            this.fileExtension = fileExtension;
-            this.fileSize = fileSize;
-            this.uploaderName = uploaderName;
-            this.description = description;
-            this.uploadedAt = uploadedAt;
-            this.relatedTable = relatedTable;
-            this.relatedId = relatedId;
-            this.contentType = contentType;
-        }
-    }
-%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.ArrayList, pms.model.UserDTO, pms.controllers.FileController.FileRecordWrapper"%>
 <%
     ArrayList<FileRecordWrapper> fileList = (ArrayList<FileRecordWrapper>) request.getAttribute("fileList");
     String msg = (String) request.getAttribute("msg");
@@ -37,16 +8,16 @@
     String downloadSuccess = (String) request.getAttribute("downloadSuccess");
 
     if (fileList == null) fileList = new ArrayList<>();
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-
     String selectedTable = request.getParameter("table");
     if (selectedTable == null) selectedTable = "";
     
     String userName = user != null ? user.getUsername() : "User";
     String userRole = user != null ? user.getRole() : "user";
-    String pageTitle = "Quản Lý File Mã Hóa";
-    String pageSubtitle = "Upload, mã hóa và quản lý tài liệu";
+    boolean isAdmin = "admin".equalsIgnoreCase(userRole);
+    String pageTitle = "Quản lý file mã hóa";
+    String pageSubtitle = "Upload, mã hóa và tải xuống tài liệu";
     request.setAttribute("activePage", "file");
+    request.setAttribute("pageTitle", pageTitle);
     
     Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
     boolean isDarkMode = sessionDark != null ? sessionDark : false;
@@ -158,8 +129,8 @@
                 <div class="mb-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Quản Lý File Mã Hóa</h1>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Upload, mã hóa và quản lý tài liệu an toàn</p>
+                            <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Quản lý file mã hóa</h1>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Upload, mã hóa và tải xuống tài liệu an toàn</p>
                         </div>
                         <div class="flex gap-2">
                             <select id="filterTable" onchange="filterByTable()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm">
@@ -193,9 +164,10 @@
                 <% } %>
 
                 <!-- Upload Zone -->
+                <% if (isAdmin) { %>
                 <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden mb-6">
                     <div class="bg-gradient-to-r from-teal-500 to-teal-600 p-4 text-white">
-                        <h3 class="text-lg font-semibold">Upload File Mã Hóa</h3>
+                        <h3 class="text-lg font-semibold">Upload file mã hóa</h3>
                         <p class="text-teal-100 text-sm mt-1">Kéo thả hoặc chọn file để upload</p>
                     </div>
                     <div class="upload-zone rounded-xl p-8 m-4 dark:border-slate-600" id="uploadZone">
@@ -208,7 +180,7 @@
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                     </svg>
-                                    Chọn File
+                                    Chọn file
                                 </label>
                                 <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">PDF, DOC, DOCX, XLS, XLSX, TXT, JPG, PNG, ZIP, RAR (tối đa 10MB)</p>
                             </div>
@@ -245,7 +217,7 @@
                                                       class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-slate-200"></textarea>
                                         </div>
                                         <button type="submit" class="w-full py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-all shadow-lg shadow-teal-600/30">
-                                            Tải Lên Và Mã Hóa
+                                            Tải lên và mã hóa
                                         </button>
                                     </div>
                                 </div>
@@ -253,13 +225,14 @@
                         </form>
                     </div>
                 </div>
+                <% } %>
 
                 <!-- File List -->
                 <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden">
                     <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Danh Sách File</h3>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1"><%= fileList.size() %> files</p>
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Danh sách file</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1"><%= fileList.size() %> file</p>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -321,15 +294,18 @@
                                         <td class="px-4 py-3 text-slate-600 dark:text-slate-400"><%= f.uploaderName != null ? f.uploaderName : "-" %></td>
                                         <td class="px-4 py-3 text-center">
                                             <div class="flex items-center justify-center gap-2">
-                                                <button onclick="openDownloadModal(<%= f.fileId %>, '<%= f.originalName.replace("'", "\\'") %>')"
+                                                <button type="button"
+                                                        data-file-id="<%= f.fileId %>"
+                                                        data-file-name="<%= f.originalName %>"
+                                                        onclick="openDownloadModalFromButton(this)"
                                                         class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
-                                                    Tải Xuống
+                                                    Tải xuống
                                                 </button>
-                                                <% if (user != null && "admin".equals(user.getRole())) { %>
+                                                <% if (isAdmin) { %>
                                                 <form action="FileController" method="post" style="display:inline;">
                                                     <input type="hidden" name="action" value="delete"/>
                                                     <input type="hidden" name="file_id" value="<%= f.fileId %>"/>
-                                                    <button type="submit" onclick="return confirm('Xóa file này?')"
+                                                    <button type="submit" onclick="return confirm('Xóa file này?');"
                                                             class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
                                                         Xóa
                                                     </button>
@@ -365,32 +341,40 @@
     <script>
         var currentDownloadId = null;
 
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            var file = e.target.files[0];
-            if (file) {
-                document.getElementById('previewName').textContent = file.name + ' (' + formatSize(file.size) + ')';
-                document.getElementById('filePreview').style.display = 'block';
-            }
-        });
-
+        var fileInput = document.getElementById('fileInput');
+        var previewName = document.getElementById('previewName');
+        var filePreview = document.getElementById('filePreview');
         var uploadZone = document.getElementById('uploadZone');
-        uploadZone.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
-        uploadZone.addEventListener('dragleave', function(e) {
-            uploadZone.classList.remove('dragover');
-        });
-        uploadZone.addEventListener('drop', function(e) {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
-            var file = e.dataTransfer.files[0];
-            if (file) {
-                document.getElementById('fileInput').files = e.dataTransfer.files;
-                document.getElementById('previewName').textContent = file.name + ' (' + formatSize(file.size) + ')';
-                document.getElementById('filePreview').style.display = 'block';
-            }
-        });
+
+        if (fileInput && previewName && filePreview) {
+            fileInput.addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    previewName.textContent = file.name + ' (' + formatSize(file.size) + ')';
+                    filePreview.style.display = 'block';
+                }
+            });
+        }
+
+        if (uploadZone && fileInput && previewName && filePreview) {
+            uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            uploadZone.addEventListener('dragleave', function(e) {
+                uploadZone.classList.remove('dragover');
+            });
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                var file = e.dataTransfer.files[0];
+                if (file) {
+                    fileInput.files = e.dataTransfer.files;
+                    previewName.textContent = file.name + ' (' + formatSize(file.size) + ')';
+                    filePreview.style.display = 'block';
+                }
+            });
+        }
 
         function formatSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
@@ -400,11 +384,16 @@
 
         function openDownloadModal(fileId, fileName) {
             currentDownloadId = fileId;
-            document.getElementById('modalTitle').textContent = 'Tải Xuống: ' + fileName;
+            document.getElementById('modalTitle').textContent = 'Tải xuống: ' + fileName;
             document.getElementById('downloadPassword').value = '';
             document.getElementById('modalError').classList.add('hidden');
             document.getElementById('downloadModal').classList.remove('hidden');
             setTimeout(function() { document.getElementById('downloadPassword').focus(); }, 100);
+        }
+
+        function openDownloadModalFromButton(button) {
+            if (!button) return;
+            openDownloadModal(button.getAttribute('data-file-id'), button.getAttribute('data-file-name'));
         }
 
         function closeDownloadModal() {
@@ -434,12 +423,15 @@
             closeDownloadModal();
         }
 
-        document.getElementById('downloadPassword').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                confirmDownload();
-            }
-        });
+        var downloadPasswordInput = document.getElementById('downloadPassword');
+        if (downloadPasswordInput) {
+            downloadPasswordInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmDownload();
+                }
+            });
+        }
 
         function filterByTable() {
             var table = document.getElementById('filterTable').value;

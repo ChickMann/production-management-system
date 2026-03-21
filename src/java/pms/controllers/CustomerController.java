@@ -1,7 +1,7 @@
 package pms.controllers;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.net.URLEncoder;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -45,7 +45,7 @@ public class CustomerController extends HttpServlet {
         }
 
         if (url != null && url.startsWith("redirect:")) {
-            response.sendRedirect(url.substring(9));
+            response.sendRedirect(request.getContextPath() + "/" + url.substring(9));
         } else if (url != null && !url.isEmpty()) {
             request.getRequestDispatcher(url).forward(request, response);
         }
@@ -58,12 +58,19 @@ public class CustomerController extends HttpServlet {
             try {
                 boolean check = cdao.deleteCustomer(Integer.parseInt(id));
                 if (check) {
-                    request.setAttribute("msg", "Xóa khách hàng thành công!");
+                    return "redirect:CustomerController?action=listCustomer&msg="
+                            + URLEncoder.encode("Xóa khách hàng thành công!", "UTF-8");
                 } else {
-                    request.setAttribute("error", "Không thể xóa khách hàng " + id + " vì có dữ liệu liên quan.");
+                    String daoError = cdao.getLastError();
+                    String errorMessage = (daoError != null && !daoError.trim().isEmpty())
+                            ? daoError
+                            : "Không thể xóa khách hàng " + id + " vì có dữ liệu liên quan.";
+                    return "redirect:CustomerController?action=listCustomer&error="
+                            + URLEncoder.encode(errorMessage, "UTF-8");
                 }
             } catch (Exception e) {
-                request.setAttribute("error", "Lỗi: " + e.getMessage());
+                return "redirect:CustomerController?action=listCustomer&error="
+                        + safeEncode("Lỗi: " + e.getMessage());
             }
         }
         request.setAttribute("customerList", cdao.getAllCustomers());
@@ -76,14 +83,22 @@ public class CustomerController extends HttpServlet {
         request.setAttribute("mode", "add");
 
         if ("saveAddCustomer".equals(action)) {
-            String name = request.getParameter("customer_name");
-            String phone = request.getParameter("phone");
-            String email = request.getParameter("email");
+            String name = trimToNull(request.getParameter("customer_name"));
+            String phone = trimToNull(request.getParameter("phone"));
+            String email = trimToNull(request.getParameter("email"));
             CustomerDTO c = new CustomerDTO(0, name, phone, email);
-            if (cdao.insertCustomer(c)) {
-                return "redirect:CustomerController?action=listCustomer";
+
+            if (name == null) {
+                request.setAttribute("error", "Tên khách không được để trống");
+                request.setAttribute("customer", c);
+            } else if (cdao.insertCustomer(c)) {
+                return "redirect:CustomerController?action=listCustomer&msg="
+                        + safeEncode("Thêm khách hàng thành công!");
             } else {
-                request.setAttribute("error", "Không thể thêm khách hàng");
+                String daoError = cdao.getLastError();
+                request.setAttribute("error", daoError != null && !daoError.trim().isEmpty()
+                        ? daoError
+                        : "Không thể thêm khách hàng");
                 request.setAttribute("customer", c);
             }
         }
@@ -99,16 +114,22 @@ public class CustomerController extends HttpServlet {
         request.setAttribute("mode", "update");
 
         if ("saveUpdateCustomer".equals(action)) {
-            String name = request.getParameter("customer_name");
-            String phone = request.getParameter("phone");
-            String email = request.getParameter("email");
+            String name = trimToNull(request.getParameter("customer_name"));
+            String phone = trimToNull(request.getParameter("phone"));
+            String email = trimToNull(request.getParameter("email"));
             try {
                 int id = Integer.parseInt(sId);
                 c = new CustomerDTO(id, name, phone, email);
-                if (cdao.updateCustomer(c)) {
-                    return "redirect:CustomerController?action=listCustomer";
+                if (name == null) {
+                    request.setAttribute("error", "Tên khách không được để trống");
+                } else if (cdao.updateCustomer(c)) {
+                    return "redirect:CustomerController?action=listCustomer&msg="
+                            + safeEncode("Cập nhật khách hàng thành công!");
                 } else {
-                    request.setAttribute("error", "Cập nhật thất bại");
+                    String daoError = cdao.getLastError();
+                    request.setAttribute("error", daoError != null && !daoError.trim().isEmpty()
+                            ? daoError
+                            : "Cập nhật thất bại");
                 }
             } catch (Exception e) {
                 request.setAttribute("error", "Lỗi: " + e.getMessage());
@@ -123,36 +144,39 @@ public class CustomerController extends HttpServlet {
     private String searchCustomer(HttpServletRequest request) {
         String keyword = request.getParameter("keyword");
         CustomerDAO cdao = new CustomerDAO();
-        List<CustomerDTO> customerList = new ArrayList<>();
+        List<CustomerDTO> customerList;
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            String trimmedKeyword = keyword.trim();
-
-            CustomerDTO byId = cdao.SearchByCustomerID(trimmedKeyword);
-            if (byId != null) {
-                customerList.add(byId);
-            }
-
-            CustomerDTO byName = cdao.SearchByCustomerName(trimmedKeyword);
-            if (byName != null && !containsCustomer(customerList, byName.getCustomer_id())) {
-                customerList.add(byName);
-            }
+            customerList = cdao.searchCustomers(keyword.trim());
         } else {
             customerList = cdao.getAllCustomers();
         }
 
         request.setAttribute("customerList", customerList);
         request.setAttribute("keyword", keyword);
+        if (request.getAttribute("msg") == null && request.getParameter("msg") != null) {
+            request.setAttribute("msg", request.getParameter("msg"));
+        }
+        if (request.getAttribute("error") == null && request.getParameter("error") != null) {
+            request.setAttribute("error", request.getParameter("error"));
+        }
         return "customer.jsp";
     }
 
-    private boolean containsCustomer(List<CustomerDTO> customerList, int customerId) {
-        for (CustomerDTO customer : customerList) {
-            if (customer.getCustomer_id() == customerId) {
-                return true;
-            }
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
         }
-        return false;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String safeEncode(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        } catch (Exception ex) {
+            return "Loi-he-thong";
+        }
     }
 
     @Override

@@ -56,6 +56,11 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
+        if (user != null && !canAccessPath(user, path, httpRequest)) {
+            httpResponse.sendRedirect(contextPath + "/DashboardController");
+            return;
+        }
+
         chain.doFilter(request, response);
     }
 
@@ -85,6 +90,60 @@ public class AuthenticationFilter implements Filter {
                lowerPath.endsWith(".woff2") ||
                lowerPath.endsWith(".ttf") ||
                lowerPath.endsWith(".eot");
+    }
+
+    private boolean canAccessPath(UserDTO user, String path, HttpServletRequest request) {
+        if (user == null) {
+            return false;
+        }
+
+        String role = user.getRole() != null ? user.getRole().trim().toLowerCase() : "";
+        if ("admin".equals(role)) {
+            return true;
+        }
+
+        if (isWorkerRole(role)) {
+            if (isWorkerAllowedPath(path, request)) {
+                return true;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isWorkerRole(String role) {
+        return "employee".equals(role)
+                || "worker".equals(role)
+                || "user".equals(role);
+    }
+
+    private boolean isWorkerAllowedPath(String path, HttpServletRequest request) {
+        if (path == null) {
+            return false;
+        }
+
+        if ("/DashboardController".equals(path)
+                || "/WorkOrderController".equals(path)
+                || "/ProductionLogController".equals(path)
+                || "/QcController".equals(path)
+                || "/KanbanController".equals(path)
+                || "/PurchaseOrderController".equals(path)
+                || "/FileController".equals(path)
+                || "/profile.jsp".equals(path)
+                || "/UserController".equals(path)) {
+            return true;
+        }
+
+        if ("/MainController".equals(path)) {
+            String action = request.getParameter("action");
+            return "listWorkOrder".equals(action)
+                    || "listPurchaseOrder".equals(action)
+                    || "searchPurchaseOrder".equals(action)
+                    || "addPurchaseOrder".equals(action);
+        }
+
+        return false;
     }
 
     @Override

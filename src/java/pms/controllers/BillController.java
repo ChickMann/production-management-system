@@ -215,10 +215,27 @@ public class BillController extends HttpServlet {
         ArrayList<BillDTO> filtered = new ArrayList<>();
         String normalizedFilter = filter == null ? "all" : filter.trim().toLowerCase();
         String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+        PaymentDAO paymentDAO = new PaymentDAO();
 
         for (BillDTO bill : source) {
+            PaymentDTO latestPayment = paymentDAO.getLatestPaymentByBillId(bill.getBill_id());
+            boolean paymentExpired = latestPayment != null
+                    && latestPayment.getExpiresAt() != null
+                    && !"PAID".equalsIgnoreCase(latestPayment.getStatus())
+                    && latestPayment.getExpiresAt().before(new java.util.Date());
+
+            String derivedStatus = "pending";
+            if (latestPayment != null) {
+                if ("PAID".equalsIgnoreCase(latestPayment.getStatus())) {
+                    derivedStatus = "paid";
+                } else if (paymentExpired || "EXPIRED".equalsIgnoreCase(latestPayment.getStatus())) {
+                    derivedStatus = "expired";
+                }
+            }
+
             boolean matchesFilter = "all".equals(normalizedFilter)
-                    || normalizedFilter.equalsIgnoreCase(String.valueOf(bill.getStatus()));
+                    || normalizedFilter.equals(derivedStatus)
+                    || ("pending".equals(normalizedFilter) && ("pending".equals(derivedStatus) || "expired".equals(derivedStatus)));
 
             boolean matchesKeyword = normalizedKeyword.isEmpty()
                     || String.valueOf(bill.getBill_id()).contains(normalizedKeyword)

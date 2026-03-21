@@ -15,8 +15,8 @@
     UserDTO user = (UserDTO) session.getAttribute("user");
     List<pms.utils.NotificationService.Notification> notifications = (List<pms.utils.NotificationService.Notification>) session.getAttribute("notifications");
     
-    String msg = (String) request.getAttribute("msg");
-    String error = (String) request.getAttribute("error");
+    String msg = request.getAttribute("msg") != null ? (String) request.getAttribute("msg") : request.getParameter("msg");
+    String error = request.getAttribute("error") != null ? (String) request.getAttribute("error") : request.getParameter("error");
     String searchKeyword = request.getParameter("keyword");
     String filterStatus = request.getParameter("status");
     
@@ -364,17 +364,44 @@
                                         </td>
                                         <td class="px-6 py-4 text-center align-middle">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="MainController?action=listWorkOrder&search=<%= w.getWo_id() %>" class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300" title="Xem chi tiết">
+                                                <button type="button"
+                                                        class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
+                                                        title="Xem chi tiết"
+                                                        data-detail-wo-id="<%= w.getWo_id() %>"
+                                                        data-detail-product-name="<%= getProductName(w, items) %>"
+                                                        data-detail-product-id="<%= w.getProduct_item_id() %>"
+                                                        data-detail-routing-name="<%= getRoutingName(w, routings) %>"
+                                                        data-detail-routing-id="<%= w.getRouting_id() %>"
+                                                        data-detail-quantity="<%= w.getOrder_quantity() %>"
+                                                        data-detail-status="<%= w.getStatus() != null ? w.getStatus() : "New" %>"
+                                                        onclick="openDetailModalFromButton(this)">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                     </svg>
-                                                </a>
-                                                <a href="WorkOrderController?action=loadUpdate&wo_id=<%= w.getWo_id() %>" class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-amber-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-amber-500/10 dark:hover:text-amber-300" title="Chỉnh sửa">
+                                                </button>
+                                                <button type="button"
+                                                        class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-amber-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-amber-500/10 dark:hover:text-amber-300"
+                                                        title="Chỉnh sửa"
+                                                        data-wo-id="<%= w.getWo_id() %>"
+                                                        data-product-id="<%= w.getProduct_item_id() %>"
+                                                        data-routing-id="<%= w.getRouting_id() %>"
+                                                        data-quantity="<%= w.getOrder_quantity() %>"
+                                                        data-status="<%= w.getStatus() != null ? w.getStatus() : "New" %>"
+                                                        onclick="openEditModalFromButton(this)">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
-                                                </a>
+                                                </button>
+                                                <button type="button"
+                                                        data-wo-id="<%= w.getWo_id() %>"
+                                                        data-wo-name="Lệnh sản xuất #<%= w.getWo_id() %>"
+                                                        onclick="openDeleteWorkOrderModal(this)"
+                                                        class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300" title="Xóa">
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -449,6 +476,129 @@
         </div>
     </div>
 
+    <!-- Edit Work Order Modal -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" data-auto-open="false" data-wo-id="<%= wo != null ? wo.getWo_id() : "" %>" data-product-id="<%= wo != null ? wo.getProduct_item_id() : "" %>" data-routing-id="<%= wo != null ? wo.getRouting_id() : "" %>" data-quantity="<%= wo != null ? wo.getOrder_quantity() : "" %>" data-status="<%= wo != null && wo.getStatus() != null ? wo.getStatus() : "New" %>">
+        <div class="section-card max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-slate-200 shadow-2xl dark:border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Cập nhật lệnh sản xuất</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Chỉnh sửa nhanh thông tin lệnh ngay trên màn hình danh sách</p>
+                </div>
+                <button type="button" onclick="closeEditModal()" class="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form action="WorkOrderController" method="post" class="space-y-5 p-6">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" id="edit_wo_id" name="wo_id" value="<%= wo != null ? wo.getWo_id() : "" %>">
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Sản phẩm</label>
+                    <select id="edit_product_item_id" name="product_item_id" required class="form-input">
+                        <option value="">-- Chọn sản phẩm --</option>
+                        <% for (ItemDTO item : items) { %>
+                        <option value="<%= item.getItemID() %>" <%= (wo != null && item.getItemID() == wo.getProduct_item_id()) ? "selected" : "" %>><%= item.getItemName() %> (ID: <%= item.getItemID() %>)</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Quy trình sản xuất</label>
+                    <select id="edit_routing_id" name="routing_id" required class="form-input">
+                        <option value="">-- Chọn quy trình --</option>
+                        <% for (RoutingDTO r : routings) { %>
+                        <option value="<%= r.getRoutingId() %>" <%= (wo != null && r.getRoutingId() == wo.getRouting_id()) ? "selected" : "" %>><%= r.getRoutingName() %> (ID: <%= r.getRoutingId() %>)</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Số lượng</label>
+                    <input id="edit_order_quantity" type="number" name="order_quantity" required min="1" placeholder="VD: 100" value="<%= wo != null ? wo.getOrder_quantity() : "" %>" class="form-input">
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Trạng thái</label>
+                    <select id="edit_status" name="status" required class="form-input">
+                        <option value="New" <%= (wo != null && "New".equalsIgnoreCase(wo.getStatus())) ? "selected" : "" %>>Mới</option>
+                        <option value="In Progress" <%= (wo != null && ("In Progress".equalsIgnoreCase(wo.getStatus()) || "InProgress".equalsIgnoreCase(wo.getStatus()))) ? "selected" : "" %>>Đang sản xuất</option>
+                        <option value="Done" <%= (wo != null && ("Done".equalsIgnoreCase(wo.getStatus()) || "Completed".equalsIgnoreCase(wo.getStatus()))) ? "selected" : "" %>>Hoàn thành</option>
+                        <option value="Cancelled" <%= (wo != null && "Cancelled".equalsIgnoreCase(wo.getStatus())) ? "selected" : "" %>>Đã hủy</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 rounded-2xl bg-amber-600 py-3 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition-all hover:bg-amber-700">Lưu cập nhật</button>
+                    <button type="button" onclick="closeEditModal()" class="rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Work Order Modal -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+        <div class="section-card max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-slate-200 shadow-2xl dark:border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Chi tiết lệnh sản xuất</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Thông tin nhanh của lệnh sản xuất đã chọn</p>
+                </div>
+                <button type="button" onclick="closeDetailModal()" class="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="grid gap-5 p-6 sm:grid-cols-2">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Mã lệnh</p>
+                    <p id="detailWoId" class="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100"></p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Trạng thái</p>
+                    <p id="detailStatus" class="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100"></p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Sản phẩm</p>
+                    <p id="detailProductName" class="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100"></p>
+                    <p id="detailProductId" class="mt-1 text-sm text-slate-500 dark:text-slate-400"></p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Quy trình</p>
+                    <p id="detailRoutingName" class="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100"></p>
+                    <p id="detailRoutingId" class="mt-1 text-sm text-slate-500 dark:text-slate-400"></p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Số lượng</p>
+                    <p id="detailQuantity" class="mt-2 text-base font-semibold text-slate-900 dark:text-slate-100"></p>
+                </div>
+            </div>
+            <div class="flex justify-end border-t border-slate-200 px-6 py-5 dark:border-slate-700">
+                <button type="button" onclick="closeDetailModal()" class="rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteWorkOrderModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+        <div class="section-card w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-600 dark:text-rose-300">Xác nhận xóa</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Xóa lệnh sản xuất?</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">Bạn sắp xóa <span id="deleteWorkOrderName" class="font-semibold text-slate-700 dark:text-slate-200"></span>. Thao tác này không thể hoàn tác.</p>
+                </div>
+            </div>
+            <form action="WorkOrderController" method="post" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" id="delete_wo_id" name="wo_id" value="">
+                <button type="button" onclick="closeDeleteWorkOrderModal()" class="rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                <button type="submit" class="rounded-2xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition-all hover:bg-rose-700">Xóa lệnh</button>
+            </form>
+        </div>
+    </div>
+ 
     <script>
         // User Dropdown
         function toggleUserDropdown() {
@@ -499,15 +649,113 @@
             document.getElementById('addModal').classList.add('flex');
         }
 
+        function openDetailModal(woId, productName, productId, routingName, routingId, quantity, status) {
+            document.getElementById('detailWoId').textContent = woId ? '#WO-' + woId : '-';
+            document.getElementById('detailProductName').textContent = productName || '-';
+            document.getElementById('detailProductId').textContent = productId ? 'Mã sản phẩm: ' + productId : '';
+            document.getElementById('detailRoutingName').textContent = routingName || '-';
+            document.getElementById('detailRoutingId').textContent = routingId ? 'Mã quy trình: ' + routingId : '';
+            document.getElementById('detailQuantity').textContent = quantity || '0';
+            document.getElementById('detailStatus').textContent = normalizeWorkOrderStatus(status) === 'Done' ? 'Hoàn thành' : (normalizeWorkOrderStatus(status) === 'In Progress' ? 'Đang sản xuất' : (normalizeWorkOrderStatus(status) === 'Cancelled' ? 'Đã hủy' : 'Mới'));
+            document.getElementById('detailModal').classList.remove('hidden');
+            document.getElementById('detailModal').classList.add('flex');
+        }
+
+        function openDetailModalFromButton(button) {
+            if (!button) return;
+            openDetailModal(
+                button.getAttribute('data-detail-wo-id'),
+                button.getAttribute('data-detail-product-name'),
+                button.getAttribute('data-detail-product-id'),
+                button.getAttribute('data-detail-routing-name'),
+                button.getAttribute('data-detail-routing-id'),
+                button.getAttribute('data-detail-quantity'),
+                button.getAttribute('data-detail-status')
+            );
+        }
+
         function closeAddModal() {
             document.getElementById('addModal').classList.add('hidden');
             document.getElementById('addModal').classList.remove('flex');
+        }
+
+        function normalizeWorkOrderStatus(status) {
+            if (!status) return 'New';
+            if (status === 'InProgress') return 'In Progress';
+            if (status === 'Completed') return 'Done';
+            return status;
+        }
+
+        function openEditModal(woId, productId, routingId, quantity, status) {
+            document.getElementById('edit_wo_id').value = woId || '';
+            document.getElementById('edit_product_item_id').value = productId || '';
+            document.getElementById('edit_routing_id').value = routingId || '';
+            document.getElementById('edit_order_quantity').value = quantity || '';
+            document.getElementById('edit_status').value = normalizeWorkOrderStatus(status);
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('detailModal').classList.remove('flex');
+        }
+
+        function openDeleteWorkOrderModal(button) {
+            if (!button) return;
+            const modal = document.getElementById('deleteWorkOrderModal');
+            if (!modal) return;
+            document.getElementById('delete_wo_id').value = button.getAttribute('data-wo-id') || '';
+            document.getElementById('deleteWorkOrderName').textContent = button.getAttribute('data-wo-name') || 'lệnh sản xuất này';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeDeleteWorkOrderModal() {
+            const modal = document.getElementById('deleteWorkOrderModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function openEditModalFromButton(button) {
+            if (!button) return;
+            openEditModal(
+                button.getAttribute('data-wo-id'),
+                button.getAttribute('data-product-id'),
+                button.getAttribute('data-routing-id'),
+                button.getAttribute('data-quantity'),
+                button.getAttribute('data-status')
+            );
         }
 
         // Close modal on backdrop click
         document.getElementById('addModal').addEventListener('click', function(e) {
             if (e.target === this) closeAddModal();
         });
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDetailModal();
+        });
+        document.getElementById('deleteWorkOrderModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteWorkOrderModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDeleteWorkOrderModal();
+            }
+        });
+ 
     </script>
 </body>
 </html>

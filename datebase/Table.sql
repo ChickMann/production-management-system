@@ -190,3 +190,18 @@ CREATE TABLE Payment (
     customer_email VARCHAR(100) NULL,
     FOREIGN KEY (bill_id) REFERENCES Bill(bill_id)
 );
+
+CREATE TABLE EncryptedFile (
+    file_id INT PRIMARY KEY IDENTITY(1,1),
+    original_name NVARCHAR(255) NOT NULL,
+    stored_name VARCHAR(255) NOT NULL,
+    file_extension VARCHAR(20) NOT NULL,
+    file_size BIGINT NOT NULL,
+    password_hash VARCHAR(512) NOT NULL,
+    uploader_id INT NULL,
+    file_description NVARCHAR(500),
+    related_table VARCHAR(50),
+    related_id INT DEFAULT 0,
+    uploaded_at DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (uploader_id) REFERENCES Users(user_id)
+);

@@ -32,9 +32,37 @@ public class DashboardController extends HttpServlet {
     }
 
     private void viewDashboard(HttpServletRequest request) {
+        pms.model.UserDTO user = (pms.model.UserDTO) request.getSession().getAttribute("user");
         DashboardDAO dao = new DashboardDAO();
-        DashboardDTO data = dao.loadDashboardStats();
-        request.setAttribute("dashboardData", data);
+        
+        if (user != null) {
+            String userRole = user.getRole();
+            boolean isAdmin = "admin".equalsIgnoreCase(userRole);
+            boolean isWorker = "employee".equalsIgnoreCase(userRole)
+                    || "worker".equalsIgnoreCase(userRole)
+                    || "user".equalsIgnoreCase(userRole);
+            
+            DashboardDTO data;
+            if (isAdmin) {
+                // Admin xem tất cả thống kê
+                data = dao.loadDashboardStats();
+            } else if (isWorker) {
+                // Worker chỉ xem thống kê liên quan đến mình
+                data = dao.loadWorkerDashboardStats(user.getId());
+            } else {
+                // Mặc định xem thống kê đầy đủ
+                data = dao.loadDashboardStats();
+            }
+            request.setAttribute("dashboardData", data);
+            request.setAttribute("isAdmin", isAdmin);
+            request.setAttribute("isWorker", isWorker);
+        } else {
+            // Không có user, load mặc định
+            DashboardDTO data = dao.loadDashboardStats();
+            request.setAttribute("dashboardData", data);
+            request.setAttribute("isAdmin", false);
+            request.setAttribute("isWorker", false);
+        }
     }
 
     @Override

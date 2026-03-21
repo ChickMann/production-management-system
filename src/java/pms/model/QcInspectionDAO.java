@@ -16,6 +16,7 @@ public class QcInspectionDAO {
                    + "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            ensureQcInspectionTable(conn);
             ps.setInt(1, qc.getWoId());
             ps.setInt(2, qc.getStepId());
             ps.setInt(3, qc.getInspectorUserId());
@@ -41,6 +42,12 @@ public class QcInspectionDAO {
                    + "LEFT JOIN Users u ON qc.inspector_user_id = u.user_id "
                    + "ORDER BY qc.inspection_id DESC";
         try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ensurePs = conn.prepareStatement(ensureQcInspectionTableSql())) {
+            ensurePs.execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -64,6 +71,7 @@ public class QcInspectionDAO {
                    + "ORDER BY qc.inspection_id DESC";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            ensureQcInspectionTable(conn);
             ps.setInt(1, woId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -88,6 +96,7 @@ public class QcInspectionDAO {
                    + "ORDER BY qc.inspection_id DESC";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            ensureQcInspectionTable(conn);
             ps.setString(1, result);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -104,6 +113,7 @@ public class QcInspectionDAO {
         String sql = "DELETE FROM QC_Inspection WHERE inspection_id = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            ensureQcInspectionTable(conn);
             ps.setInt(1, inspectionId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -115,9 +125,11 @@ public class QcInspectionDAO {
     public int getTotalInspected() {
         String sql = "SELECT ISNULL(SUM(quantity_inspected), 0) FROM QC_Inspection";
         try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ensureQcInspectionTable(conn);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -127,9 +139,11 @@ public class QcInspectionDAO {
     public int getTotalFailed() {
         String sql = "SELECT ISNULL(SUM(quantity_failed), 0) FROM QC_Inspection WHERE inspection_result = 'FAIL'";
         try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ensureQcInspectionTable(conn);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -141,6 +155,32 @@ public class QcInspectionDAO {
         if (total == 0) return 0;
         int passed = getTotalInspected() - getTotalFailed();
         return Math.round((double) passed / total * 100.0);
+    }
+
+    private void ensureQcInspectionTable(Connection conn) throws Exception {
+        try (PreparedStatement ps = conn.prepareStatement(ensureQcInspectionTableSql())) {
+            ps.execute();
+        }
+    }
+
+    private String ensureQcInspectionTableSql() {
+        return "IF OBJECT_ID('QC_Inspection', 'U') IS NULL "
+                + "BEGIN "
+                + "CREATE TABLE QC_Inspection ("
+                + "inspection_id INT PRIMARY KEY IDENTITY(1,1), "
+                + "wo_id INT NOT NULL, "
+                + "step_id INT NOT NULL, "
+                + "inspector_user_id INT NOT NULL, "
+                + "inspection_result VARCHAR(20) NOT NULL, "
+                + "quantity_inspected INT NOT NULL DEFAULT 0, "
+                + "quantity_passed INT NOT NULL DEFAULT 0, "
+                + "quantity_failed INT NOT NULL DEFAULT 0, "
+                + "notes NVARCHAR(500) NULL, "
+                + "inspection_date DATETIME NOT NULL DEFAULT GETDATE(), "
+                + "FOREIGN KEY (wo_id) REFERENCES Work_Order(wo_id), "
+                + "FOREIGN KEY (step_id) REFERENCES Routing_Step(step_id), "
+                + "FOREIGN KEY (inspector_user_id) REFERENCES Users(user_id)"
+                + ") END";
     }
 
     private QcInspectionDTO mapInspection(ResultSet rs) {

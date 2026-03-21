@@ -90,6 +90,114 @@ function toggleNotificationPanel() {
     if (panel) panel.classList.toggle('hidden');
 }
 
+async function postNotificationAction(params) {
+    const response = await fetch('NotificationServlet', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        },
+        body: new URLSearchParams(params).toString()
+    });
+    return response.json();
+}
+
+function updateNotificationBadge(count) {
+    const badge = document.getElementById('notifBadge');
+    if (!badge) return;
+
+    const unread = Number(count) || 0;
+    if (unread > 0) {
+        badge.textContent = unread > 9 ? '9+' : String(unread);
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+    } else {
+        badge.textContent = '0';
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+    }
+}
+
+function ensureNotificationEmptyState() {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+
+    const hasNotification = list.querySelector('a[data-notification-item]');
+    let emptyState = document.getElementById('notifEmptyState');
+
+    if (hasNotification) {
+        if (emptyState) emptyState.remove();
+        return;
+    }
+
+    if (!emptyState) {
+        emptyState = document.createElement('div');
+        emptyState.id = 'notifEmptyState';
+        emptyState.className = 'p-8 text-center text-slate-400 dark:text-slate-500';
+        emptyState.innerHTML = `
+            <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+            </svg>
+            <p>Chưa có thông báo nào</p>
+        `;
+        list.appendChild(emptyState);
+    }
+}
+
+async function markNotificationRead(notificationId) {
+    if (!notificationId) return true;
+    try {
+        const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+        const wasUnread = item ? !item.classList.contains('opacity-60') : false;
+
+        await postNotificationAction({ action: 'markRead', id: notificationId });
+
+        if (item) {
+            item.classList.add('opacity-60');
+            const title = item.querySelector('[data-notification-title]');
+            if (title) {
+                title.classList.remove('text-teal-600', 'dark:text-teal-400');
+            }
+        }
+
+        if (wasUnread) {
+            const currentCount = Number((document.getElementById('notifBadge') || {}).textContent) || 0;
+            updateNotificationBadge(Math.max(0, currentCount - 1));
+        }
+    } catch (error) {
+        console.error('Mark notification read failed:', error);
+    }
+    return true;
+}
+
+async function handleNotificationClick(event, notificationId, link) {
+    if (event) {
+        event.preventDefault();
+    }
+
+    await markNotificationRead(notificationId);
+
+    if (link) {
+        window.location.href = link;
+    }
+
+    return false;
+}
+
+async function markAllNotificationsRead() {
+    try {
+        await postNotificationAction({ action: 'markAllRead' });
+        document.querySelectorAll('[data-notification-item]').forEach(item => {
+            item.classList.add('opacity-60');
+        });
+        document.querySelectorAll('[data-notification-title]').forEach(title => {
+            title.classList.remove('text-teal-600', 'dark:text-teal-400');
+        });
+        updateNotificationBadge(0);
+    } catch (error) {
+        console.error('Mark all notifications read failed:', error);
+    }
+}
+
 // Close notification panel when clicking outside
 document.addEventListener('click', function(e) {
     const btn = document.getElementById('notifBtn');
@@ -345,4 +453,6 @@ function sortTable(tableId, columnIndex) {
 // ============ Initialize on Page Load ============
 document.addEventListener('DOMContentLoaded', function() {
     initMobileNavigation();
+    ensureNotificationEmptyState();
 });
+

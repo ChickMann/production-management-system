@@ -1,6 +1,7 @@
 package pms.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -84,23 +85,16 @@ public class BOMController extends HttpServlet {
     }
 
     private void listBOMs(HttpServletRequest request) {
-        BOMDAO dao = new BOMDAO();
-        ItemDAO itemDao = new ItemDAO();
-        List<BOMDTO> boms = dao.getAllBOMS();
-        List<ItemDTO> products = itemDao.getProducts();
-        request.setAttribute("boms", boms);
-        request.setAttribute("products", products);
+        loadBomListData(request);
         url = "bom-list.jsp";
     }
 
     private void searchBOMs(HttpServletRequest request) {
         BOMDAO dao = new BOMDAO();
-        ItemDAO itemDao = new ItemDAO();
         String keyword = request.getParameter("keyword");
         String status = request.getParameter("status");
 
         List<BOMDTO> boms = dao.getAllBOMS();
-        List<ItemDTO> products = itemDao.getProducts();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             boms.removeIf(b -> b.getProductName() == null || !b.getProductName().toLowerCase().contains(keyword.toLowerCase()));
@@ -109,8 +103,8 @@ public class BOMController extends HttpServlet {
             boms.removeIf(b -> !b.getStatus().equals(status));
         }
 
+        loadBomReferenceData(request);
         request.setAttribute("boms", boms);
-        request.setAttribute("products", products);
         url = "bom-list.jsp";
     }
 
@@ -127,16 +121,16 @@ public class BOMController extends HttpServlet {
 
         BOMDAO dao = new BOMDAO();
         BOMDTO bom = dao.getBOMById(id);
-        request.setAttribute("bom", bom);
-        url = "bom-detail.jsp";
+        loadBomListData(request);
+        request.setAttribute("selectedBom", bom);
+        request.setAttribute("mode", "view");
+        url = "bom-list.jsp";
     }
 
     private void showAddForm(HttpServletRequest request) {
-        ItemDAO itemDao = new ItemDAO();
-        List<ItemDTO> products = itemDao.getProducts();
-        request.setAttribute("products", products);
+        loadBomListData(request);
         request.setAttribute("mode", "add");
-        url = "bom-form.jsp";
+        url = "bom-list.jsp";
     }
 
     private void showEditForm(HttpServletRequest request) {
@@ -151,49 +145,129 @@ public class BOMController extends HttpServlet {
         }
 
         BOMDAO dao = new BOMDAO();
-        ItemDAO itemDao = new ItemDAO();
-        
         BOMDTO bom = dao.getBOMById(id);
-        List<ItemDTO> products = itemDao.getProducts();
-        
-        request.setAttribute("bom", bom);
-        request.setAttribute("products", products);
+
+        loadBomListData(request);
+        request.setAttribute("selectedBom", bom);
         request.setAttribute("mode", "update");
-        url = "bom-form.jsp";
+        url = "bom-list.jsp";
     }
 
     private void addBOM(HttpServletRequest request) {
         String msg = "";
         String error = "";
+        BOMDTO bom = new BOMDTO();
 
         try {
             int productItemId = Integer.parseInt(request.getParameter("productItemId"));
-            String version = request.getParameter("version");
-            String status = request.getParameter("status") != null ? request.getParameter("status") : "active";
             String notes = request.getParameter("notes");
+            List<BOMDetailDTO> details = extractDetails(request);
 
-            BOMDTO bom = new BOMDTO();
             bom.setProductItemId(productItemId);
-            bom.setBomVersion(version);
-            bom.setStatus(status);
+            bom.setBomVersion(generateDefaultVersion(productItemId));
+            bom.setStatus("active");
             bom.setNotes(notes);
+            bom.setDetails(details);
+
+            if (details.isEmpty()) {
+                throw new IllegalArgumentException("Vui lòng thêm ít nhất một nguyên liệu cho BOM");
+            }
 
             BOMDAO dao = new BOMDAO();
             if (dao.insertBOM(bom)) {
-                url = "redirect:BOMController?action=list&msg=T%E1%BA%A1o%20BOM%20m%E1%BB%9Bi%20th%C3%A0nh%20c%C3%B4ng";
+                for (BOMDetailDTO detail : details) {
+                    detail.setBomId(bom.getBomId());
+                    if (!dao.addBOMDetail(detail)) {
+                        throw new IllegalStateException("Không thể lưu nguyên liệu cho BOM");
+                    }
+                }
+                url = "redirect:BOMController?action=list";
                 return;
             } else {
                 error = "Không thể tạo BOM mới";
             }
         } catch (Exception e) {
             error = "Lỗi: " + e.getMessage();
+            try {
+                bom.setProductItemId(Integer.parseInt(request.getParameter("productItemId")));
+            } catch (Exception ignore) {
+            }
+            bom.setNotes(request.getParameter("notes"));
+            bom.setDetails(extractDetails(request));
         }
 
+        loadBomListData(request);
+        request.setAttribute("selectedBom", bom);
         request.setAttribute("msg", msg);
         request.setAttribute("error", error);
-        request.setAttribute("products", new ItemDAO().getProducts());
         request.setAttribute("mode", "add");
         url = "bom-list.jsp";
+    }
+
+    private List<BOMDetailDTO> extractDetails(HttpServletRequest request) {
+        String[] materialIds = request.getParameterValues("materialItemId[]");
+        String[] quantities = request.getParameterValues("quantityRequired[]");
+        String[] units = request.getParameterValues("unit[]");
+        String[] wastePercents = request.getParameterValues("wastePercent[]");
+        String[] notes = request.getParameterValues("detailNotes[]");
+
+        List<BOMDetailDTO> details = new ArrayList<>();
+        if (materialIds == null || quantities == null) {
+            return details;
+        }
+
+        for (int i = 0; i < materialIds.length; i++) {
+            String materialIdValue = materialIds[i] != null ? materialIds[i].trim() : "";
+            String quantityValue = i < quantities.length && quantities[i] != null ? quantities[i].trim() : "";
+
+            if (materialIdValue.isEmpty() && quantityValue.isEmpty()) {
+                continue;
+            }
+
+            BOMDetailDTO detail = new BOMDetailDTO();
+            detail.setMaterialItemId(Integer.parseInt(materialIdValue));
+            detail.setQuantityRequired(Double.parseDouble(quantityValue));
+            detail.setUnit(getArrayValue(units, i));
+            detail.setWastePercent(parseDoubleOrDefault(wastePercents, i, 0));
+            detail.setNotes(getArrayValue(notes, i));
+            details.add(detail);
+        }
+
+        return details;
+    }
+
+    private String getArrayValue(String[] values, int index) {
+        if (values == null || index >= values.length || values[index] == null) {
+            return "";
+        }
+        return values[index].trim();
+    }
+
+    private double parseDoubleOrDefault(String[] values, int index, double defaultValue) {
+        if (values == null || index >= values.length || values[index] == null || values[index].trim().isEmpty()) {
+            return defaultValue;
+        }
+        return Double.parseDouble(values[index].trim());
+    }
+
+    private String generateDefaultVersion(int productItemId) {
+        BOMDAO dao = new BOMDAO();
+        int nextVersion = 1;
+        for (BOMDTO existing : dao.getBOMSByProduct(productItemId)) {
+            String version = existing.getBomVersion();
+            if (version == null || !version.startsWith("v")) {
+                continue;
+            }
+            try {
+                String normalized = version.substring(1);
+                int current = Integer.parseInt(normalized.split("\\.")[0]);
+                if (current >= nextVersion) {
+                    nextVersion = current + 1;
+                }
+            } catch (Exception ignore) {
+            }
+        }
+        return "v" + nextVersion + ".0";
     }
 
     private void updateBOM(HttpServletRequest request) {
@@ -203,9 +277,24 @@ public class BOMController extends HttpServlet {
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             int productItemId = Integer.parseInt(request.getParameter("productItemId"));
+            String notes = request.getParameter("notes");
+            List<BOMDetailDTO> details = extractDetails(request);
+
+            if (details.isEmpty()) {
+                throw new IllegalArgumentException("Vui lòng thêm ít nhất một nguyên liệu cho BOM");
+            }
+
+            BOMDAO dao = new BOMDAO();
+            BOMDTO existingBom = dao.getBOMById(id);
             String version = request.getParameter("version");
             String status = request.getParameter("status");
-            String notes = request.getParameter("notes");
+
+            if ((version == null || version.trim().isEmpty()) && existingBom != null) {
+                version = existingBom.getBomVersion();
+            }
+            if ((status == null || status.trim().isEmpty()) && existingBom != null) {
+                status = existingBom.getStatus();
+            }
 
             BOMDTO bom = new BOMDTO();
             bom.setBomId(id);
@@ -214,20 +303,54 @@ public class BOMController extends HttpServlet {
             bom.setStatus(status);
             bom.setNotes(notes);
 
-            BOMDAO dao = new BOMDAO();
             if (dao.updateBOM(bom)) {
-                msg = "BOM updated successfully!";
+                if (!dao.deleteBOMDetailsByBomId(id)) {
+                    throw new IllegalStateException("Không thể làm mới danh sách nguyên liệu của BOM");
+                }
+                for (BOMDetailDTO detail : details) {
+                    detail.setBomId(id);
+                    if (!dao.addBOMDetail(detail)) {
+                        throw new IllegalStateException("Không thể cập nhật nguyên liệu cho BOM");
+                    }
+                }
+                msg = "Cập nhật BOM thành công!";
             } else {
-                error = "Failed to update BOM";
+                error = "Không thể cập nhật BOM";
             }
         } catch (Exception e) {
-            error = "Error: " + e.getMessage();
+            error = "Lỗi: " + e.getMessage();
         }
 
-        request.setAttribute("msg", msg);
-        request.setAttribute("error", error);
-        request.setAttribute("mode", "update");
-        url = "redirect:BOMController?action=viewBOM&id=" + request.getParameter("id");
+        if (error != null && !error.trim().isEmpty()) {
+            BOMDAO dao = new BOMDAO();
+            BOMDTO bom = dao.getBOMById(Integer.parseInt(request.getParameter("id")));
+            if (bom != null) {
+                bom.setProductItemId(Integer.parseInt(request.getParameter("productItemId")));
+                bom.setNotes(request.getParameter("notes"));
+                bom.setDetails(extractDetails(request));
+            }
+            loadBomListData(request);
+            request.setAttribute("selectedBom", bom);
+            request.setAttribute("msg", msg);
+            request.setAttribute("error", error);
+            request.setAttribute("mode", "update");
+            url = "bom-list.jsp";
+            return;
+        }
+
+        url = "redirect:BOMController?action=list";
+    }
+
+    private void loadBomListData(HttpServletRequest request) {
+        BOMDAO dao = new BOMDAO();
+        request.setAttribute("boms", dao.getAllBOMS());
+        loadBomReferenceData(request);
+    }
+
+    private void loadBomReferenceData(HttpServletRequest request) {
+        ItemDAO itemDao = new ItemDAO();
+        request.setAttribute("products", itemDao.getProducts());
+        request.setAttribute("materials", itemDao.getMaterials());
     }
 
     private void cloneBOM(HttpServletRequest request) {

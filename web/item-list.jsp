@@ -25,6 +25,9 @@
         msg = request.getParameter("msg");
     }
     String error = (String) request.getAttribute("error");
+    if (error == null || error.trim().isEmpty()) {
+        error = request.getParameter("error");
+    }
     String keyword = request.getParameter("keyword");
     String typeFilter = request.getParameter("type");
     Boolean lowStockOnly = (Boolean) request.getAttribute("lowStockOnly");
@@ -162,14 +165,6 @@
                             <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">Theo dõi danh mục vật tư, sản phẩm và cảnh báo tồn kho ngay trên một màn hình. Bạn có thể thêm nhanh vật tư mới mà không cần rời khỏi trang danh sách.</p>
                         </div>
                         <div class="flex flex-wrap gap-3">
-                            <% if (lowStockCount > 0) { %>
-                            <a href="ItemController?action=lowStock" class="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-red-500/30 transition-all hover:-translate-y-0.5 hover:bg-red-700">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                </svg>
-                                Tồn kho thấp (<%= lowStockCount %>)
-                            </a>
-                            <% } %>
                             <button type="button" onclick="openAddItemModal()" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:-translate-y-0.5 hover:bg-teal-700">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -283,16 +278,13 @@
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tên vật tư</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Loại</th>
                                     <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tồn kho</th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tối thiểu</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Đơn vị</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trạng thái</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% if (items.isEmpty()) { %>
                                 <tr>
-                                    <td colspan="8" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
+                                    <td colspan="5" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
                                         <div class="mx-auto flex max-w-md flex-col items-center gap-3">
                                             <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                                                 <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,37 +326,32 @@
                                         <td class="px-4 py-3 text-right">
                                             <span class="font-bold <%= item.isLowStock() ? "text-red-600 dark:text-red-300" : "text-slate-700 dark:text-slate-200" %>"><%= item.getStockQuantity() %></span>
                                         </td>
-                                        <td class="px-4 py-3 text-right text-slate-500 dark:text-slate-400"><%= item.getMinStockLevel() %></td>
-                                        <td class="px-4 py-3 text-center text-slate-500 dark:text-slate-400"><%= item.getUnit() != null ? item.getUnit() : "-" %></td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <%= getStockStatusClass(item) %>">
-                                                <% if (item.isLowStock()) { %>
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                                </svg>
-                                                <% } else { %>
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                                </svg>
-                                                <% } %>
-                                                <%= getStockStatusText(item) %>
-                                            </span>
-                                        </td>
                                         <td class="px-4 py-3 text-center">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="ItemController?action=editItem&id=<%= item.getItemID() %>" 
-                                                   class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-amber-100 dark:hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-300 transition-colors" title="Chỉnh sửa">
+                                                <button type="button"
+                                                        class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-amber-100 dark:hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-300 transition-colors"
+                                                        title="Chỉnh sửa"
+                                                        data-item-id="<%= item.getItemID() %>"
+                                                        data-item-name="<%= item.getItemName() != null ? item.getItemName() : "" %>"
+                                                        data-item-type="<%= item.getItemType() != null ? item.getItemType() : "" %>"
+                                                        data-stock-quantity="<%= item.getStockQuantity() %>"
+                                                        data-description="<%= item.getDescription() != null ? item.getDescription() : "" %>"
+                                                        data-unit="<%= item.getUnit() != null ? item.getUnit() : "" %>"
+                                                        data-min-stock="<%= item.getMinStockLevel() %>"
+                                                        onclick="openEditItemModalFromButton(this)">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
-                                                </a>
-                                                <a href="ItemController?action=deleteItem&id=<%= item.getItemID() %>" 
-                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa vật tư này?')"
-                                                   class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-red-100 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors" title="Xóa">
+                                                </button>
+                                                <button type="button"
+                                                        data-item-id="<%= item.getItemID() %>"
+                                                        data-item-name="<%= item.getItemName() != null ? item.getItemName() : "Vật tư / sản phẩm #" + item.getItemID() %>"
+                                                        onclick="openDeleteItemModal(this)"
+                                                        class="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-red-100 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors" title="Xóa">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
-                                                </a>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -413,16 +400,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Đơn vị tính</label>
-                        <input type="text" name="unit" class="form-input w-full rounded-2xl border px-4 py-3" placeholder="Ví dụ: cái, kg, m">
-                    </div>
-                    <div>
                         <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Số lượng tồn kho</label>
                         <input type="number" name="stockQuantity" min="0" value="0" class="form-input w-full rounded-2xl border px-4 py-3">
-                    </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Tồn kho tối thiểu</label>
-                        <input type="number" name="minStockLevel" min="0" value="0" class="form-input w-full rounded-2xl border px-4 py-3">
                     </div>
                     <div class="md:col-span-2">
                         <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Mô tả</label>
@@ -437,10 +416,87 @@
         </div>
     </div>
 
+    <div id="editItemModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4" data-auto-open="false">
+        <div class="w-full max-w-3xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-300">Cập nhật</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Sửa vật tư / sản phẩm</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"></p>
+                </div>
+                <button type="button" onclick="closeEditItemModal()" class="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form action="ItemController" method="post" class="space-y-5 px-6 py-6">
+                <input type="hidden" name="action" value="saveUpdateItem">
+                <input type="hidden" id="edit_item_id" name="id" value="">
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Tên vật tư <span class="text-red-500">*</span></label>
+                        <input id="edit_item_name" type="text" name="itemName" required class="form-input w-full rounded-2xl border px-4 py-3" placeholder="Nhập tên vật tư hoặc sản phẩm">
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Loại <span class="text-red-500">*</span></label>
+                        <select id="edit_item_type" name="itemType" required class="form-input w-full rounded-2xl border px-4 py-3">
+                            <option value="">Chọn loại</option>
+                            <option value="SanPham">Sản phẩm</option>
+                            <option value="VatTu">Vật tư</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Số lượng tồn kho</label>
+                        <input id="edit_stock_quantity" type="number" name="stockQuantity" min="0" value="0" class="form-input w-full rounded-2xl border px-4 py-3">
+                    </div>
+                    <div class="md:col-span-2 hidden">
+                        <input id="edit_unit" type="text" name="unit" value="">
+                        <input id="edit_min_stock" type="number" name="minStockLevel" min="0" value="0">
+                    </div>
+                    <div class="md:col-span-2 hidden">
+                        <textarea id="edit_description" name="description" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end dark:border-slate-700">
+                    <button type="button" onclick="closeEditItemModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                    <button type="submit" class="rounded-2xl bg-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition hover:bg-amber-700">Lưu cập nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteItemModal" class="modal-backdrop fixed inset-0 z-[60] hidden items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-600 dark:text-rose-300">Xác nhận xóa</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Xóa vật tư / sản phẩm?</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                        Bạn sắp xóa <span id="deleteItemName" class="font-semibold text-slate-700 dark:text-slate-200"></span>. Thao tác này không thể hoàn tác.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button type="button" onclick="closeDeleteItemModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                <a id="confirmDeleteItemBtn" href="#" class="rounded-2xl bg-rose-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition hover:bg-rose-700">Xóa</a>
+            </div>
+        </div>
+    </div>
+
     <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" onclick="toggleSidebar()"></div>
     <script src="js/common.js"></script>
     <script>
         const addItemModal = document.getElementById('addItemModal');
+        const editItemModal = document.getElementById('editItemModal');
+        const deleteItemModal = document.getElementById('deleteItemModal');
+        const deleteItemName = document.getElementById('deleteItemName');
+        const confirmDeleteItemBtn = document.getElementById('confirmDeleteItemBtn');
 
         function openAddItemModal() {
             if (!addItemModal) return;
@@ -456,6 +512,62 @@
             document.body.classList.remove('overflow-hidden');
         }
 
+        function openEditItemModal(itemId, itemName, itemType, stockQuantity, description, unit, minStockLevel) {
+            if (!editItemModal) return;
+            document.getElementById('edit_item_id').value = itemId || '';
+            document.getElementById('edit_item_name').value = itemName || '';
+            document.getElementById('edit_item_type').value = itemType || '';
+            document.getElementById('edit_stock_quantity').value = stockQuantity || 0;
+            document.getElementById('edit_description').value = description || '';
+            document.getElementById('edit_unit').value = unit || '';
+            document.getElementById('edit_min_stock').value = minStockLevel || 0;
+            editItemModal.classList.remove('hidden');
+            editItemModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function openEditItemModalFromButton(button) {
+            if (!button) return;
+            openEditItemModal(
+                button.getAttribute('data-item-id'),
+                button.getAttribute('data-item-name'),
+                button.getAttribute('data-item-type'),
+                button.getAttribute('data-stock-quantity'),
+                button.getAttribute('data-description'),
+                button.getAttribute('data-unit'),
+                button.getAttribute('data-min-stock')
+            );
+        }
+
+        function closeEditItemModal() {
+            if (!editItemModal) return;
+            editItemModal.classList.add('hidden');
+            editItemModal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function openDeleteItemModal(button) {
+            if (!deleteItemModal || !deleteItemName || !confirmDeleteItemBtn || !button) return;
+            const itemId = button.getAttribute('data-item-id');
+            const itemName = button.getAttribute('data-item-name');
+            deleteItemName.textContent = itemName || ('Vật tư / sản phẩm #' + itemId);
+            confirmDeleteItemBtn.href = 'ItemController?action=deleteItem&id=' + itemId;
+            deleteItemModal.classList.remove('hidden');
+            deleteItemModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeDeleteItemModal() {
+            if (!deleteItemModal) return;
+            deleteItemModal.classList.add('hidden');
+            deleteItemModal.classList.remove('flex');
+            if (!addItemModal || addItemModal.classList.contains('hidden')) {
+                if (!editItemModal || editItemModal.classList.contains('hidden')) {
+                    document.body.classList.remove('overflow-hidden');
+                }
+            }
+        }
+
         if (addItemModal) {
             addItemModal.addEventListener('click', function (event) {
                 if (event.target === addItemModal) {
@@ -464,9 +576,27 @@
             });
         }
 
+        if (editItemModal) {
+            editItemModal.addEventListener('click', function (event) {
+                if (event.target === editItemModal) {
+                    closeEditItemModal();
+                }
+            });
+        }
+
+        if (deleteItemModal) {
+            deleteItemModal.addEventListener('click', function (event) {
+                if (event.target === deleteItemModal) {
+                    closeDeleteItemModal();
+                }
+            });
+        }
+
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
+                closeDeleteItemModal();
                 closeAddItemModal();
+                closeEditItemModal();
             }
         });
     </script>

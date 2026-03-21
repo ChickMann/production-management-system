@@ -4,8 +4,8 @@
     UserDTO currentUser = (UserDTO) session.getAttribute("user");
     List<Notification> notifications = (List<Notification>) session.getAttribute("notifications");
     
-    String msg = (String) request.getAttribute("msg");
-    String error = (String) request.getAttribute("error");
+    String msg = request.getAttribute("msg") != null ? (String) request.getAttribute("msg") : request.getParameter("msg");
+    String error = request.getAttribute("error") != null ? (String) request.getAttribute("error") : request.getParameter("error");
     String filterRole = request.getParameter("role");
     String keyword = request.getParameter("keyword");
     boolean showModal = request.getAttribute("showModal") != null && (Boolean) request.getAttribute("showModal");
@@ -42,10 +42,24 @@
     String pageTitle = "Quản Lý Người Dùng";
     String pageSubtitle = "Quản lý tài khoản và phân quyền người dùng";
     request.setAttribute("activePage", "user");
+    request.setAttribute("pageTitle", pageTitle);
     
     Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
     boolean isDarkMode = sessionDark != null ? sessionDark : false;
     String lang = session.getAttribute("lang") != null ? (String) session.getAttribute("lang") : "vi";
+%>
+<%!
+    private String escapeJs(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value
+                .replace("\\", "\\\\")
+                .replace("'", "\\'")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("</", "<\\/");
+    }
 %>
 <!DOCTYPE html>
 <html lang="<%= lang %>">
@@ -70,10 +84,58 @@
     <style>
         * { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; }
         body { overflow-x: hidden; }
+
+        .sidebar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 40;
+        }
+
+        .sidebar-header {
+            position: sticky;
+            top: 0;
+            background: #0f172a;
+            z-index: 10;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
+        }
+
+        .sidebar-footer {
+            position: sticky;
+            bottom: 0;
+            background: #0f172a;
+            z-index: 10;
+        }
+
+        .dark .sidebar-fixed,
+        .dark .sidebar-header,
+        .dark .sidebar-footer {
+            background: #0f172a;
+        }
         
         .main-wrapper {
             margin-left: 0;
             transition: margin-left 0.3s ease;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
         }
         @media (min-width: 1024px) {
             .main-wrapper {
@@ -117,7 +179,7 @@
         <jsp:include page="components/shared-sidebar.jsp" />
         
         <!-- Main Content -->
-        <div id="mainWrapper" class="main-wrapper flex-1 flex flex-col min-h-screen min-w-0">
+        <div id="mainWrapper" class="main-wrapper flex-1 flex flex-col min-h-screen min-w-0 w-full overflow-x-hidden">
             <jsp:include page="components/shared-header.jsp" />
             
             <main class="flex-1 overflow-y-auto p-4 lg:p-6 bg-slate-100 dark:bg-slate-900">
@@ -326,18 +388,37 @@
                                             <td class="px-4 py-3">
                                                 <div class="flex items-center justify-center gap-1">
                                                     <!-- Chi tiết -->
-                                                    <a href="UserController?action=view&id=<%= u.getId() %>" 
-                                                       class="action-btn p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-blue-100 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" title="Chi tiết">
+                                                    <button type="button"
+                                                       class="action-btn p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-blue-100 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+                                                       title="Chi tiết"
+                                                       data-user-id="<%= u.getId() %>"
+                                                       data-username="<%= escapeJs(u.getUsername()) %>"
+                                                       data-full-name="<%= escapeJs(u.getFullName()) %>"
+                                                       data-role="<%= escapeJs(u.getRole()) %>"
+                                                       data-email="<%= escapeJs(u.getEmail()) %>"
+                                                       data-phone="<%= escapeJs(u.getPhone()) %>"
+                                                       data-status="<%= escapeJs(u.getStatus()) %>"
+                                                       data-created-date="<%= u.getCreatedDate() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(u.getCreatedDate()) : "Chưa có" %>"
+                                                       onclick="openDetailModalFromButton(this)">
                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                         </svg>
-                                                    </a>
+                                                    </button>
                                                     
                                                     <% if (isAdmin || isCurrentUser) { %>
                                                     <!-- Sửa -->
-                                                    <button type="button" onclick="openEditModal(<%= u.getId() %>, '<%= u.getUsername() %>', '<%= u.getFullName() != null ? u.getFullName() : "" %>', '<%= u.getRole() %>', '<%= u.getEmail() != null ? u.getEmail() : "" %>', '<%= u.getPhone() != null ? u.getPhone() : "" %>', '<%= u.getStatus() %>')"
-                                                       class="action-btn p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-blue-100 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-300 transition-colors" title="Chỉnh sửa">
+                                                    <button type="button"
+                                                       class="action-btn p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-blue-100 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+                                                       title="Chỉnh sửa"
+                                                       data-edit-id="<%= u.getId() %>"
+                                                       data-edit-username="<%= escapeJs(u.getUsername()) %>"
+                                                       data-edit-full-name="<%= escapeJs(u.getFullName()) %>"
+                                                       data-edit-role="<%= escapeJs(u.getRole()) %>"
+                                                       data-edit-email="<%= escapeJs(u.getEmail()) %>"
+                                                       data-edit-phone="<%= escapeJs(u.getPhone()) %>"
+                                                       data-edit-status="<%= escapeJs(u.getStatus()) %>"
+                                                       onclick="openEditModalFromButton(this)">
                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                         </svg>
@@ -345,11 +426,25 @@
                                                     <% } %>
                                                     
                                                     <% if (isAdmin && !isCurrentUser) { %>
+                                                    <button type="button"
+                                                            class="action-btn p-2 rounded-xl text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-500/10 transition-colors"
+                                                            title="Xóa"
+                                                            data-delete-id="<%= u.getId() %>"
+                                                            data-delete-name="<%= escapeJs(u.getFullName() != null && !u.getFullName().trim().isEmpty() ? u.getFullName() : u.getUsername()) %>"
+                                                            data-delete-username="<%= escapeJs(u.getUsername()) %>"
+                                                            onclick="openDeleteUserModalFromButton(this)">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                        </svg>
+                                                    </button>
+
                                                     <!-- Khóa/Mở khóa -->
                                                     <form action="UserController" method="post" style="display:inline;">
                                                         <input type="hidden" name="action" value="<%= "active".equalsIgnoreCase(u.getStatus()) ? "lockUser" : "unlockUser" %>"/>
                                                         <input type="hidden" name="id" value="<%= u.getId() %>"/>
-                                                        <button type="submit" onclick="return confirm('<%= "active".equalsIgnoreCase(u.getStatus()) ? "Khóa tài khoản này?" : "Mở khóa tài khoản này?" %>')"
+                                                        <button type="submit"
+                                                                data-confirm="<%= "active".equalsIgnoreCase(u.getStatus()) ? "Khóa tài khoản này?" : "Mở khóa tài khoản này?" %>"
+                                                                onclick="return confirm(this.dataset.confirm)"
                                                                 class="action-btn p-2 rounded-xl <%= "active".equalsIgnoreCase(u.getStatus()) ? "text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-500/10" : "text-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-500/10" %> transition-colors" title="<%= "active".equalsIgnoreCase(u.getStatus()) ? "Khóa" : "Mở khóa" %>">
                                                             <% if ("active".equalsIgnoreCase(u.getStatus())) { %>
                                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,7 +477,8 @@
     </div>
 
     <!-- Add User Modal -->
-    <div id="userModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm overflow-y-auto py-8">
+    <div id="userModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm overflow-y-auto py-8"
+         data-auto-open="<%= showModal ? "true" : "false" %>">
         <div class="w-full max-w-2xl my-auto overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
             <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
                 <div>
@@ -396,16 +492,18 @@
                     </svg>
                 </button>
             </div>
-            <form action="UserController" method="post" class="space-y-5 px-6 py-6">
+            <form action="UserController" method="post" class="space-y-5 px-6 py-6" autocomplete="off">
                 <input type="hidden" name="action" value="saveAddUser"/>
+                <input type="text" name="fakeUsername" autocomplete="username" tabindex="-1" class="hidden" aria-hidden="true">
+                <input type="password" name="fakePassword" autocomplete="current-password" tabindex="-1" class="hidden" aria-hidden="true">
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div>
                         <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Username <span class="text-red-500">*</span></label>
-                        <input type="text" name="username" required class="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all" placeholder="Nhập username">
+                        <input type="text" name="username" required autocomplete="off" data-lpignore="true" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all" placeholder="Nhập username">
                     </div>
                     <div>
                         <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Mật khẩu <span class="text-red-500">*</span></label>
-                        <input type="password" name="password" required class="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all" placeholder="Nhập mật khẩu">
+                        <input type="password" name="password" required autocomplete="new-password" data-lpignore="true" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all" placeholder="Nhập mật khẩu">
                     </div>
                 </div>
                 <div class="grid gap-5 sm:grid-cols-2">
@@ -441,7 +539,15 @@
     </div>
 
     <!-- Edit User Modal -->
-    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm overflow-y-auto py-8">
+    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm overflow-y-auto py-8"
+         data-auto-open="<%= showEditModal && editUser != null ? "true" : "false" %>"
+         data-edit-id="<%= editUser != null ? editUser.getId() : 0 %>"
+         data-edit-username="<%= editUser != null ? escapeJs(editUser.getUsername()) : "" %>"
+         data-edit-full-name="<%= editUser != null ? escapeJs(editUser.getFullName()) : "" %>"
+         data-edit-role="<%= editUser != null ? escapeJs(editUser.getRole()) : "" %>"
+         data-edit-email="<%= editUser != null ? escapeJs(editUser.getEmail()) : "" %>"
+         data-edit-phone="<%= editUser != null ? escapeJs(editUser.getPhone()) : "" %>"
+         data-edit-status="<%= editUser != null ? escapeJs(editUser.getStatus()) : "" %>">
         <div class="w-full max-w-2xl my-auto overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
             <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
                 <div>
@@ -508,9 +614,95 @@
         </div>
     </div>
 
+    <!-- Detail User Modal -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm overflow-y-auto py-8">
+        <div class="w-full max-w-2xl my-auto overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-300">Chi tiết</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Thông tin người dùng</h3>
+                </div>
+                <button type="button" onclick="closeDetailModal()" class="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="grid gap-6 px-6 py-6 sm:grid-cols-2">
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Mã người dùng</p>
+                        <p id="detailUserId" class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Username</p>
+                        <p id="detailUsername" class="mt-1 text-sm text-slate-600 dark:text-slate-300"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Họ tên</p>
+                        <p id="detailFullName" class="mt-1 text-sm text-slate-600 dark:text-slate-300"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Ngày tạo</p>
+                        <p id="detailCreatedDate" class="mt-1 text-sm text-slate-600 dark:text-slate-300"></p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Vai trò</p>
+                        <p id="detailRole" class="mt-1 text-sm text-slate-600 dark:text-slate-300"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Email</p>
+                        <p id="detailEmail" class="mt-1 text-sm text-slate-600 dark:text-slate-300"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Điện thoại</p>
+                        <p id="detailPhone" class="mt-1 text-sm text-slate-600 dark:text-slate-300"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Trạng thái</p>
+                        <p id="detailStatus" class="mt-1 text-sm text-slate-600 dark:text-slate-300"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end border-t border-slate-200 px-6 py-5 dark:border-slate-700">
+                <button type="button" onclick="closeDetailModal()" class="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div id="deleteUserModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm overflow-y-auto py-8">
+        <div class="w-full max-w-md my-auto overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="px-6 py-6">
+                <div class="flex items-start gap-4">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-600 dark:text-rose-300">Xác nhận xóa</p>
+                        <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Xóa người dùng?</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">Bạn sắp xóa <span id="deleteUserName" class="font-semibold text-slate-700 dark:text-slate-200"></span> <span id="deleteUsername" class="text-slate-500 dark:text-slate-400"></span>. Thao tác này không thể hoàn tác.</p>
+                    </div>
+                </div>
+                <form action="UserController" method="post" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <input type="hidden" name="action" value="removeUser">
+                    <input type="hidden" id="deleteUserId" name="id" value="">
+                    <button type="button" onclick="closeDeleteUserModal()" class="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                    <button type="submit" class="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition hover:bg-rose-700">Xóa người dùng</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         const userModal = document.getElementById('userModal');
         const editModal = document.getElementById('editModal');
+        const detailModal = document.getElementById('detailModal');
+        const deleteUserModal = document.getElementById('deleteUserModal');
 
         function openUserModal() {
             if (!userModal) return;
@@ -528,16 +720,29 @@
 
         function openEditModal(id, username, fullName, role, email, phone, status) {
             if (!editModal) return;
-            document.getElementById('editUserId').value = id;
-            document.getElementById('editUsername').value = username;
-            document.getElementById('editFullName').value = fullName;
-            document.getElementById('editRole').value = role;
-            document.getElementById('editEmail').value = email;
-            document.getElementById('editPhone').value = phone;
-            document.getElementById('editStatus').value = status;
+            document.getElementById('editUserId').value = id || '';
+            document.getElementById('editUsername').value = username || '';
+            document.getElementById('editFullName').value = fullName || '';
+            document.getElementById('editRole').value = role || 'employee';
+            document.getElementById('editEmail').value = email || '';
+            document.getElementById('editPhone').value = phone || '';
+            document.getElementById('editStatus').value = status || 'active';
             editModal.classList.remove('hidden');
             editModal.classList.add('flex');
             document.body.classList.add('overflow-hidden');
+        }
+
+        function openEditModalFromButton(button) {
+            if (!button) return;
+            openEditModal(
+                button.getAttribute('data-edit-id'),
+                button.getAttribute('data-edit-username'),
+                button.getAttribute('data-edit-full-name'),
+                button.getAttribute('data-edit-role'),
+                button.getAttribute('data-edit-email'),
+                button.getAttribute('data-edit-phone'),
+                button.getAttribute('data-edit-status')
+            );
         }
 
         function closeEditModal() {
@@ -547,8 +752,82 @@
             document.body.classList.remove('overflow-hidden');
         }
 
+        function formatRole(role) {
+            if (role === 'admin') return 'Admin';
+            if (role === 'employee') return 'Công nhân';
+            return role || '-';
+        }
+
+        function formatStatus(status) {
+            if (status === 'active') return 'Hoạt động';
+            if (status === 'inactive') return 'Khóa';
+            return status || '-';
+        }
+
+        function openDetailModal(id, username, fullName, role, email, phone, status, createdDate) {
+            if (!detailModal) return;
+            document.getElementById('detailUserId').textContent = id ? '#' + id : '-';
+            document.getElementById('detailUsername').textContent = username || '-';
+            document.getElementById('detailFullName').textContent = fullName || username || '-';
+            document.getElementById('detailRole').textContent = formatRole(role);
+            document.getElementById('detailEmail').textContent = email || 'Chưa cập nhật';
+            document.getElementById('detailPhone').textContent = phone || 'Chưa cập nhật';
+            document.getElementById('detailStatus').textContent = formatStatus(status);
+            document.getElementById('detailCreatedDate').textContent = createdDate || 'Chưa có';
+            detailModal.classList.remove('hidden');
+            detailModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function openDetailModalFromButton(button) {
+            if (!button) return;
+            openDetailModal(
+                button.getAttribute('data-user-id'),
+                button.getAttribute('data-username'),
+                button.getAttribute('data-full-name'),
+                button.getAttribute('data-role'),
+                button.getAttribute('data-email'),
+                button.getAttribute('data-phone'),
+                button.getAttribute('data-status'),
+                button.getAttribute('data-created-date')
+            );
+        }
+
+        function closeDetailModal() {
+            if (!detailModal) return;
+            detailModal.classList.add('hidden');
+            detailModal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function openDeleteUserModal(id, fullName, username) {
+            if (!deleteUserModal) return;
+            document.getElementById('deleteUserId').value = id || '';
+            document.getElementById('deleteUserName').textContent = fullName || username || 'người dùng này';
+            document.getElementById('deleteUsername').textContent = username ? '(@' + username + ')' : '';
+            deleteUserModal.classList.remove('hidden');
+            deleteUserModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function openDeleteUserModalFromButton(button) {
+            if (!button) return;
+            openDeleteUserModal(
+                button.getAttribute('data-delete-id'),
+                button.getAttribute('data-delete-name'),
+                button.getAttribute('data-delete-username')
+            );
+        }
+
+        function closeDeleteUserModal() {
+            if (!deleteUserModal) return;
+            deleteUserModal.classList.add('hidden');
+            deleteUserModal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
+
         // Close on outside click
-        [userModal, editModal].forEach(modal => {
+        [userModal, editModal, detailModal, deleteUserModal].forEach(modal => {
             if (modal) {
                 modal.addEventListener('click', function(event) {
                     if (event.target === modal) {
@@ -565,22 +844,27 @@
             if (event.key === 'Escape') {
                 closeUserModal();
                 closeEditModal();
+                closeDetailModal();
+                closeDeleteUserModal();
             }
         });
 
-        // Auto-open add modal if showModal flag
-        <% if (showModal) { %>
         document.addEventListener('DOMContentLoaded', function() {
-            openUserModal();
+            if (userModal && userModal.getAttribute('data-auto-open') === 'true') {
+                openUserModal();
+            }
+            if (editModal && editModal.getAttribute('data-auto-open') === 'true') {
+                openEditModal(
+                    editModal.getAttribute('data-edit-id'),
+                    editModal.getAttribute('data-edit-username'),
+                    editModal.getAttribute('data-edit-full-name'),
+                    editModal.getAttribute('data-edit-role'),
+                    editModal.getAttribute('data-edit-email'),
+                    editModal.getAttribute('data-edit-phone'),
+                    editModal.getAttribute('data-edit-status')
+                );
+            }
         });
-        <% } %>
-        
-        // Auto-open edit modal if showEditModal flag
-        <% if (showEditModal && editUser != null) { %>
-        document.addEventListener('DOMContentLoaded', function() {
-            openEditModal(<%= editUser.getId() %>, '<%= editUser.getUsername() %>', '<%= editUser.getFullName() != null ? editUser.getFullName() : "" %>', '<%= editUser.getRole() %>', '<%= editUser.getEmail() != null ? editUser.getEmail() : "" %>', '<%= editUser.getPhone() != null ? editUser.getPhone() : "" %>', '<%= editUser.getStatus() %>');
-        });
-        <% } %>
     </script>
 </body>
 </html>

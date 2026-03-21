@@ -50,8 +50,12 @@ public class WorkOrderController extends HttpServlet {
                 wo.setRouting_id(routing);
                 wo.setOrder_quantity(quantity);
                 wo.setStatus(status);
-                dao.insertWorkOrder(wo);
-                response.sendRedirect("MainController?action=listWorkOrder");
+                boolean inserted = dao.insertWorkOrder(wo);
+                String insertNotice = inserted
+                        ? java.net.URLEncoder.encode("Tạo lệnh sản xuất thành công", "UTF-8")
+                        : java.net.URLEncoder.encode("Tạo lệnh sản xuất thất bại", "UTF-8");
+                response.sendRedirect(request.getContextPath() + "/MainController?action=listWorkOrder"
+                        + (inserted ? "&msg=" : "&error=") + insertNotice);
                 return;
 
             } else if ("update".equals(action)) {
@@ -67,14 +71,22 @@ public class WorkOrderController extends HttpServlet {
                 wo.setRouting_id(routing);
                 wo.setOrder_quantity(quantity);
                 wo.setStatus(status);
-                dao.updateWorkOrder(wo);
-                response.sendRedirect("MainController?action=listWorkOrder");
+                boolean updated = dao.updateWorkOrder(wo);
+                String updateNotice = updated
+                        ? java.net.URLEncoder.encode("Cập nhật lệnh sản xuất thành công", "UTF-8")
+                        : java.net.URLEncoder.encode("Cập nhật lệnh sản xuất thất bại", "UTF-8");
+                response.sendRedirect(request.getContextPath() + "/MainController?action=listWorkOrder"
+                        + (updated ? "&msg=" : "&error=") + updateNotice);
                 return;
 
             } else if ("delete".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("wo_id"));
-                dao.deleteWorkOrder(id);
-                response.sendRedirect("MainController?action=listWorkOrder");
+                boolean deleted = dao.deleteWorkOrder(id);
+                String deleteNotice = deleted
+                        ? java.net.URLEncoder.encode("Xóa lệnh sản xuất thành công", "UTF-8")
+                        : java.net.URLEncoder.encode("Không thể xóa lệnh sản xuất vì đang có dữ liệu liên quan", "UTF-8");
+                response.sendRedirect(request.getContextPath() + "/MainController?action=listWorkOrder"
+                        + (deleted ? "&msg=" : "&error=") + deleteNotice);
                 return;
 
             } else if ("search".equals(action)) {
@@ -91,6 +103,8 @@ public class WorkOrderController extends HttpServlet {
                 String filterStatus = request.getParameter("status");
                 String searchId = request.getParameter("search");
                 String woIdParam = request.getParameter("wo_id");
+                String msg = request.getParameter("msg");
+                String error = request.getParameter("error");
 
                 if (searchId != null && !searchId.trim().isEmpty()) {
                     try {
@@ -104,6 +118,13 @@ public class WorkOrderController extends HttpServlet {
                     } catch (NumberFormatException e) {
                         request.setAttribute("error", "Mã lệnh sản xuất không hợp lệ");
                     }
+                }
+
+                if (msg != null && !msg.trim().isEmpty()) {
+                    request.setAttribute("msg", msg);
+                }
+                if (error != null && !error.trim().isEmpty()) {
+                    request.setAttribute("error", error);
                 }
 
                 loadWorkOrderPageData(request, dao);

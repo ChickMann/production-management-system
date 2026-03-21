@@ -42,6 +42,15 @@ public class ProductionLogController extends HttpServlet {
             action = "listLog";
         }
 
+        // Lấy user từ session để phân quyền
+        pms.model.UserDTO currentUser = (pms.model.UserDTO) request.getSession().getAttribute("user");
+        String userRole = currentUser != null ? currentUser.getRole() : "";
+        int currentUserId = currentUser != null ? currentUser.getId() : 0;
+        boolean isAdmin = "admin".equalsIgnoreCase(userRole);
+        boolean isWorker = "employee".equalsIgnoreCase(userRole)
+                || "worker".equalsIgnoreCase(userRole)
+                || "user".equalsIgnoreCase(userRole);
+
         ProductionLogDAO dao = new ProductionLogDAO();
         WorkOrderDAO woDao = new WorkOrderDAO();
         RoutingStepDAO stepDao = new RoutingStepDAO();
@@ -49,15 +58,37 @@ public class ProductionLogController extends HttpServlet {
 
         try {
             if ("listLog".equals(action) || "list".equals(action)) {
-                request.setAttribute("listLogs", dao.getAllLogs());
+                // Boss xem tất cả, công nhân chỉ xem log của mình
+                if (isAdmin) {
+                    request.setAttribute("listLogs", dao.getAllLogs());
+                } else if (isWorker) {
+                    // Filter logs theo workerId vì chưa có method getLogsByWorkerId
+                    java.util.List<ProductionLogDTO> allLogs = dao.getAllLogs();
+                    java.util.List<ProductionLogDTO> workerLogs = new java.util.ArrayList<>();
+                    for (ProductionLogDTO log : allLogs) {
+                        if (log.getWorkerUserId() == currentUserId) {
+                            workerLogs.add(log);
+                        }
+                    }
+                    request.setAttribute("listLogs", workerLogs);
+                } else {
+                    request.setAttribute("listLogs", new java.util.ArrayList<>());
+                }
                 request.setAttribute("listWO", woDao.getAllWorkOrders());
                 request.setAttribute("listSteps", stepDao.getAllRoutingStep());
                 request.setAttribute("listDefects", defectDao.getAllDefects());
+                request.setAttribute("isAdmin", isAdmin);
+                request.setAttribute("isWorker", isWorker);
                 request.getRequestDispatcher("productionlog.jsp").forward(request, response);
                 return;
             }
 
+            // Chỉ công nhân được thêm log báo cáo
             if ("addLog".equals(action)) {
+                if (!isWorker) {
+                    response.sendRedirect("MainController?action=listLog");
+                    return;
+                }
                 int woId = Integer.parseInt(request.getParameter("workOrderId"));
                 int stepId = Integer.parseInt(request.getParameter("stepId"));
                 int quantityDone = Integer.parseInt(request.getParameter("quantityDone"));
@@ -67,7 +98,7 @@ public class ProductionLogController extends HttpServlet {
                 ProductionLogDTO log = new ProductionLogDTO();
                 log.setWoId(woId);
                 log.setStepId(stepId);
-                log.setWorkerUserId(0);
+                log.setWorkerUserId(currentUserId); // Lấy từ session thay vì set cứng = 0
                 log.setQuantityDone(quantityDone);
                 log.setQuantityDefective(quantityDefective);
                 if (defectId > 0) {

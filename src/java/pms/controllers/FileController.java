@@ -18,6 +18,8 @@ import java.util.ArrayList;
 @MultipartConfig(maxFileSize = 10 * 1024 * 1024)
 public class FileController extends HttpServlet {
 
+    private static final String LIST_REDIRECT = "FileController?action=list";
+
     private FileService fileService;
     private FileEncryptor encryptor;
 
@@ -35,7 +37,7 @@ public class FileController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null) {
+        if (action == null || action.trim().isEmpty()) {
             action = "list";
         }
 
@@ -61,7 +63,7 @@ public class FileController extends HttpServlet {
         }
 
         if (request.getAttribute("redirect") != null) {
-            response.sendRedirect((String) request.getAttribute("redirect"));
+            response.sendRedirect(request.getContextPath() + "/" + (String) request.getAttribute("redirect"));
         } else {
             request.getRequestDispatcher("file-management.jsp").forward(request, response);
         }
@@ -109,54 +111,59 @@ public class FileController extends HttpServlet {
     }
 
     private void uploadFile(HttpServletRequest request) {
+        UserDTO currentUser = (UserDTO) request.getSession().getAttribute("user");
+        if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
+            request.setAttribute("error", "Bạn không có quyền upload file.");
+            listFiles(request);
+            return;
+        }
+
         try {
             String password = request.getParameter("password");
-            if (password == null || password.isEmpty()) {
-                request.setAttribute("error", "Mat khau khong duoc trong!");
+            if (password == null || password.trim().isEmpty()) {
+                request.setAttribute("error", "Mật khẩu mã hóa không được để trống!");
                 listFiles(request);
                 return;
-            }
-
-            String uploaderIdStr = request.getParameter("uploader_id");
-            int uploaderId = 0;
-            try {
-                uploaderId = Integer.parseInt(uploaderIdStr);
-            } catch (Exception e) {
             }
 
             String description = request.getParameter("description");
             String relatedTable = request.getParameter("related_table");
             String relatedIdStr = request.getParameter("related_id");
-
             int relatedId = 0;
-            if (relatedIdStr != null && !relatedIdStr.isEmpty()) {
+
+            if (relatedIdStr != null && !relatedIdStr.trim().isEmpty()) {
                 try {
-                    relatedId = Integer.parseInt(relatedIdStr);
-                } catch (Exception e) {
+                    relatedId = Integer.parseInt(relatedIdStr.trim());
+                } catch (NumberFormatException e) {
+                    request.setAttribute("error", "ID liên quan không hợp lệ!");
+                    listFiles(request);
+                    return;
                 }
             }
 
             Part filePart = request.getPart("file");
-            if (filePart == null || filePart.getInputStream() == null) {
-                request.setAttribute("error", "Khong co file duoc chon!");
+            if (filePart == null || filePart.getSize() <= 0) {
+                request.setAttribute("error", "Chưa chọn file để upload!");
                 listFiles(request);
                 return;
             }
 
-            String passwordHash = encryptor.hashPassword(password).toString();
-
             boolean success = fileService.uploadEncryptedFile(
-                    filePart, password, uploaderId, description,
-                    relatedTable, relatedId
+                    filePart,
+                    password.trim(),
+                    currentUser.getId(),
+                    description,
+                    relatedTable,
+                    relatedId
             );
 
             if (success) {
-                request.setAttribute("msg", "Upload va ma hoa file thanh cong!");
+                request.setAttribute("msg", "Upload và mã hóa file thành công!");
             } else {
-                request.setAttribute("error", "Upload file that bai! Kiem tra dinh dang va kich thuoc file.");
+                request.setAttribute("error", "Upload file thất bại! Kiểm tra định dạng, kích thước hoặc dữ liệu liên quan.");
             }
         } catch (Exception e) {
-            request.setAttribute("error", "Loi upload: " + e.getMessage());
+            request.setAttribute("error", "Lỗi upload: " + e.getMessage());
             e.printStackTrace();
         }
         listFiles(request);
@@ -167,8 +174,8 @@ public class FileController extends HttpServlet {
         String fileIdStr = request.getParameter("file_id");
         String password = request.getParameter("password");
 
-        if (fileIdStr == null || password == null || password.isEmpty()) {
-            request.setAttribute("downloadError", "Thieu thong tin tai xuong!");
+        if (fileIdStr == null || password == null || password.trim().isEmpty()) {
+            request.setAttribute("downloadError", "Thiếu thông tin tải xuống!");
             listFiles(request);
             request.getRequestDispatcher("file-management.jsp").forward(request, response);
             return;
@@ -179,23 +186,23 @@ public class FileController extends HttpServlet {
             FileRecord record = getFileRecord(fileId);
 
             if (record == null) {
-                request.setAttribute("downloadError", "File khong ton tai!");
+                request.setAttribute("downloadError", "File không tồn tại!");
                 listFiles(request);
                 request.getRequestDispatcher("file-management.jsp").forward(request, response);
                 return;
             }
 
-            boolean valid = fileService.verifyPassword(fileId, password);
+            boolean valid = fileService.verifyPassword(fileId, password.trim());
             if (!valid) {
-                request.setAttribute("downloadError", "Mat khau khong dung!");
+                request.setAttribute("downloadError", "Mật khẩu không đúng!");
                 listFiles(request);
                 request.getRequestDispatcher("file-management.jsp").forward(request, response);
                 return;
             }
 
-            byte[] decryptedData = fileService.downloadDecryptedFile(fileId, password);
+            byte[] decryptedData = fileService.downloadDecryptedFile(fileId, password.trim());
             if (decryptedData == null) {
-                request.setAttribute("downloadError", "Giai ma that bai!");
+                request.setAttribute("downloadError", "Giải mã thất bại!");
                 listFiles(request);
                 request.getRequestDispatcher("file-management.jsp").forward(request, response);
                 return;
@@ -210,7 +217,7 @@ public class FileController extends HttpServlet {
             return;
 
         } catch (Exception e) {
-            request.setAttribute("downloadError", "Loi tai file: " + e.getMessage());
+            request.setAttribute("downloadError", "Lỗi tải file: " + e.getMessage());
             e.printStackTrace();
         }
         listFiles(request);
@@ -218,18 +225,25 @@ public class FileController extends HttpServlet {
     }
 
     private void deleteFile(HttpServletRequest request) {
+        UserDTO currentUser = (UserDTO) request.getSession().getAttribute("user");
+        if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
+            request.setAttribute("error", "Bạn không có quyền xóa file.");
+            listFiles(request);
+            return;
+        }
+
         String fileIdStr = request.getParameter("file_id");
         if (fileIdStr != null && !fileIdStr.isEmpty()) {
             try {
                 int fileId = Integer.parseInt(fileIdStr);
                 boolean success = fileService.deleteFile(fileId);
                 if (success) {
-                    request.setAttribute("msg", "Xoa file thanh cong!");
+                    request.setAttribute("msg", "Xóa file thành công!");
                 } else {
-                    request.setAttribute("error", "Xoa file that bai!");
+                    request.setAttribute("error", "Xóa file thất bại!");
                 }
             } catch (Exception e) {
-                request.setAttribute("error", "Loi: " + e.getMessage());
+                request.setAttribute("error", "Lỗi: " + e.getMessage());
             }
         }
         listFiles(request);
@@ -255,12 +269,19 @@ public class FileController extends HttpServlet {
     }
 
     private void changePassword(HttpServletRequest request) {
+        UserDTO currentUser = (UserDTO) request.getSession().getAttribute("user");
+        if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
+            request.setAttribute("error", "Bạn không có quyền đổi mật khẩu file.");
+            listFiles(request);
+            return;
+        }
+
         String fileIdStr = request.getParameter("file_id");
         String oldPassword = request.getParameter("oldPassword");
         String newPassword = request.getParameter("newPassword");
 
         if (fileIdStr == null || oldPassword == null || newPassword == null) {
-            request.setAttribute("error", "Thieu thong tin!");
+            request.setAttribute("error", "Thiếu thông tin!");
             listFiles(request);
             return;
         }
@@ -269,12 +290,12 @@ public class FileController extends HttpServlet {
             int fileId = Integer.parseInt(fileIdStr);
             boolean success = fileService.changePassword(fileId, oldPassword, newPassword);
             if (success) {
-                request.setAttribute("msg", "Doi mat khau thanh cong!");
+                request.setAttribute("msg", "Đổi mật khẩu file thành công!");
             } else {
-                request.setAttribute("error", "Doi mat khau that bai! Mat khau cu khong dung.");
+                request.setAttribute("error", "Đổi mật khẩu thất bại! Mật khẩu cũ không đúng.");
             }
         } catch (Exception e) {
-            request.setAttribute("error", "Loi: " + e.getMessage());
+            request.setAttribute("error", "Lỗi: " + e.getMessage());
         }
         listFiles(request);
     }

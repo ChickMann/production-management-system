@@ -258,13 +258,15 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </a>
-                                                <a href="DefectController?action=deleteDefectReason&defectId=<%= d.getDefectId() %>"
-                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa nguyên nhân lỗi này?')"
-                                                   class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300" title="Xóa">
+                                                <button type="button"
+                                                        data-defect-id="<%= d.getDefectId() %>"
+                                                        data-defect-name="<%= d.getReasonName() != null ? d.getReasonName() : "Nguyên nhân lỗi #" + d.getDefectId() %>"
+                                                        onclick="openDeleteDefectReasonModal(this)"
+                                                        class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300" title="Xóa">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
-                                                </a>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -334,7 +336,7 @@
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">Chỉnh sửa</p>
                     <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Cập nhật nguyên nhân lỗi</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Điều chỉnh trực tiếp trên trang danh sách để thao tác sửa hoạt động thống nhất.</p>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"></p>
                 </div>
                 <a href="DefectController?action=listDefectReason<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>" class="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200" aria-label="Đóng">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,13 +377,37 @@
         </div>
     </div>
 
+    <div id="deleteDefectReasonModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-600 dark:text-rose-300">Xác nhận xóa</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Xóa nguyên nhân lỗi?</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">Bạn sắp xóa <span id="deleteDefectReasonName" class="font-semibold text-slate-700 dark:text-slate-200"></span>. Thao tác này không thể hoàn tác.</p>
+                </div>
+            </div>
+            <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button type="button" onclick="closeDeleteDefectReasonModal()" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                <a id="confirmDeleteDefectReasonBtn" href="#" class="inline-flex items-center justify-center rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition hover:bg-rose-700">Xóa nguyên nhân lỗi</a>
+            </div>
+        </div>
+    </div>
+
     <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" onclick="toggleSidebar()"></div>
 
     <script>
         const defectReasonModal = document.getElementById('defectReasonModal');
         const editDefectReasonModal = document.getElementById('editDefectReasonModal');
+        const deleteDefectReasonModal = document.getElementById('deleteDefectReasonModal');
         const reasonNameInput = document.getElementById('reasonName');
         const editReasonNameInput = document.getElementById('editReasonName');
+        const deleteDefectReasonName = document.getElementById('deleteDefectReasonName');
+        const confirmDeleteDefectReasonBtn = document.getElementById('confirmDeleteDefectReasonBtn');
 
         function openDefectReasonModal() {
             if (!defectReasonModal) return;
@@ -406,7 +432,29 @@
             if (!editDefectReasonModal) return;
             editDefectReasonModal.classList.add('hidden');
             editDefectReasonModal.classList.remove('flex');
-            if (!defectReasonModal || defectReasonModal.classList.contains('hidden')) {
+            if ((!defectReasonModal || defectReasonModal.classList.contains('hidden'))
+                    && (!deleteDefectReasonModal || deleteDefectReasonModal.classList.contains('hidden'))) {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function openDeleteDefectReasonModal(button) {
+            if (!deleteDefectReasonModal || !deleteDefectReasonName || !confirmDeleteDefectReasonBtn || !button) return;
+            const defectId = button.getAttribute('data-defect-id');
+            const defectName = button.getAttribute('data-defect-name');
+            deleteDefectReasonName.textContent = defectName || ('Nguyên nhân lỗi #' + defectId);
+            confirmDeleteDefectReasonBtn.href = 'DefectController?action=deleteDefectReason&defectId=' + defectId;
+            deleteDefectReasonModal.classList.remove('hidden');
+            deleteDefectReasonModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeDeleteDefectReasonModal() {
+            if (!deleteDefectReasonModal) return;
+            deleteDefectReasonModal.classList.add('hidden');
+            deleteDefectReasonModal.classList.remove('flex');
+            if ((!defectReasonModal || defectReasonModal.classList.contains('hidden'))
+                    && (!editDefectReasonModal || editDefectReasonModal.classList.contains('hidden'))) {
                 document.body.classList.remove('overflow-hidden');
             }
         }
@@ -427,6 +475,14 @@
             });
         }
 
+        if (deleteDefectReasonModal) {
+            deleteDefectReasonModal.addEventListener('click', function (event) {
+                if (event.target === deleteDefectReasonModal) {
+                    closeDeleteDefectReasonModal();
+                }
+            });
+        }
+
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 if (defectReasonModal && defectReasonModal.classList.contains('flex')) {
@@ -435,11 +491,18 @@
                 if (editDefectReasonModal && editDefectReasonModal.classList.contains('flex')) {
                     closeEditDefectReasonModal();
                 }
+                if (deleteDefectReasonModal && deleteDefectReasonModal.classList.contains('flex')) {
+                    closeDeleteDefectReasonModal();
+                }
             }
         });
 
-        if (editDefectReasonModal && editDefectReasonModal.classList.contains('flex')) {
+        if ((editDefectReasonModal && editDefectReasonModal.classList.contains('flex'))
+                || (deleteDefectReasonModal && deleteDefectReasonModal.classList.contains('flex'))) {
             document.body.classList.add('overflow-hidden');
+        }
+
+        if (editDefectReasonModal && editDefectReasonModal.classList.contains('flex')) {
             if (editReasonNameInput) {
                 setTimeout(() => editReasonNameInput.focus(), 50);
             }

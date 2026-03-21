@@ -4,8 +4,8 @@
     List<WorkOrderDTO> workOrders = (List<WorkOrderDTO>) request.getAttribute("workOrders");
     UserDTO user = (UserDTO) session.getAttribute("user");
     
-    String msg = (String) request.getAttribute("msg");
-    String error = (String) request.getAttribute("error");
+    String msg = request.getAttribute("msg") != null ? (String) request.getAttribute("msg") : request.getParameter("msg");
+    String error = request.getAttribute("error") != null ? (String) request.getAttribute("error") : request.getParameter("error");
     String mode = (String) request.getAttribute("mode");
     
     if (inspections == null) inspections = new java.util.ArrayList<>();

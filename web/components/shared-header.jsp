@@ -4,21 +4,18 @@
   Dùng chung cho tất cả các trang JSP
   
   Tự động lấy biến từ session/request.
---%>
+ --%>
 <%@page import="java.util.List"%>
+<%@page import="pms.utils.NotificationService"%>
 <%@page import="pms.utils.NotificationService.Notification"%>
 <%
     // Lấy user từ session
     pms.model.UserDTO headerUser = (pms.model.UserDTO) session.getAttribute("user");
     String pageTitle = request.getAttribute("pageTitle") != null ? (String) request.getAttribute("pageTitle") : "Bảng điều khiển";
     
-    // Notifications
-    List<Notification> headerNotifications = (List<Notification>) session.getAttribute("notifications");
-    if (headerNotifications == null) headerNotifications = new java.util.ArrayList<>();
-    int unreadCount = 0;
-    for (Notification n : headerNotifications) {
-        if (!n.isRead()) unreadCount++;
-    }
+    String notificationUsername = headerUser != null ? headerUser.getUsername() : null;
+    List<Notification> headerNotifications = NotificationService.getNotifications(notificationUsername);
+    int unreadCount = NotificationService.getUnreadCount(notificationUsername);
     
     Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
     boolean isDarkMode = sessionDark != null ? sessionDark : false;
@@ -88,19 +85,21 @@
         </button>
         
         <!-- Notification Bell -->
-        <button onclick="toggleNotificationPanel()" class="relative w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+        <button id="notifBtn" onclick="toggleNotificationPanel()" class="relative w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
             <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
             </svg>
             <% if (unreadCount > 0) { %>
-            <span class="notif-badge absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span id="notifBadge" class="notif-badge absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 <%= unreadCount > 9 ? "9+" : unreadCount %>
             </span>
+            <% } else { %>
+            <span id="notifBadge" class="notif-badge absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full hidden items-center justify-center">0</span>
             <% } %>
         </button>
         
         <!-- User: text chào mừng + dropdown -->
-        <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+        <button id="userDropdownBtn" onclick="toggleUserDropdown()" class="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             <span class="hidden sm:block text-sm font-medium text-slate-700 dark:text-slate-200">Xin chào, <%= userName %></span>
             <svg class="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -112,14 +111,14 @@
 <!-- Notification Panel -->
 <div id="notifPanel" class="absolute right-4 top-16 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 hidden z-50 overflow-hidden">
     <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-        <h3 class="font-semibold text-slate-900 dark:text-slate-100">Thông Báo</h3>
-        <% if (unreadCount > 0) { %>
-        <a href="NotificationServlet?action=markAllRead" class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">Đánh dấu đã đọc</a>
+        <h3 class="font-semibold text-slate-900 dark:text-slate-100">Thông báo</h3>
+        <% if (notificationUsername != null && unreadCount > 0) { %>
+        <button type="button" onclick="markAllNotificationsRead()" class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300">Đánh dấu đã đọc</button>
         <% } %>
     </div>
-    <div class="max-h-80 overflow-y-auto">
+    <div id="notifList" class="max-h-80 overflow-y-auto">
         <% if (headerNotifications.isEmpty()) { %>
-        <div class="p-8 text-center text-slate-400 dark:text-slate-500">
+        <div class="p-8 text-center text-slate-400 dark:text-slate-500" id="notifEmptyState">
             <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
             </svg>
@@ -127,8 +126,8 @@
         </div>
         <% } else { %>
         <% for (Notification n : headerNotifications) { %>
-        <a href="<%= n.getLink() %>" class="block p-4 border-b border-slate-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors <%= n.isRead() ? "opacity-60" : "" %>">
-            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 <%= n.isRead() ? "" : "text-teal-600 dark:text-teal-400" %>"><%= n.getTitle() %></p>
+        <a href="<%= n.getLink() %>" data-notification-item="true" data-notification-id="<%= n.getId() %>" class="block p-4 border-b border-slate-50 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors <%= n.isRead() ? "opacity-60" : "" %>" onclick="return handleNotificationClick(event, '<%= n.getId() %>', '<%= n.getLink() %>')">
+            <p data-notification-title="true" class="text-sm font-semibold text-slate-900 dark:text-slate-100 <%= n.isRead() ? "" : "text-teal-600 dark:text-teal-400" %>"><%= n.getTitle() %></p>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"><%= n.getMessage() %></p>
         </a>
         <% } %>
@@ -140,13 +139,17 @@
 <div id="userDropdown" class="absolute right-4 top-16 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 hidden z-50">
     <div class="p-4 border-b border-slate-100 dark:border-slate-700">
         <p class="font-semibold text-slate-900 dark:text-slate-100"><%= userName %></p>
+        <% if (userRole != null && !userRole.isEmpty()) { %>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide"><%= userRole %></p>
+        <% } %>
     </div>
     <div class="p-2">
         <a href="profile.jsp" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-            <span class="text-sm text-slate-700 dark:text-slate-200">Hồ Sơ Cá Nhân</span>
+            <span class="text-sm text-slate-700 dark:text-slate-200">Hồ sơ cá nhân</span>
         </a>
         <a href="UserController?action=logout" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
-            <span class="text-sm text-red-600 font-medium">Đăng Xuất</span>
+            <span class="text-sm text-red-600 font-medium">Đăng xuất</span>
         </a>
     </div>
 </div>
+

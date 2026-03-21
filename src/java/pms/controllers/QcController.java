@@ -40,8 +40,7 @@ public class QcController extends HttpServlet {
                 url = "qc-form.jsp";
                 break;
             case "saveAdd":
-                addInspection(request);
-                url = "redirect:QcController?action=list";
+                addInspection(request, response);
                 return;
             case "byWo":
                 inspectionsByWo(request);
@@ -52,8 +51,7 @@ public class QcController extends HttpServlet {
                 url = "qc-list.jsp";
                 break;
             case "delete":
-                deleteInspection(request);
-                url = "redirect:QcController?action=list";
+                deleteInspection(request, response);
                 return;
             default:
                 listInspections(request);
@@ -62,7 +60,7 @@ public class QcController extends HttpServlet {
         }
 
         if (url.startsWith("redirect:")) {
-            response.sendRedirect(url.substring(9));
+            response.sendRedirect(request.getContextPath() + "/" + url.substring(9));
         } else {
             request.getRequestDispatcher(url).forward(request, response);
         }
@@ -118,13 +116,22 @@ public class QcController extends HttpServlet {
 
     private void showAddForm(HttpServletRequest request) {
         request.setAttribute("mode", "add");
+        loadFormOptions(request);
     }
 
-    private void addInspection(HttpServletRequest request) {
+    private void addInspection(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
-        if (session == null) return;
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                    + java.net.URLEncoder.encode("Phiên đăng nhập đã hết hạn", "UTF-8"));
+            return;
+        }
         UserDTO user = (UserDTO) session.getAttribute("user");
-        if (user == null) return;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                    + java.net.URLEncoder.encode("Bạn cần đăng nhập để tạo phiếu QC", "UTF-8"));
+            return;
+        }
 
         try {
             int woId = Integer.parseInt(request.getParameter("woId"));
@@ -132,8 +139,38 @@ public class QcController extends HttpServlet {
             String result = request.getParameter("inspectionResult");
             int inspected = Integer.parseInt(request.getParameter("quantityInspected"));
             int passed = Integer.parseInt(request.getParameter("quantityPassed"));
-            int failed = inspected - passed;
+            int failed = Math.max(0, inspected - passed);
             String notes = request.getParameter("notes");
+            String defectIdRaw = request.getParameter("defectId");
+
+            if (inspected <= 0) {
+                response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                        + java.net.URLEncoder.encode("Số lượng kiểm tra phải lớn hơn 0", "UTF-8"));
+                return;
+            }
+            if (passed < 0 || passed > inspected) {
+                response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                        + java.net.URLEncoder.encode("Số lượng đạt không hợp lệ", "UTF-8"));
+                return;
+            }
+            if (result == null || result.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                        + java.net.URLEncoder.encode("Bạn chưa chọn kết quả kiểm tra", "UTF-8"));
+                return;
+            }
+
+            if ("FAIL".equalsIgnoreCase(result) && defectIdRaw != null && !defectIdRaw.trim().isEmpty() && !"0".equals(defectIdRaw.trim())) {
+                try {
+                    int defectId = Integer.parseInt(defectIdRaw.trim());
+                    DefectDAO defectDAO = new DefectDAO();
+                    pms.model.DefectDTO defect = defectDAO.getDefectById(defectId);
+                    if (defect != null && defect.getReasonName() != null && !defect.getReasonName().trim().isEmpty()) {
+                        String defectNote = "Lý do lỗi: " + defect.getReasonName().trim();
+                        notes = (notes == null || notes.trim().isEmpty()) ? defectNote : defectNote + " | " + notes.trim();
+                    }
+                } catch (NumberFormatException ignore) {
+                }
+            }
 
             QcInspectionDTO qc = new QcInspectionDTO();
             qc.setWoId(woId);
@@ -149,29 +186,39 @@ public class QcController extends HttpServlet {
             boolean success = dao.insertInspection(qc);
 
             if (success) {
-                if ("FAIL".equals(result)) {
+                if ("FAIL".equalsIgnoreCase(result)) {
                     NotificationService.notifyDefectDetected(String.valueOf(woId),
-                        "QC khong dat - " + failed + " san pham loi");
+                        "QC không đạt - " + failed + " sản phẩm lỗi");
                 }
-                request.setAttribute("msg", "Kiem tra chat luong da duoc ghi nhan!");
+                response.sendRedirect(request.getContextPath() + "/QcController?action=list&msg="
+                        + java.net.URLEncoder.encode("Tạo phiếu kiểm tra chất lượng thành công", "UTF-8"));
             } else {
-                request.setAttribute("error", "Loi khi luu ket qua QC.");
+                response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                        + java.net.URLEncoder.encode("Lưu kết quả QC thất bại", "UTF-8"));
             }
         } catch (Exception e) {
-            request.setAttribute("error", "Loi: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                    + java.net.URLEncoder.encode("Lỗi khi tạo phiếu QC: " + e.getMessage(), "UTF-8"));
         }
     }
 
-    private void deleteInspection(HttpServletRequest request) {
+    private void deleteInspection(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String sId = request.getParameter("id");
-        if (sId == null || sId.trim().isEmpty()) return;
+        if (sId == null || sId.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                    + java.net.URLEncoder.encode("Thiếu mã phiếu QC cần xóa", "UTF-8"));
+            return;
+        }
         try {
             int id = Integer.parseInt(sId);
             QcInspectionDAO dao = new QcInspectionDAO();
-            dao.deleteInspection(id);
-            request.setAttribute("msg", "Da xoa ket qua QC.");
+            boolean deleted = dao.deleteInspection(id);
+            response.sendRedirect(request.getContextPath() + "/QcController?action=list&"
+                    + (deleted ? "msg=" + java.net.URLEncoder.encode("Đã xóa kết quả QC", "UTF-8")
+                               : "error=" + java.net.URLEncoder.encode("Không thể xóa kết quả QC", "UTF-8")));
         } catch (Exception e) {
-            request.setAttribute("error", "Loi xoa: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/QcController?action=list&error="
+                    + java.net.URLEncoder.encode("Lỗi xóa QC: " + e.getMessage(), "UTF-8"));
         }
     }
 

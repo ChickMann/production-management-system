@@ -1,4 +1,5 @@
 <%@page import="pms.model.BOMDTO"%>
+<%@page import="pms.model.BOMDetailDTO"%>
 <%@page import="pms.model.ItemDTO"%>
 <%@page import="java.util.List"%>
 <%@page import="pms.model.UserDTO"%>
@@ -20,6 +21,9 @@
 <%
     List<BOMDTO> boms = (List<BOMDTO>) request.getAttribute("boms");
     List<ItemDTO> products = (List<ItemDTO>) request.getAttribute("products");
+    List<ItemDTO> materials = (List<ItemDTO>) request.getAttribute("materials");
+    BOMDTO selectedBom = (BOMDTO) request.getAttribute("selectedBom");
+    String mode = (String) request.getAttribute("mode");
     UserDTO user = (UserDTO) session.getAttribute("user");
     String msg = (String) request.getAttribute("msg");
     String error = (String) request.getAttribute("error");
@@ -28,6 +32,17 @@
 
     if (boms == null) boms = new java.util.ArrayList<>();
     if (products == null) products = new java.util.ArrayList<>();
+    if (materials == null) materials = new java.util.ArrayList<>();
+    if (mode == null) mode = "";
+
+    boolean isAddMode = "add".equals(mode);
+    boolean isUpdateMode = "update".equals(mode);
+    boolean isViewMode = "view".equals(mode);
+    List<BOMDetailDTO> selectedDetails = selectedBom != null && selectedBom.getDetails() != null
+            ? selectedBom.getDetails() : new java.util.ArrayList<BOMDetailDTO>();
+    if ((isAddMode || isUpdateMode) && selectedDetails.isEmpty()) {
+        selectedDetails.add(new BOMDetailDTO());
+    }
 
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -138,6 +153,15 @@
         .dark .section-card {
             background: rgba(15,23,42,0.92);
         }
+        .modal-backdrop {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(6px);
+        }
+        .material-row + .material-row {
+            border-top: 1px dashed rgba(148, 163, 184, 0.35);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
     </style>
     <script src="js/common.js"></script>
 </head>
@@ -151,24 +175,29 @@
 
             <main class="flex-1 overflow-y-auto p-4 lg:p-6 bg-slate-100 dark:bg-slate-900">
                 <!-- Page Header -->
-                <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Quản lý định mức (BOM)</h1>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Theo dõi cấu trúc nguyên vật liệu, phiên bản áp dụng và trạng thái sử dụng cho từng sản phẩm.</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <a href="BOMController?action=list" class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                            Làm mới
-                        </a>
-                        <button type="button" onclick="openBomModal()" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Tạo BOM mới
-                        </button>
+                <div class="mb-6 rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-teal-50/70 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-teal-950/30">
+                    <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="max-w-3xl">
+                            <div class="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-teal-700 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300">
+                                Định mức sản xuất
+                            </div>
+                            <h1 class="mt-3 text-2xl font-semibold text-slate-900 dark:text-slate-100">Quản lý định mức (BOM)</h1>
+                            <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">Theo dõi cấu trúc nguyên vật liệu, phiên bản áp dụng và trạng thái sử dụng cho từng sản phẩm trên một giao diện đồng bộ với các phân hệ khác.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <a href="BOMController?action=list" class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                Làm mới
+                            </a>
+                            <a href="BOMController?action=addBOM" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:-translate-y-0.5 hover:bg-teal-700">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Tạo BOM mới
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -285,7 +314,6 @@
                                 <tr class="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mã BOM</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Sản phẩm</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Phiên bản</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trạng thái</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Ngày tạo</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
@@ -294,7 +322,7 @@
                             <tbody>
                                 <% if (boms.isEmpty()) { %>
                                 <tr>
-                                    <td colspan="6" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
+                                    <td colspan="5" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
                                         <div class="mx-auto flex max-w-md flex-col items-center gap-3">
                                             <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                                                 <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -305,12 +333,12 @@
                                                 <p class="text-base font-semibold text-slate-700 dark:text-slate-200">Chưa có BOM nào</p>
                                                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tạo BOM mới để quản lý định mức nguyên vật liệu cho sản phẩm.</p>
                                             </div>
-                                            <button type="button" onclick="openBomModal()" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
+                                            <a href="BOMController?action=addBOM" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
                                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                                 </svg>
                                                 Tạo BOM mới
-                                            </button>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -330,11 +358,6 @@
                                                     <p class="text-xs text-slate-400 dark:text-slate-500">Mã sản phẩm: <%= bom.getProductItemId() %></p>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium">
-                                                <%= bom.getBomVersion() != null ? bom.getBomVersion() : "v1.0" %>
-                                            </span>
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <%= getStatusClass(bom.getStatus()) %>">
@@ -384,6 +407,15 @@
                                                     </svg>
                                                 </a>
                                                 <% } %>
+                                                <button type="button"
+                                                        data-bom-id="<%= bom.getBomId() %>"
+                                                        data-bom-name="<%= bom.getProductName() != null ? bom.getProductName() : "BOM #" + bom.getBomId() %>"
+                                                        onclick="openDeleteBomModal(this)"
+                                                        class="p-2 rounded-xl text-slate-500 transition-colors hover:bg-rose-100 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-300" title="Xóa">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"/>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -402,69 +434,260 @@
         </div>
     </div>
 
-    <div id="bomModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
-        <div class="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-            <div class="flex items-start justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+    <div id="bomModal" data-mode="<%= mode %>" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="w-full max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-700">
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Tạo BOM mới</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tạo nhanh định mức vật tư ngay trên màn hình danh sách.</p>
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-teal-600 dark:text-teal-300"><%= isAddMode ? "Tạo định mức" : (isUpdateMode ? "Chỉnh sửa định mức" : "Chi tiết định mức") %></p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100"><%= isAddMode ? "Tạo BOM mới" : (isUpdateMode ? "Sửa BOM" : "Chi tiết BOM") %></h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"><%= isViewMode ? "Theo dõi nhanh thông tin BOM và danh sách nguyên liệu ngay trên trang danh sách." : "Khai báo thông tin BOM và điều chỉnh danh sách nguyên liệu trực tiếp trên popup." %></p>
                 </div>
-                <button type="button" onclick="closeBomModal()" class="rounded-2xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="button" onclick="closeBomModal()" class="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
-            <form method="post" action="BOMController" class="space-y-6 px-6 py-6">
-                <input type="hidden" name="action" value="saveAddBOM">
-                <div class="grid gap-5 md:grid-cols-2">
-                    <div class="md:col-span-2">
-                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Sản phẩm áp dụng</label>
-                        <select name="productItemId" class="form-input w-full rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700" required>
-                            <option value="">-- Chọn sản phẩm --</option>
-                            <% for (ItemDTO product : products) { %>
-                            <option value="<%= product.getItemID() %>"><%= product.getItemName() %></option>
-                            <% } %>
-                        </select>
+
+            <% if (isViewMode && selectedBom != null) { %>
+            <div class="max-h-[85vh] overflow-y-auto px-6 py-6">
+                <div class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <div class="rounded-3xl border border-slate-200/70 p-5 shadow-sm dark:border-slate-700/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Mã BOM</p>
+                        <p class="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100">#<%= selectedBom.getBomId() %></p>
                     </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Phiên bản BOM</label>
-                        <input type="text" name="version" value="v1.0" class="form-input w-full rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700" placeholder="VD: v1.0" required>
+                    <div class="rounded-3xl border border-slate-200/70 p-5 shadow-sm dark:border-slate-700/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Phiên bản</p>
+                        <p class="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100"><%= selectedBom.getBomVersion() != null ? selectedBom.getBomVersion() : "v1.0" %></p>
                     </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Trạng thái</label>
-                        <select name="status" class="form-input w-full rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700">
-                            <option value="active">Đang dùng</option>
-                            <option value="pending">Chờ duyệt</option>
-                            <option value="inactive">Ngừng</option>
-                        </select>
+                    <div class="rounded-3xl border border-slate-200/70 p-5 shadow-sm dark:border-slate-700/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Trạng thái</p>
+                        <div class="mt-3">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <%= getStatusClass(selectedBom.getStatus()) %>"><%= getStatusText(selectedBom.getStatus()) %></span>
+                        </div>
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Ghi chú</label>
-                        <textarea name="notes" rows="4" class="form-input w-full rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700" placeholder="Thêm ghi chú cho BOM nếu cần..."></textarea>
+                    <div class="rounded-3xl border border-slate-200/70 p-5 shadow-sm dark:border-slate-700/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Số nguyên liệu</p>
+                        <p class="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100"><%= selectedDetails.size() %></p>
                     </div>
                 </div>
-                <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end">
-                    <button type="button" onclick="closeBomModal()" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Hủy</button>
-                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Tạo BOM mới
-                    </button>
+
+                <div class="grid gap-6 xl:grid-cols-[1fr_1.6fr]">
+                    <section class="rounded-3xl border border-slate-200/70 p-6 shadow-sm dark:border-slate-700/60">
+                        <h4 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Thông tin BOM</h4>
+                        <dl class="mt-4 space-y-4 text-sm">
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                                <dt class="text-slate-500 dark:text-slate-400">Sản phẩm áp dụng</dt>
+                                <dd class="mt-1 font-semibold text-slate-900 dark:text-slate-100"><%= selectedBom.getProductName() != null ? selectedBom.getProductName() : "ID: " + selectedBom.getProductItemId() %></dd>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                                <dt class="text-slate-500 dark:text-slate-400">Mã sản phẩm</dt>
+                                <dd class="mt-1 font-semibold text-slate-900 dark:text-slate-100"><%= selectedBom.getProductItemId() %></dd>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                                <dt class="text-slate-500 dark:text-slate-400">Ngày tạo</dt>
+                                <dd class="mt-1 font-semibold text-slate-900 dark:text-slate-100"><%= selectedBom.getCreatedDate() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(selectedBom.getCreatedDate()) : "Chưa có" %></dd>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                                <dt class="text-slate-500 dark:text-slate-400">Ghi chú</dt>
+                                <dd class="mt-1 leading-6 text-slate-700 dark:text-slate-300"><%= selectedBom.getNotes() != null && !selectedBom.getNotes().trim().isEmpty() ? selectedBom.getNotes() : "Không có ghi chú." %></dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    <section class="overflow-hidden rounded-3xl border border-slate-200/70 shadow-sm dark:border-slate-700/60">
+                        <div class="border-b border-slate-200/70 px-6 py-5 dark:border-slate-700/60">
+                            <h4 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Danh sách nguyên liệu</h4>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Danh sách vật tư cấu thành đang áp dụng cho BOM hiện tại.</p>
+                        </div>
+                        <% if (!selectedDetails.isEmpty()) { %>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                                <thead class="bg-slate-50 dark:bg-slate-800/80">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">#</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Nguyên liệu</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Số lượng</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Đơn vị</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-transparent">
+                                    <% for (int i = 0; i < selectedDetails.size(); i++) { BOMDetailDTO detail = selectedDetails.get(i); %>
+                                    <tr class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/50">
+                                        <td class="px-6 py-4 text-sm font-medium text-slate-500 dark:text-slate-400"><%= i + 1 %></td>
+                                        <td class="px-6 py-4">
+                                            <div class="font-semibold text-slate-900 dark:text-slate-100"><%= detail.getMaterialName() != null ? detail.getMaterialName() : "ID: " + detail.getMaterialItemId() %></div>
+                                            <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Mã vật tư: <%= detail.getMaterialItemId() %></div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100"><%= detail.getQuantityRequired() %></td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"><%= detail.getUnit() != null && !detail.getUnit().trim().isEmpty() ? detail.getUnit() : "-" %></td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"><%= detail.getNotes() != null && !detail.getNotes().trim().isEmpty() ? detail.getNotes() : "-" %></td>
+                                    </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } else { %>
+                        <div class="px-6 py-14 text-center">
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Chưa có nguyên liệu nào</h3>
+                            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">BOM này hiện chưa có dòng nguyên liệu.</p>
+                        </div>
+                        <% } %>
+                    </section>
+                </div>
+            </div>
+            <% } else if (isAddMode || isUpdateMode) { %>
+            <form method="post" action="BOMController" class="max-h-[85vh] overflow-y-auto px-6 py-6">
+                <input type="hidden" name="action" value="<%= isAddMode ? "saveAddBOM" : "saveUpdateBOM" %>">
+                <% if (isUpdateMode && selectedBom != null) { %>
+                <input type="hidden" name="id" value="<%= selectedBom.getBomId() %>">
+                <% } %>
+                <div class="space-y-6">
+                    <section class="rounded-3xl border border-slate-200/70 p-6 shadow-sm dark:border-slate-700/60">
+                        <div class="mb-6 flex items-start justify-between gap-4">
+                            <div>
+                                <h4 class="text-lg font-semibold text-slate-900 dark:text-slate-100"><%= isAddMode ? "Thông tin BOM mới" : "Thông tin BOM cần chỉnh sửa" %></h4>
+                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"><%= isAddMode ? "Chọn sản phẩm và khai báo định mức cần thiết." : "Cập nhật sản phẩm áp dụng, ghi chú và danh sách nguyên liệu của BOM." %></p>
+                            </div>
+                            <% if (isUpdateMode && selectedBom != null) { %>
+                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">BOM #<%= selectedBom.getBomId() %></span>
+                            <% } %>
+                        </div>
+                        <div class="grid gap-5 md:grid-cols-2">
+                            <div class="md:col-span-2">
+                                <label for="productItemId" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Sản phẩm áp dụng</label>
+                                <select id="productItemId" name="productItemId" required class="form-input w-full rounded-2xl border px-4 py-3 text-sm dark:border-slate-700">
+                                    <option value="">-- Chọn sản phẩm --</option>
+                                    <% for (ItemDTO p : products) { %>
+                                    <option value="<%= p.getItemID() %>" <%= selectedBom != null && selectedBom.getProductItemId() == p.getItemID() ? "selected" : "" %>><%= p.getItemName() %></option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="notes" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Ghi chú</label>
+                                <textarea id="notes" name="notes" rows="5" placeholder="Nhập ghi chú cho BOM" class="form-input w-full rounded-2xl border px-4 py-3 text-sm dark:border-slate-700"><%= selectedBom != null && selectedBom.getNotes() != null ? selectedBom.getNotes() : "" %></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="rounded-3xl border border-slate-200/80 bg-slate-50/70 p-5 dark:border-slate-700 dark:bg-slate-900/40">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h4 class="text-base font-semibold text-slate-900 dark:text-slate-100">Nguyên liệu cấu thành</h4>
+                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"><%= isAddMode ? "Thêm các vật tư cấu thành cần thiết cho định mức sản xuất." : "Điều chỉnh danh sách vật tư cấu thành đang áp dụng cho BOM này." %></p>
+                            </div>
+                            <button type="button" onclick="addMaterialRow()" class="inline-flex items-center justify-center rounded-2xl border border-teal-200 bg-white px-4 py-2.5 text-sm font-medium text-teal-700 transition hover:bg-teal-50 dark:border-teal-500/30 dark:bg-slate-800 dark:text-teal-300 dark:hover:bg-slate-700">+ Thêm nguyên liệu</button>
+                        </div>
+
+                        <div id="materialRows" class="space-y-4">
+                            <% for (int i = 0; i < selectedDetails.size(); i++) { BOMDetailDTO detail = selectedDetails.get(i); %>
+                            <div class="material-row rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800/70">
+                                <div class="mb-4 flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Nguyên liệu #<%= i + 1 %></p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">Khai báo vật tư và số lượng.</p>
+                                    </div>
+                                    <button type="button" onclick="removeMaterialRow(this)" class="rounded-xl border border-rose-200 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:border-rose-500/30 dark:text-rose-300 dark:hover:bg-rose-500/10">Xóa</button>
+                                </div>
+                                <div class="grid gap-4 md:grid-cols-2">
+                                    <div>
+                                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Nguyên liệu</label>
+                                        <select name="materialItemId[]" required class="form-input w-full rounded-2xl border px-4 py-3 text-sm dark:border-slate-700">
+                                            <option value="">-- Chọn nguyên liệu --</option>
+                                            <% for (ItemDTO m : materials) { %>
+                                            <option value="<%= m.getItemID() %>" <%= detail.getMaterialItemId() == m.getItemID() ? "selected" : "" %>><%= m.getItemName() %></option>
+                                            <% } %>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Số lượng</label>
+                                        <input type="number" step="0.01" min="0.01" name="quantityRequired[]" value="<%= detail.getQuantityRequired() > 0 ? detail.getQuantityRequired() : "" %>" required class="form-input w-full rounded-2xl border px-4 py-3 text-sm dark:border-slate-700">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Ghi chú dòng nguyên liệu</label>
+                                        <input type="text" name="detailNotes[]" value="<%= detail.getNotes() != null ? detail.getNotes() : "" %>" placeholder="Ví dụ: cắt dư 2%, dùng loại A" class="form-input w-full rounded-2xl border px-4 py-3 text-sm dark:border-slate-700">
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+                        </div>
+                    </section>
+
+                    <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end dark:border-slate-700">
+                        <button type="button" onclick="closeBomModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                        <button type="submit" class="rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition hover:bg-teal-700"><%= isAddMode ? "Lưu BOM mới" : "Lưu thay đổi" %></button>
+                    </div>
                 </div>
             </form>
+            <% } else { %>
+            <div class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">Không có dữ liệu BOM để hiển thị.</div>
+            <% } %>
         </div>
     </div>
 
-    <div id="sidebarOverlay" class="sidebar-overlay hidden lg:hidden"></div>
+    <template id="materialRowTemplate">
+        <div class="material-row rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800/70">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Nguyên liệu mới</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Khai báo vật tư và số lượng.</p>
+                </div>
+                <button type="button" onclick="removeMaterialRow(this)" class="rounded-xl border border-rose-200 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:border-rose-500/30 dark:text-rose-300 dark:hover:bg-rose-500/10">Xóa</button>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Nguyên liệu</label>
+                    <select name="materialItemId[]" required class="form-input w-full rounded-2xl border px-4 py-3 text-sm dark:border-slate-700">
+                        <option value="">-- Chọn nguyên liệu --</option>
+                        <% for (ItemDTO m : materials) { %>
+                        <option value="<%= m.getItemID() %>"><%= m.getItemName() %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Số lượng</label>
+                    <input type="number" step="0.01" min="0.01" name="quantityRequired[]" required class="form-input w-full rounded-2xl border px-4 py-3 text-sm dark:border-slate-700">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Ghi chú dòng nguyên liệu</label>
+                    <input type="text" name="detailNotes[]" placeholder="Ví dụ: cắt dư 2%, dùng loại A" class="form-input w-full rounded-2xl border px-4 py-3 text-sm dark:border-slate-700">
+                </div>
+            </div>
+        </div>
+    </template>
 
+    <div id="deleteBomModal" class="modal-backdrop fixed inset-0 z-[60] hidden items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-600 dark:text-rose-300">Xác nhận xóa</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Xóa BOM này?</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                        Bạn sắp xóa <span id="deleteBomName" class="font-semibold text-slate-700 dark:text-slate-200"></span>. Thao tác này không thể hoàn tác.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button type="button" onclick="closeDeleteBomModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>
+                <a id="confirmDeleteBomBtn" href="#" class="rounded-2xl bg-rose-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition hover:bg-rose-700">Xóa BOM</a>
+            </div>
+        </div>
+    </div>
+ 
+    <div id="sidebarOverlay" class="sidebar-overlay hidden lg:hidden"></div>
     <script>
-        // Sidebar toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
         const bomModal = document.getElementById('bomModal');
+        const bomModalMode = bomModal ? bomModal.dataset.mode : '';
+        const bomListUrl = 'BOMController?action=list';
+        const deleteBomModal = document.getElementById('deleteBomModal');
+        const deleteBomName = document.getElementById('deleteBomName');
+        const confirmDeleteBomBtn = document.getElementById('confirmDeleteBomBtn');
 
         function openBomModal() {
             if (!bomModal) return;
@@ -478,26 +701,33 @@
             bomModal.classList.add('hidden');
             bomModal.classList.remove('flex');
             document.body.classList.remove('overflow-hidden');
+            if (bomModalMode) {
+                window.location.href = bomListUrl;
+            }
         }
 
-        if (menuToggle && sidebar && overlay) {
-            menuToggle.addEventListener('click', function() {
-                if (window.innerWidth >= 1024) {
-                    const collapsed = sidebar.dataset.collapsed === 'true';
-                    sidebar.dataset.collapsed = (!collapsed).toString();
-                } else {
-                    sidebar.classList.toggle('-translate-x-full');
-                    overlay.classList.toggle('hidden');
-                }
-            });
-
-            overlay.addEventListener('click', function() {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            });
+        function openDeleteBomModal(button) {
+            if (!deleteBomModal || !confirmDeleteBomBtn || !deleteBomName || !button) return;
+            const bomId = button.dataset.bomId;
+            const bomName = button.dataset.bomName;
+            deleteBomName.textContent = bomName || ('BOM #' + bomId);
+            confirmDeleteBomBtn.href = 'BOMController?action=deleteBOM&id=' + bomId;
+            deleteBomModal.classList.remove('hidden');
+            deleteBomModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
         }
 
-        if (bomModal) {
+        function closeDeleteBomModal() {
+            if (!deleteBomModal) return;
+            deleteBomModal.classList.add('hidden');
+            deleteBomModal.classList.remove('flex');
+            if (!bomModal || bomModal.classList.contains('hidden')) {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+ 
+        if (bomModal && bomModalMode) {
+            openBomModal();
             bomModal.addEventListener('click', function(event) {
                 if (event.target === bomModal) {
                     closeBomModal();
@@ -505,11 +735,62 @@
             });
         }
 
+        if (deleteBomModal) {
+            deleteBomModal.addEventListener('click', function(event) {
+                if (event.target === deleteBomModal) {
+                    closeDeleteBomModal();
+                }
+            });
+        }
+ 
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                closeBomModal();
+                if (deleteBomModal && !deleteBomModal.classList.contains('hidden')) {
+                    closeDeleteBomModal();
+                    return;
+                }
+                if (bomModal && !bomModal.classList.contains('hidden')) {
+                    closeBomModal();
+                }
             }
         });
+
+        function updateMaterialRowTitles() {
+            const rows = document.querySelectorAll('#materialRows .material-row');
+            rows.forEach((row, index) => {
+                const title = row.querySelector('p.font-semibold');
+                if (title) {
+                    title.textContent = 'Nguyên liệu #' + (index + 1);
+                }
+            });
+        }
+
+        function addMaterialRow() {
+            const template = document.getElementById('materialRowTemplate');
+            const container = document.getElementById('materialRows');
+            if (!template || !container) return;
+            container.insertAdjacentHTML('beforeend', template.innerHTML);
+            updateMaterialRowTitles();
+        }
+
+        function removeMaterialRow(button) {
+            const container = document.getElementById('materialRows');
+            if (!container) return;
+            const rows = container.querySelectorAll('.material-row');
+            if (rows.length <= 1) {
+                rows[0].querySelectorAll('input, select').forEach((field) => {
+                    field.value = '';
+                });
+                return;
+            }
+            const row = button.closest('.material-row');
+            if (row) {
+                row.remove();
+                updateMaterialRowTitles();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', updateMaterialRowTitles);
     </script>
 </body>
 </html>

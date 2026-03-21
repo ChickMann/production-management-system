@@ -9,6 +9,9 @@
     String userName = user != null ? user.getUsername() : "User";
     String userRole = user != null ? user.getRole() : "user";
     boolean isAdmin = "admin".equalsIgnoreCase(userRole);
+    boolean isWorker = "employee".equalsIgnoreCase(userRole)
+            || "worker".equalsIgnoreCase(userRole)
+            || "user".equalsIgnoreCase(userRole);
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
     if (data == null) data = new DashboardDTO();
@@ -206,6 +209,7 @@
                         </div>
                     </div>
                     
+                    <% if (isAdmin) { %>
                     <!-- Đơn Hàng -->
                     <div class="kpi-card rounded-2xl bg-white p-6 shadow-sm border-t-4 border-blue-500 dark:bg-slate-800">
                         <div class="flex items-start justify-between">
@@ -233,7 +237,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Doanh Thu -->
                     <div class="kpi-card rounded-2xl bg-white p-6 shadow-sm border-t-4 border-emerald-500 dark:bg-slate-800">
                         <div class="flex items-start justify-between">
@@ -252,8 +256,47 @@
                             </div>
                         </div>
                     </div>
+                    <% } else { %>
+                    <!-- Worker: thay KPI quản trị bằng KPI cá nhân -->
+                    <div class="kpi-card rounded-2xl bg-white p-6 shadow-sm border-t-4 border-amber-500 dark:bg-slate-800">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Nhật Ký SX</p>
+                                <p class="mt-2 text-4xl font-bold text-slate-800 dark:text-slate-100"><%= data.getTotalProductionLogs() %></p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="text-xs text-amber-600 font-medium flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <%= data.getLogsToday() %> log hôm nay
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="w-14 h-14 rounded-xl bg-amber-50 flex items-center justify-center">
+                                <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card rounded-2xl bg-white p-6 shadow-sm border-t-4 border-emerald-500 dark:bg-slate-800">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Tỷ Lệ Hoàn Thành</p>
+                                <p class="text-3xl font-bold text-emerald-600 mt-2"><%= data.getCompletionRate() %>%</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Theo công việc của bạn
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="w-14 h-14 rounded-xl bg-emerald-50 flex items-center justify-center">
+                                <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
                 </div>
                 
+                <% if (isAdmin) { %>
                 <!-- Status Cards (4 cards smaller) - Hàng thứ hai -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <!-- Lỗi -->
@@ -367,67 +410,144 @@
                         </a>
                     </div>
                 </div>
+                <% } else { %>
+                <!-- Worker summary -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base font-semibold text-slate-800 dark:text-slate-100">Công việc gần đây</h3>
+                            <span class="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700"><%= data.getRecentWorkOrders() != null ? data.getRecentWorkOrders().size() : 0 %> việc</span>
+                        </div>
+                        <% if (data.getRecentWorkOrders() != null && !data.getRecentWorkOrders().isEmpty()) { %>
+                            <div class="space-y-3">
+                                <% for (WorkOrderDTO workOrder : data.getRecentWorkOrders()) { %>
+                                <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p class="font-semibold text-slate-800 dark:text-slate-100"><%= workOrder.getProductName() != null ? workOrder.getProductName() : "Lệnh sản xuất #" + workOrder.getWo_id() %></p>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400">Mã WO: <%= workOrder.getWo_id() %></p>
+                                        </div>
+                                        <span class="rounded-full px-2.5 py-1 text-xs font-semibold <%= "Done".equalsIgnoreCase(workOrder.getStatus()) ? "status-done" : ("InProgress".equalsIgnoreCase(workOrder.getStatus()) ? "status-progress" : "status-new") %>"><%= workOrder.getStatusLabel() %></span>
+                                    </div>
+                                </div>
+                                <% } %>
+                            </div>
+                        <% } else { %>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Chưa có công việc nào được giao.</p>
+                        <% } %>
+                    </div>
+
+                    <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base font-semibold text-slate-800 dark:text-slate-100">Nhật ký gần đây</h3>
+                            <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700"><%= data.getRecentLogs() != null ? data.getRecentLogs().size() : 0 %> log</span>
+                        </div>
+                        <% if (data.getRecentLogs() != null && !data.getRecentLogs().isEmpty()) { %>
+                            <div class="space-y-3">
+                                <% for (ProductionLogDTO log : data.getRecentLogs()) { %>
+                                <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                                    <p class="font-semibold text-slate-800 dark:text-slate-100"><%= log.getStepName() != null ? log.getStepName() : "Đã ghi nhận" %></p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">WO: <%= log.getWoId() %> • Số lượng: <%= log.getProducedQuantity() %></p>
+                                </div>
+                                <% } %>
+                            </div>
+                        <% } else { %>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Hôm nay chưa có nhật ký sản xuất nào.</p>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-800">
+                    <h3 class="mb-4 text-base font-semibold text-slate-800 dark:text-slate-100">Thao tác nhanh</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <a href="MainController?action=listProduction" class="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition-all hover:border-amber-300 hover:bg-amber-50 dark:border-slate-700 dark:hover:bg-slate-700/70">
+                            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-medium text-slate-700 dark:text-slate-200">Xem nhật ký sản xuất</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Theo dõi việc được giao và tiến độ cá nhân</p>
+                            </div>
+                        </a>
+                        <a href="MainController?action=listWorkOrder" class="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition-all hover:border-teal-300 hover:bg-teal-50 dark:border-slate-700 dark:hover:bg-slate-700/70">
+                            <div class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            </div>
+                            <div>
+                                <p class="font-medium text-slate-700 dark:text-slate-200">Xem lệnh sản xuất</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Chỉ hiển thị danh sách công việc liên quan</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <% } %>
             </main>
         </div>
     </div>
 
     <script>
-        // Charts - Chỉ khởi tạo nếu có dữ liệu
-        <% if (hasData) { %>
-        const monthLabels = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
-        const revenueData = new Array(12).fill(0);
-        <% if (data.getMonthlyRevenue() != null) {
-            for (double[] row : data.getMonthlyRevenue()) { %>
-                revenueData[Math.floor(<%= row[0] %>) - 1] = <%= (long) row[1] %>;
-        <% } } %>
+        <% if (hasData && isAdmin) { %>
+        const revenueCanvas = document.getElementById('revenueChart');
+        const statusCanvas = document.getElementById('woStatusChart');
 
-        new Chart(document.getElementById('revenueChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: monthLabels,
-                datasets: [{
-                    label: 'Doanh thu (VND)',
-                    data: revenueData,
-                    backgroundColor: 'rgba(20, 184, 166, 0.7)',
-                    borderColor: 'rgba(20, 184, 166, 1)',
-                    borderWidth: 1,
-                    borderRadius: 6,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { callback: function(value) {
-                            if (value >= 1000000) return (value/1000000).toFixed(1) + 'M';
-                            if (value >= 1000) return (value/1000).toFixed(0) + 'K';
-                            return value;
-                        }}
+        if (revenueCanvas) {
+            const monthLabels = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+            const revenueData = new Array(12).fill(0);
+            <% if (data.getMonthlyRevenue() != null) {
+                for (double[] row : data.getMonthlyRevenue()) { %>
+                    revenueData[Math.floor(<%= row[0] %>) - 1] = <%= (long) row[1] %>;
+            <% } } %>
+
+            new Chart(revenueCanvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Doanh thu (VND)',
+                        data: revenueData,
+                        backgroundColor: 'rgba(20, 184, 166, 0.7)',
+                        borderColor: 'rgba(20, 184, 166, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: function(value) {
+                                if (value >= 1000000) return (value/1000000).toFixed(1) + 'M';
+                                if (value >= 1000) return (value/1000).toFixed(0) + 'K';
+                                return value;
+                            }}
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
-        new Chart(document.getElementById('woStatusChart').getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Mới', 'Đang SX', 'Hoàn Thành', 'Đã Hủy'],
-                datasets: [{
-                    data: [<%= data.getWorkOrdersNew() %>, <%= data.getWorkOrdersInProgress() %>, <%= data.getWorkOrdersDone() %>, <%= data.getWorkOrdersCancelled() %>],
-                    backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444'],
-                    borderWidth: 0,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } } },
-                cutout: '60%',
-            }
-        });
+        if (statusCanvas) {
+            new Chart(statusCanvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mới', 'Đang SX', 'Hoàn Thành', 'Đã Hủy'],
+                    datasets: [{
+                        data: [<%= data.getWorkOrdersNew() %>, <%= data.getWorkOrdersInProgress() %>, <%= data.getWorkOrdersDone() %>, <%= data.getWorkOrdersCancelled() %>],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } } },
+                    cutout: '60%',
+                }
+            });
+        }
         <% } %>
     </script>
 </body>

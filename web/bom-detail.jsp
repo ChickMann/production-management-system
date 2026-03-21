@@ -127,14 +127,20 @@
                     </div>
                 </div>
                 <% } else { %>
-                <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Chi tiết BOM</h1>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Trang này chỉ hiển thị thông tin BOM và danh sách nguyên liệu.</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <a href="BOMController?action=list" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">← Danh sách BOM</a>
-                        <a href="BOMController?action=editBOM&id=<%= bom.getBomId() %>" class="rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-teal-500/30 transition-colors hover:bg-teal-700">Sửa BOM</a>
+                <div class="mb-6 rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-teal-50/70 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-teal-950/30">
+                    <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="max-w-3xl">
+                            <div class="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-teal-700 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300">
+                                Chi tiết định mức
+                            </div>
+                            <h1 class="mt-3 text-2xl font-semibold text-slate-900 dark:text-slate-100">Chi tiết BOM</h1>
+                            <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">Theo dõi nhanh thông tin định mức, trạng thái áp dụng và danh sách nguyên liệu của sản phẩm trên giao diện đồng bộ.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="BOMController?action=list" class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">← Danh sách BOM</a>
+                            <a href="MainController?action=listRouting&productItemId=<%= bom.getProductItemId() %>" class="rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-sm shadow-indigo-500/30 transition-colors hover:bg-indigo-700">Xem quy trình sản xuất</a>
+                            <a href="BOMController?action=editBOM&id=<%= bom.getBomId() %>" class="rounded-2xl bg-teal-600 px-4 py-3 text-sm font-medium text-white shadow-sm shadow-teal-500/30 transition-colors hover:bg-teal-700">Sửa BOM</a>
+                        </div>
                     </div>
                 </div>
 
@@ -168,7 +174,7 @@
                                 <dd class="mt-1 font-semibold text-slate-900 dark:text-slate-100"><%= bom.getProductName() != null ? bom.getProductName() : "ID: " + bom.getProductItemId() %></dd>
                             </div>
                             <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
-                                <dt class="text-slate-500 dark:text-slate-400">Product Item ID</dt>
+                                <dt class="text-slate-500 dark:text-slate-400">Mã sản phẩm</dt>
                                 <dd class="mt-1 font-semibold text-slate-900 dark:text-slate-100"><%= bom.getProductItemId() %></dd>
                             </div>
                             <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
@@ -185,7 +191,7 @@
                     <section class="section-card overflow-hidden rounded-3xl border border-slate-200/70 shadow-sm dark:border-slate-700/60">
                         <div class="border-b border-slate-200/70 px-6 py-5 dark:border-slate-700/60">
                             <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Danh sách nguyên liệu</h2>
-                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Bảng chỉ xem, không chỉnh sửa trực tiếp tại trang chi tiết.</p>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Danh sách vật tư cấu thành đang áp dụng cho BOM hiện tại.</p>
                         </div>
 
                         <% if (details != null && !details.isEmpty()) { %>
@@ -197,7 +203,6 @@
                                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Nguyên liệu</th>
                                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Số lượng</th>
                                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Đơn vị</th>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Hao hụt</th>
                                         <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Ghi chú</th>
                                     </tr>
                                 </thead>
@@ -210,11 +215,10 @@
                                         <td class="px-6 py-4 text-sm font-medium text-slate-500 dark:text-slate-400"><%= stt++ %></td>
                                         <td class="px-6 py-4">
                                             <div class="font-semibold text-slate-900 dark:text-slate-100"><%= detail.getMaterialName() != null ? detail.getMaterialName() : "ID: " + detail.getMaterialItemId() %></div>
-                                            <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Material ID: <%= detail.getMaterialItemId() %></div>
+                                            <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Mã vật tư: <%= detail.getMaterialItemId() %></div>
                                         </td>
                                         <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100"><%= detail.getQuantityRequired() %></td>
                                         <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"><%= detail.getUnit() != null && !detail.getUnit().trim().isEmpty() ? detail.getUnit() : "-" %></td>
-                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"><%= detail.getWastePercent() %>%</td>
                                         <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"><%= detail.getNotes() != null && !detail.getNotes().trim().isEmpty() ? detail.getNotes() : "-" %></td>
                                     </tr>
                                     <% } %>

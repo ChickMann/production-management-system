@@ -78,15 +78,15 @@
 
         <!-- Danh Mục -->
         <p class="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400 mt-4">Danh Mục</p>
-        <a href="item-list.jsp" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg <%= "item".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-medium" : "text-slate-300 hover:bg-slate-800" %>">
+        <a href="ItemController?action=list" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg <%= "item".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-medium" : "text-slate-300 hover:bg-slate-800" %>">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
             Vật Tư / Sản Phẩm
         </a>
-        <a href="customer.jsp" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg <%= "customer".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-medium" : "text-slate-300 hover:bg-slate-800" %>">
+        <a href="CustomerController?action=listCustomer" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg <%= "customer".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-medium" : "text-slate-300 hover:bg-slate-800" %>">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             Khách Hàng
         </a>
-        <a href="SearchSupplier.jsp" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg <%= "supplier".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-medium" : "text-slate-300 hover:bg-slate-800" %>">
+        <a href="SupplierController?action=listSupplier" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg <%= "supplier".equals(activePage) ? "bg-teal-500/20 text-teal-300 font-medium" : "text-slate-300 hover:bg-slate-800" %>">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             Nhà Cung Cấp
         </a>

@@ -43,8 +43,9 @@ public class RoutingStepController extends HttpServlet {
 
                         for (RoutingStepDTO s : listStep) {
                             String stepName = s.getStepName();
-                            boolean matchKeyword = stepName == null || stepName.isEmpty()
-                                    || stepName.toLowerCase().contains(lowerKeyword);
+                            // Sửa logic filter: chỉ match khi stepName không null và chứa keyword
+                            boolean matchKeyword = (keyword == null || keyword.trim().isEmpty())
+                                    || (stepName != null && stepName.toLowerCase().contains(lowerKeyword));
                             boolean matchRouting = (searchRoutingId == null || searchRoutingId.isEmpty())
                                     || String.valueOf(s.getRoutingId()).equals(searchRoutingId);
 
@@ -57,6 +58,8 @@ public class RoutingStepController extends HttpServlet {
 
                     request.setAttribute("listStep", listStep);
                     request.setAttribute("listRouting", listRouting);
+                    request.setAttribute("keyword", keyword != null ? keyword : "");
+                    request.setAttribute("searchRoutingId", searchRoutingId != null ? searchRoutingId : "");
                     request.getRequestDispatcher("listRoutingStep.jsp").forward(request, response);
                     break;
                 }

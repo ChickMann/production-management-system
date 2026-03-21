@@ -243,6 +243,19 @@ public class BOMDAO {
         return false;
     }
 
+    public boolean deleteBOMDetailsByBomId(int bomId) {
+        String sql = "DELETE FROM BOM_Detail WHERE bom_id = ?";
+        try (Connection conn = DBUtils.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bomId);
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean cloneBOM(int sourceBomId, String newVersion) {
         BOMDTO sourceBOM = getBOMById(sourceBomId);
         if (sourceBOM == null) {

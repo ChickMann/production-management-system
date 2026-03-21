@@ -45,8 +45,16 @@
     
     for (BillDTO b : billList) {
         if (b.getTotal_amount() > 0) totalAmount += b.getTotal_amount();
-        if ("paid".equalsIgnoreCase(b.getStatus())) countPaid++;
-        else if ("pending".equalsIgnoreCase(b.getStatus())) countPending++;
+        PaymentDTO latestPayment = latestPaymentMap.get(b.getBill_id());
+        boolean paymentExpired = latestPayment != null
+                && latestPayment.getExpiresAt() != null
+                && !"PAID".equalsIgnoreCase(latestPayment.getStatus())
+                && latestPayment.getExpiresAt().before(new java.util.Date());
+        if (latestPayment != null && "PAID".equalsIgnoreCase(latestPayment.getStatus())) {
+            countPaid++;
+        } else if (latestPayment == null || "PENDING".equalsIgnoreCase(latestPayment.getStatus()) || paymentExpired || "EXPIRED".equalsIgnoreCase(latestPayment.getStatus())) {
+            countPending++;
+        }
     }
 %>
 <!DOCTYPE html>
@@ -399,6 +407,18 @@
                                                 <% } %>
                                             </button>
                                             <% } %>
+                                            <button type="button"
+                                                    data-bill-id="<%= b.getBill_id() %>"
+                                                    data-bill-name="Hóa đơn #<%= b.getBill_id() %>"
+                                                    data-customer-name="<%= customerName %>"
+                                                    onclick="openDeleteBillModal(this)"
+                                                    class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-600 text-white transition-colors hover:bg-rose-700 shadow-sm shadow-rose-500/30"
+                                                    title="Xóa hóa đơn"
+                                                    aria-label="Xóa hóa đơn">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -465,6 +485,29 @@
                         Hủy
                     </button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteBillModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-600 dark:text-rose-300">Xác nhận xóa</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Xóa hóa đơn?</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">Bạn sắp xóa <span id="deleteBillName" class="font-semibold text-slate-700 dark:text-slate-200"></span> của <span id="deleteBillCustomer" class="font-semibold text-slate-700 dark:text-slate-200"></span>. Thao tác này không thể hoàn tác.</p>
+                </div>
+            </div>
+            <form action="BillController" method="post" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <input type="hidden" name="action" value="deleteBill"/>
+                <input type="hidden" id="deleteBillId" name="bill_id" value=""/>
+                <button type="button" onclick="closeDeleteBillModal()" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Hủy</button>
+                <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-rose-600 px-5 py-2.5 font-semibold text-white shadow-sm shadow-rose-500/30 transition-all hover:bg-rose-700">Xóa hóa đơn</button>
             </form>
         </div>
     </div>
@@ -557,6 +600,7 @@
         const billTotalAmount = document.getElementById('billTotalAmount');
         const addBillForm = document.querySelector('#addModal form');
         const addModal = document.getElementById('addModal');
+        const deleteBillModal = document.getElementById('deleteBillModal');
         const qrModal = document.getElementById('qrModal');
         const qrCreateForm = document.getElementById('qrCreateForm');
         const qrModalTitle = document.getElementById('qrModalTitle');
@@ -605,7 +649,28 @@
             if (!addModal) return;
             addModal.classList.add('hidden');
             addModal.classList.remove('flex');
-            document.body.classList.remove('overflow-hidden');
+            if (!deleteBillModal || deleteBillModal.classList.contains('hidden')) {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function openDeleteBillModal(button) {
+            if (!deleteBillModal || !button) return;
+            document.getElementById('deleteBillId').value = button.getAttribute('data-bill-id') || '';
+            document.getElementById('deleteBillName').textContent = button.getAttribute('data-bill-name') || 'hóa đơn này';
+            document.getElementById('deleteBillCustomer').textContent = button.getAttribute('data-customer-name') || 'khách hàng liên quan';
+            deleteBillModal.classList.remove('hidden');
+            deleteBillModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeDeleteBillModal() {
+            if (!deleteBillModal) return;
+            deleteBillModal.classList.add('hidden');
+            deleteBillModal.classList.remove('flex');
+            if ((!addModal || addModal.classList.contains('hidden')) && (!qrModal || qrModal.classList.contains('hidden'))) {
+                document.body.classList.remove('overflow-hidden');
+            }
         }
 
         function stopQrCountdown() {
@@ -871,6 +936,12 @@
             });
         }
 
+        if (deleteBillModal) {
+            deleteBillModal.addEventListener('click', function(e) {
+                if (e.target === this) closeDeleteBillModal();
+            });
+        }
+
         if (qrModal) {
             qrModal.addEventListener('click', function(e) {
                 if (e.target === this) closeQrModal();
@@ -899,7 +970,7 @@
                     payload.set('amount', document.getElementById('qrAmount').value || '');
                     payload.set('customer_name', document.getElementById('qrCustomerName').value || '');
                     payload.set('customer_email', document.getElementById('qrCustomerEmail').value || '');
-                    payload.set('expire_minutes', qrCreateForm.querySelector('input[name="expire_minutes"]') ? qrCreateForm.querySelector('input[name="expire_minutes"]').value : '15');
+                    payload.set('expire_minutes', qrCreateForm.querySelector('select[name="expire_minutes"]') ? qrCreateForm.querySelector('select[name="expire_minutes"]').value : '15');
 
                     const response = await fetch('<%= request.getContextPath() %>/PaymentController', {
                         method: 'POST',
@@ -1034,6 +1105,9 @@
             if (event.key === 'Escape') {
                 if (qrModal && !qrModal.classList.contains('hidden')) {
                     closeQrModal();
+                }
+                if (deleteBillModal && !deleteBillModal.classList.contains('hidden')) {
+                    closeDeleteBillModal();
                 }
                 if (addModal && !addModal.classList.contains('hidden')) {
                     closeAddModal();

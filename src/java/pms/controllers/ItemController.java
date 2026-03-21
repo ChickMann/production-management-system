@@ -160,9 +160,6 @@ public class ItemController extends HttpServlet {
     }
 
     private void updateItem(HttpServletRequest request) {
-        String msg = "";
-        String error = "";
-
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             String itemName = request.getParameter("itemName");
@@ -183,17 +180,16 @@ public class ItemController extends HttpServlet {
 
             ItemDAO dao = new ItemDAO();
             if (dao.Update(item)) {
-                msg = "Item updated successfully!";
+                url = "redirect:ItemController?action=list&msg="
+                        + java.net.URLEncoder.encode("Cập nhật vật tư thành công", "UTF-8");
             } else {
-                error = "Failed to update item";
+                url = "redirect:ItemController?action=list&error="
+                        + java.net.URLEncoder.encode("Không thể cập nhật vật tư", "UTF-8");
             }
         } catch (Exception e) {
-            error = "Error: " + e.getMessage();
+            url = "redirect:ItemController?action=list&error="
+                    + java.net.URLEncoder.encode("Lỗi: " + e.getMessage(), "UTF-8");
         }
-
-        request.setAttribute("msg", msg);
-        request.setAttribute("error", error);
-        url = "redirect:ItemController?action=list";
     }
 
     private void deleteItem(HttpServletRequest request) {
@@ -203,14 +199,16 @@ public class ItemController extends HttpServlet {
             ItemDAO dao = new ItemDAO();
             boolean success = dao.Delete(id);
             if (success) {
-                request.setAttribute("msg", "Item deleted successfully!");
+                url = "redirect:ItemController?action=list&msg="
+                        + java.net.URLEncoder.encode("Xóa vật tư thành công", "UTF-8");
             } else {
-                request.setAttribute("error", "Failed to delete item");
+                url = "redirect:ItemController?action=list&error="
+                        + java.net.URLEncoder.encode("Không thể xóa vật tư", "UTF-8");
             }
         } catch (Exception e) {
-            request.setAttribute("error", "Error: " + e.getMessage());
+            url = "redirect:ItemController?action=list&error="
+                    + java.net.URLEncoder.encode("Lỗi: " + e.getMessage(), "UTF-8");
         }
-        url = "redirect:ItemController?action=list";
     }
 
     @Override
