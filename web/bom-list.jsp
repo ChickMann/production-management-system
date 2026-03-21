@@ -191,41 +191,14 @@
                 <% } %>
 
                 <!-- Stats Cards -->
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-                    <div class="kpi-card bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-200 dark:border-blue-500/30 border-t-4 border-t-blue-500">
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 mb-6">
+                    <div class="kpi-card bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-blue-200 dark:border-blue-500/30 border-t-4 border-t-blue-500 max-w-sm">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tổng BOM</p>
                                 <p class="mt-2 text-3xl font-bold text-slate-800 dark:text-slate-100"><%= totalBOMs %></p>
                             </div>
                             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-300 text-2xl">&#129513;</div>
-                        </div>
-                    </div>
-                    <div class="kpi-card bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-emerald-200 dark:border-emerald-500/30 border-t-4 border-t-emerald-500">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Đang dùng</p>
-                                <p class="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-300"><%= activeCount %></p>
-                            </div>
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-2xl">&#10004;</div>
-                        </div>
-                    </div>
-                    <div class="kpi-card bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-amber-200 dark:border-amber-500/30 border-t-4 border-t-amber-500">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Chờ duyệt</p>
-                                <p class="mt-2 text-3xl font-bold text-amber-600 dark:text-amber-300"><%= pendingCount %></p>
-                            </div>
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-300 text-2xl">&#9203;</div>
-                        </div>
-                    </div>
-                    <div class="kpi-card bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-rose-200 dark:border-rose-500/30 border-t-4 border-t-rose-500">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Ngừng</p>
-                                <p class="mt-2 text-3xl font-bold text-slate-600 dark:text-slate-300"><%= inactiveCount %></p>
-                            </div>
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-2xl">&#10006;</div>
                         </div>
                     </div>
                 </div>
@@ -251,12 +224,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        <select name="status" class="rounded-2xl border border-slate-200 px-4 py-3 transition-all form-input dark:border-slate-700 xl:min-w-[220px]">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="active" <%= "active".equals(statusFilter) ? "selected" : "" %>>Đang dùng</option>
-                            <option value="pending" <%= "pending".equals(statusFilter) ? "selected" : "" %>>Chờ duyệt</option>
-                            <option value="inactive" <%= "inactive".equals(statusFilter) ? "selected" : "" %>>Ngừng</option>
-                        </select>
+
                         <div class="flex gap-3">
                             <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
                                 Tìm kiếm
@@ -359,31 +327,13 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </a>
-                                                <a href="BOMController?action=cloneBOM&id=<%= bom.getBomId() %>" 
-                                                   onclick="return confirm('Nhân bản BOM này thành phiên bản mới?')"
-                                                   class="p-2 rounded-xl text-slate-500 transition-colors hover:bg-purple-100 hover:text-purple-600 dark:text-slate-400 dark:hover:bg-purple-500/10 dark:hover:text-purple-300" title="Nhân bản">
+                                                <a href="BOMController?action=deleteBOM&id=<%= bom.getBomId() %>" 
+                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa BOM này?')"
+                                                   class="p-2 rounded-xl text-slate-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300" title="Xóa">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                     </svg>
                                                 </a>
-                                                <% if ("active".equals(bom.getStatus())) { %>
-                                                <a href="BOMController?action=deactivateBOM&id=<%= bom.getBomId() %>" 
-                                                   onclick="return confirm('Ngừng sử dụng BOM này?')"
-                                                   class="p-2 rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200" title="Ngừng">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
-                                                    </svg>
-                                                </a>
-                                                <% } else { %>
-                                                <a href="BOMController?action=activateBOM&id=<%= bom.getBomId() %>" 
-                                                   class="p-2 rounded-xl text-slate-500 transition-colors hover:bg-emerald-100 hover:text-emerald-600 dark:text-slate-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300" title="Kích hoạt">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                    </svg>
-                                                </a>
-                                                <% } %>
                                             </div>
                                         </td>
                                     </tr>
@@ -427,18 +377,7 @@
                             <% } %>
                         </select>
                     </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Phiên bản BOM</label>
-                        <input type="text" name="version" value="v1.0" class="form-input w-full rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700" placeholder="VD: v1.0" required>
-                    </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Trạng thái</label>
-                        <select name="status" class="form-input w-full rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700">
-                            <option value="active">Đang dùng</option>
-                            <option value="pending">Chờ duyệt</option>
-                            <option value="inactive">Ngừng</option>
-                        </select>
-                    </div>
+
                     <div class="md:col-span-2">
                         <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Ghi chú</label>
                         <textarea name="notes" rows="4" class="form-input w-full rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700" placeholder="Thêm ghi chú cho BOM nếu cần..."></textarea>

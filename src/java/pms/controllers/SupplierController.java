@@ -43,7 +43,7 @@ public class SupplierController extends HttpServlet {
                     }
 
                     request.setAttribute("supplierList", list);
-                    request.getRequestDispatcher("supplier.jsp").forward(request, response);
+                    request.getRequestDispatcher("SearchSupplier.jsp").forward(request, response);
                     break;
 
                 case "addSupplier":
@@ -59,7 +59,7 @@ public class SupplierController extends HttpServlet {
                 case "loadUpdateSupplier":
                     request.setAttribute("supplierEdit", sdao.SearchByID(Integer.parseInt(request.getParameter("id"))));
                     request.setAttribute("supplierList", sdao.SupplierList());
-                    request.getRequestDispatcher("supplier.jsp").forward(request, response);
+                    request.getRequestDispatcher("SearchSupplier.jsp").forward(request, response);
                     break;
 
                 case "saveUpdateSupplier":

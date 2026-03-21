@@ -169,7 +169,9 @@ public class BOMController extends HttpServlet {
         try {
             int productItemId = Integer.parseInt(request.getParameter("productItemId"));
             String version = request.getParameter("version");
-            String status = request.getParameter("status") != null ? request.getParameter("status") : "active";
+            if (version == null || version.trim().isEmpty()) { version = "v1.0"; }
+            String status = request.getParameter("status");
+            if (status == null || status.trim().isEmpty()) { status = "active"; }
             String notes = request.getParameter("notes");
 
             BOMDTO bom = new BOMDTO();
@@ -204,7 +206,9 @@ public class BOMController extends HttpServlet {
             int id = Integer.parseInt(request.getParameter("id"));
             int productItemId = Integer.parseInt(request.getParameter("productItemId"));
             String version = request.getParameter("version");
+            if (version == null || version.trim().isEmpty()) { version = "v1.0"; }
             String status = request.getParameter("status");
+            if (status == null || status.trim().isEmpty()) { status = "active"; }
             String notes = request.getParameter("notes");
 
             BOMDTO bom = new BOMDTO();

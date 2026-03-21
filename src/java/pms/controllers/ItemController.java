@@ -167,10 +167,13 @@ public class ItemController extends HttpServlet {
             int id = Integer.parseInt(request.getParameter("id"));
             String itemName = request.getParameter("itemName");
             String itemType = request.getParameter("itemType");
-            int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
+            int stockQuantity = 0;
+            try { stockQuantity = Integer.parseInt(request.getParameter("stockQuantity")); } catch(Exception e) {}
             String unit = request.getParameter("unit");
+            if (unit == null) unit = "";
             String description = request.getParameter("description");
-            int minStockLevel = Integer.parseInt(request.getParameter("minStockLevel"));
+            int minStockLevel = 0;
+            try { minStockLevel = Integer.parseInt(request.getParameter("minStockLevel")); } catch(Exception e) {}
 
             ItemDTO item = new ItemDTO();
             item.setItemID(id);

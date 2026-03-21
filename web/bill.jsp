@@ -280,12 +280,22 @@
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex items-center justify-center gap-2">
                                             <% if (!"paid".equalsIgnoreCase(b.getStatus())) { %>
-                                            <a href="MainController?action=listBill&pay=<%= b.getBill_id() %>" class="p-2 rounded-lg text-slate-500 hover:bg-emerald-100 hover:text-emerald-600 dark:hover:bg-emerald-900/30" title="Thanh toán">
+                                            <a href="PaymentController?action=createQr&bill_id=<%= b.getBill_id() %>&amount=<%= b.getTotal_amount() %>" class="p-2 rounded-lg text-slate-500 hover:bg-emerald-100 hover:text-emerald-600 dark:hover:bg-emerald-900/30" title="Tạo QR Thanh toán">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                                 </svg>
                                             </a>
                                             <% } %>
+                                            <button type="button" onclick="openEditModal('<%= b.getBill_id() %>', '<%= b.getWo_id() %>', '<%= b.getCustomer_id() %>', '<%= b.getTotal_amount() %>')" class="p-2 rounded-lg text-slate-500 hover:bg-amber-100 hover:text-amber-600 dark:hover:bg-amber-900/30" title="Sửa">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                </svg>
+                                            </button>
+                                            <a href="MainController?action=deleteBill&bill_id=<%= b.getBill_id() %>" onclick="return confirm('Bạn có chắc xoá hóa đơn này?');" class="p-2 rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30" title="Xóa">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -353,6 +363,62 @@
         </div>
     </div>
 
+    <!-- Edit Bill Modal -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-800">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Sửa hóa đơn</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Từ đây bạn có thể cập nhật thông tin hóa đơn.</p>
+                </div>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form action="MainController" method="post" class="p-6 space-y-4">
+                <input type="hidden" name="action" value="updateBill"/>
+                <input type="hidden" name="bill_id" id="edit_bill_id"/>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Lệnh Sản Xuất (WO)</label>
+                    <select name="wo_id" id="edit_wo_id" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                        <option value="">-- Chọn lệnh sản xuất --</option>
+                        <% for (WorkOrderDTO wo : workOrders) { %>
+                        <option value="<%= wo.getWo_id() %>">WO-<%= wo.getWo_id() %> | <%= wo.getProductName() != null ? wo.getProductName() : "SP#" + wo.getProduct_item_id() %></option>
+                        <% } %>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Khách Hàng</label>
+                    <select name="customer_id" id="edit_customer_id" class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                        <option value="0">-- Khách hàng văn phòng --</option>
+                        <% for (CustomerDTO c : customers) { %>
+                        <option value="<%= c.getCustomer_id() %>"><%= c.getCustomer_name() %></option>
+                        <% } %>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Tổng Tiền (VND)</label>
+                    <input type="number" name="total_amount" id="edit_total_amount" required min="0" step="1000" placeholder="VD: 5000000"
+                           class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700">
+                        Cập Nhật
+                    </button>
+                    <button type="button" onclick="closeEditModal()" class="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">
+                        Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Sidebar toggle
         let sidebarOpen = window.innerWidth >= 1024;
@@ -385,6 +451,22 @@
         }
         document.getElementById('addModal').addEventListener('click', function(e) {
             if (e.target === this) closeAddModal();
+        });
+
+        function openEditModal(billId, woId, customerId, amount) {
+            document.getElementById('edit_bill_id').value = billId;
+            document.getElementById('edit_wo_id').value = woId;
+            document.getElementById('edit_customer_id').value = customerId;
+            document.getElementById('edit_total_amount').value = parseFloat(amount);
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
+        }
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
         });
 
         // User dropdown

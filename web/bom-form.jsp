@@ -91,21 +91,7 @@
                             </select>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Version BOM <span class="text-danger">*</span></label>
-                                <input type="text" name="version" class="form-control" placeholder="VD: v1.0, v2.0..." required
-                                       value="<%= bom != null && bom.getBomVersion() != null ? bom.getBomVersion() : "v1.0" %>">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Trạng thái</label>
-                                <select name="status" class="form-select">
-                                    <option value="active" <%= bom != null && "active".equals(bom.getStatus()) ? "selected" : "" %>>Đang dùng</option>
-                                    <option value="pending" <%= bom != null && "pending".equals(bom.getStatus()) ? "selected" : "" %>>Chờ duyệt</option>
-                                    <option value="inactive" <%= bom != null && "inactive".equals(bom.getStatus()) ? "selected" : "" %>>Ngưng</option>
-                                </select>
-                            </div>
-                        </div>
+
 
                         <div class="mb-3">
                             <label class="form-label">Ghi chú</label>

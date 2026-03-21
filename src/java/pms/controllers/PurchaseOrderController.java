@@ -45,6 +45,14 @@ public class PurchaseOrderController extends HttpServlet {
                 case "updateStatusPurchaseOrder":
                     int poId = Integer.parseInt(request.getParameter("poId"));
                     String newStatus = request.getParameter("status");
+                    
+                    if ("Received".equals(newStatus)) {
+                        PurchaseOrderDTO po = dao.getPurchaseOrderById(poId);
+                        if (po != null && !"Received".equals(po.getStatus())) {
+                            itemDao.increaseStock(po.getItemId(), po.getQuantityRequested());
+                        }
+                    }
+                    
                     dao.updateStatus(poId, newStatus);
                     response.sendRedirect("MainController?action=listPurchaseOrder");
                     break;

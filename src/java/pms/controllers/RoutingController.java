@@ -28,6 +28,12 @@ public class RoutingController extends HttpServlet {
                     request.setAttribute("listRouting", list);
                     request.getRequestDispatcher("listRouting.jsp").forward(request, response);
                     break;
+                case "searchRouting":
+                    String keyword = request.getParameter("keyword");
+                    List<RoutingDTO> searchList = keyword != null && !keyword.trim().isEmpty() ? dao.searchRouting(keyword) : dao.getAllRouting();
+                    request.setAttribute("listRouting", searchList);
+                    request.getRequestDispatcher("listRouting.jsp").forward(request, response);
+                    break;
                 case "addRouting":
                     String addName = request.getParameter("routingName");
                     dao.insertRouting(new RoutingDTO(0, addName));

@@ -68,8 +68,29 @@ public class BillController extends HttpServlet {
 
     private void ListBill(HttpServletRequest request) {
         BillDAO dao = new BillDAO();
-        ArrayList<BillDTO> list = dao.getAllBill();
-        request.setAttribute("billList", list);
+        String keyword = request.getParameter("keyword");
+        String filterStatus = request.getParameter("filter");
+        
+        ArrayList<BillDTO> allList;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            allList = dao.searchBill(keyword.trim());
+        } else {
+            allList = dao.getAllBill();
+        }
+        
+        if (filterStatus != null && !filterStatus.equals("all")) {
+            ArrayList<BillDTO> filteredList = new ArrayList<>();
+            for (BillDTO b : allList) {
+                if (filterStatus.equalsIgnoreCase(b.getStatus())) {
+                    filteredList.add(b);
+                }
+            }
+            request.setAttribute("billList", filteredList);
+        } else {
+            request.setAttribute("billList", allList);
+        }
+        
+        request.setAttribute("keyword", keyword);
         url = "bill.jsp";
     }
 
@@ -79,7 +100,8 @@ public class BillController extends HttpServlet {
         int customer_id = Integer.parseInt(request.getParameter("customer_id"));
         double total_amount = Double.parseDouble(request.getParameter("total_amount"));
         BillDAO dao = new BillDAO();
-        BillDTO bill = new BillDTO(0, wo_id, customer_id, total_amount, null);
+        java.sql.Date curDate = new java.sql.Date(System.currentTimeMillis());
+        BillDTO bill = new BillDTO(0, wo_id, customer_id, total_amount, curDate);
         boolean result = dao.InsertBill(bill);
         if (result) {
             request.setAttribute("msg", "Add Bill Success");
@@ -108,8 +130,9 @@ public class BillController extends HttpServlet {
         int wo_id = Integer.parseInt(request.getParameter("wo_id"));
         int customer_id = Integer.parseInt(request.getParameter("customer_id"));
         double total_amount = Double.parseDouble(request.getParameter("total_amount"));
+        java.sql.Date curDate = new java.sql.Date(System.currentTimeMillis());
         BillDAO dao = new BillDAO();
-        BillDTO bill = new BillDTO(bill_id, wo_id, customer_id, total_amount, null);
+        BillDTO bill = new BillDTO(bill_id, wo_id, customer_id, total_amount, curDate);
         boolean result = dao.UpdateBill(bill);
         if (result) {
             request.setAttribute("msg", "Update Bill Success");

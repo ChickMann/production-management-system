@@ -329,7 +329,6 @@
 
                         <div class="auth-meta">
                             <span>Use your existing account to continue.</span>
-                            <a href="index.jsp">Back to home</a>
                         </div>
 
                         <button class="btn btn-primary" type="submit">Sign in</button>

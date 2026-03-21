@@ -197,12 +197,14 @@
                         <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Lệnh sản xuất</h1>
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tạo, tìm kiếm và theo dõi toàn bộ lệnh sản xuất trên cùng một màn hình</p>
                     </div>
+                    <% if (isAdmin) { %>
                     <button onclick="openAddModal()" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                         Thêm lệnh mới
                     </button>
+                    <% } %>
                 </div>
 
                 <% if (msg != null && !msg.trim().isEmpty()) { %>
@@ -370,11 +372,13 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                     </svg>
                                                 </a>
+                                                <% if (isAdmin) { %>
                                                 <a href="WorkOrderController?action=loadUpdate&wo_id=<%= w.getWo_id() %>" class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-amber-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-amber-500/10 dark:hover:text-amber-300" title="Chỉnh sửa">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </a>
+                                                <% } %>
                                             </div>
                                         </td>
                                     </tr>

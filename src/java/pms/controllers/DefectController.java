@@ -25,7 +25,19 @@ public class DefectController extends HttpServlet {
             switch (action) {
                 case "listDefectReason":
                 case "listDefect":
-                    request.setAttribute("listD", dao.getAllDefectReasons());
+                case "searchDefectReason":
+                    String keyword = request.getParameter("keyword");
+                    java.util.List<DefectReasonDTO> allDefects = dao.getAllDefectReasons();
+                    if (keyword != null && !keyword.trim().isEmpty()) {
+                        java.util.List<DefectReasonDTO> filtered = new java.util.ArrayList<>();
+                        for (DefectReasonDTO d : allDefects) {
+                            if (d.getReasonName() != null && d.getReasonName().toLowerCase().contains(keyword.toLowerCase())) {
+                                filtered.add(d);
+                            }
+                        }
+                        allDefects = filtered;
+                    }
+                    request.setAttribute("listD", allDefects);
                     request.getRequestDispatcher("listDefectReason.jsp").forward(request, response);
                     break;
                 case "addDefectReason":

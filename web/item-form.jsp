@@ -88,22 +88,9 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Đơn vị tính</label>
-                                <input type="text" name="unit" class="form-control" placeholder="VD: cái, kg, m..."
-                                       value="<%= item != null && item.getUnit() != null ? item.getUnit() : "" %>">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
                                 <label class="form-label">Số lượng tồn kho</label>
                                 <input type="number" name="stockQuantity" class="form-control" min="0"
                                        value="<%= item != null ? item.getStockQuantity() : 0 %>">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Tồn kho tối thiểu</label>
-                                <input type="number" name="minStockLevel" class="form-control" min="0"
-                                       value="<%= item != null ? item.getMinStockLevel() : 0 %>">
                             </div>
                         </div>
 

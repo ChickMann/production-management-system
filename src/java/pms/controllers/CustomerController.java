@@ -27,6 +27,9 @@ public class CustomerController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
+        if (action == null || action.isEmpty()) {
+            action = "searchCustomer";
+        }
         switch (action) {
             case "addCustomer":
             case "saveAddCustomer":
@@ -40,6 +43,7 @@ public class CustomerController extends HttpServlet {
                 UpdateCustomer(request);
                 break;
             case "searchCustomer":
+            case "listCustomer":
                 SearchCustomer(request);
                 break;
         }
@@ -52,9 +56,9 @@ public class CustomerController extends HttpServlet {
     if (id != null && !id.isEmpty()) {
         boolean check = cdao.deleteCustomer(Integer.parseInt(id));
         if (check) {
-            request.setAttribute("msg", "Deleted!");
+            request.setAttribute("msg", "Xóa khách hàng thành công!");
         } else {
-            request.setAttribute("msg", "Error, can not delete: " + id);
+            request.setAttribute("error", "Không thể xóa khách hàng " + id + " vì đang có Liên kết dữ liệu (ví dụ: Hóa đơn, Lệnh). Vui lòng kiểm tra lại dữ liệu liên quan.");
         }
     }
     List<CustomerDTO> customerList = cdao.getAllCustomers();
@@ -117,10 +121,7 @@ public class CustomerController extends HttpServlet {
         CustomerDAO cdao = new CustomerDAO();
         List<CustomerDTO> customerList = new ArrayList<>();
         if (keyword != null && keyword.trim().length() > 0) {
-            CustomerDTO c = cdao.SearchByCustomerID(keyword);
-            if (c != null) {
-                customerList.add(c);
-            }
+            customerList = cdao.searchCustomers(keyword.trim());
         } else {
             customerList = cdao.getAllCustomers();
         }

@@ -32,6 +32,32 @@ public class PurchaseOrderDAO {
         return list;
     }
 
+    public PurchaseOrderDTO getPurchaseOrderById(int poId) {
+        String sql = "SELECT po.*, i.item_name FROM Purchase_Order po "
+                   + "JOIN Item i ON po.item_id = i.item_id "
+                   + "WHERE po.po_id = ?";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, poId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    PurchaseOrderDTO po = new PurchaseOrderDTO(
+                        rs.getInt("po_id"),
+                        rs.getInt("item_id"),
+                        rs.getInt("required_quantity"),
+                        rs.getString("status"),
+                        rs.getString("alert_date")
+                    );
+                    po.setItemName(rs.getString("item_name"));
+                    return po;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public boolean insertPurchaseOrder(PurchaseOrderDTO po) {
         String sql = "INSERT INTO Purchase_Order (item_id, required_quantity, status, alert_date) VALUES(?,?,?,?)";
         try (Connection conn = DBUtils.getConnection();

@@ -177,7 +177,12 @@ public class PaymentController extends HttpServlet {
 
             boolean success = paymentService.confirmPayment(paymentId, transactionId);
             if (success) {
-                request.setAttribute("msg", "Xac nhan thanh toan thanh cong!");
+                pms.model.PaymentDTO payment = paymentService.getPaymentInfo(paymentId);
+                if (payment != null) {
+                    pms.model.BillDAO billDao = new pms.model.BillDAO();
+                    billDao.UpdateBillStatus(payment.getBillId(), "paid");
+                }
+                request.setAttribute("msg", "Xac nhan thanh toan thanh cong! Trang thai hoa don da duoc cap nhat.");
             } else {
                 request.setAttribute("error", "Xac nhan thanh toan that bai! QR co the da het han.");
             }

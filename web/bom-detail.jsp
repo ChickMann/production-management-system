@@ -51,12 +51,15 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2><i class="fas fa-clipboard-list me-2"></i>Chi tiết BOM</h2>
                         <div>
+                            <a href="MainController?action=listRouting" class="btn btn-info text-white">
+                                <i class="fas fa-route me-2"></i>Xem quy trình
+                            </a>
                             <a href="BOMController?action=editBOM&id=<%= bom.getBomId() %>" class="btn btn-warning">
                                 <i class="fas fa-edit me-2"></i>Sửa thông tin
                             </a>
-                            <a href="BOMController?action=cloneBOM&id=<%= bom.getBomId() %>" class="btn btn-primary"
-                               onclick="return confirm('Clone BOM này thành bản mới?')">
-                                <i class="fas fa-copy me-2"></i>Clone BOM
+                            <a href="BOMController?action=deleteBOM&id=<%= bom.getBomId() %>" class="btn btn-danger"
+                               onclick="return confirm('Bạn có chắc chắn muốn xóa BOM này?')">
+                                <i class="fas fa-trash me-2"></i>Xóa BOM
                             </a>
                         </div>
                     </div>
@@ -72,26 +75,12 @@
                                     <th>Sản phẩm:</th>
                                     <td><%= bom.getProductName() != null ? bom.getProductName() : "ID: " + bom.getProductItemId() %></td>
                                 </tr>
-                                <tr>
-                                    <th>Version:</th>
-                                    <td><%= bom.getBomVersion() != null ? bom.getBomVersion() : "v1.0" %></td>
-                                </tr>
+
                             </table>
                         </div>
                         <div class="col-md-6">
                             <table class="table table-borderless">
-                                <tr>
-                                    <th width="40%">Trạng thái:</th>
-                                    <td>
-                                        <% if ("active".equals(bom.getStatus())) { %>
-                                            <span class="badge bg-success">Đang dùng</span>
-                                        <% } else if ("inactive".equals(bom.getStatus())) { %>
-                                            <span class="badge bg-secondary">Ngưng</span>
-                                        <% } else { %>
-                                            <span class="badge bg-warning">Chờ duyệt</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
+
                                 <tr>
                                     <th>Ngày tạo:</th>
                                     <td><%= bom.getCreatedDate() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(bom.getCreatedDate()) : "Chưa có" %></td>
