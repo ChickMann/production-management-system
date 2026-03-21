@@ -129,7 +129,7 @@
                                     }
                             %>
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-600 dark:text-slate-300"><%= log.getCreatedAt() != null ? sdf.format(log.getCreatedAt()) : "" %></td>
+                                <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-600 dark:text-slate-300"><%= log.getLogDate() != null ? sdf.format(log.getLogDate()) : "" %></td>
                                 <td class="px-6 py-4 font-medium text-slate-800 dark:text-slate-200"><%= log.getItemName() %></td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex flex-col items-center">
@@ -145,7 +145,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-500 italic max-w-xs truncate"><%= log.getReason() != null ? log.getReason() : "" %></td>
-                                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 text-right"><%= log.getPerformedByName() != null ? log.getPerformedByName() : "Admin" %></td>
+                                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 text-right"><%= log.getPerformerName() != null ? log.getPerformerName() : "Admin" %></td>
                             </tr>
                             <%  }
                             } %>
