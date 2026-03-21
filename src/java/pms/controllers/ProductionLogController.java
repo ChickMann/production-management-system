@@ -6,7 +6,6 @@ package pms.controllers;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -50,20 +49,7 @@ public class ProductionLogController extends HttpServlet {
 
         try {
             if ("listLog".equals(action) || "list".equals(action)) {
-                String searchWoId = request.getParameter("searchWoId");
-                List<ProductionLogDTO> allLogs = dao.getAllLogs();
-                
-                if (searchWoId != null && !searchWoId.trim().isEmpty()) {
-                    try {
-                        int filterWoId = Integer.parseInt(searchWoId.trim());
-                        allLogs.removeIf(log -> log.getWoId() != filterWoId);
-                        request.setAttribute("searchWoId", searchWoId);
-                    } catch (NumberFormatException e) {
-                        request.setAttribute("error", "Mã LSX không hợp lệ");
-                    }
-                }
-                
-                request.setAttribute("listLogs", allLogs);
+                request.setAttribute("listLogs", dao.getAllLogs());
                 request.setAttribute("listWO", woDao.getAllWorkOrders());
                 request.setAttribute("listSteps", stepDao.getAllRoutingStep());
                 request.setAttribute("listDefects", defectDao.getAllDefects());

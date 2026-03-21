@@ -34,8 +34,11 @@ public class EncodingFilter implements Filter {
         response.setCharacterEncoding(encoding);
         response.setContentType("text/html; charset=" + encoding);
 
-
-
+        // Handle the lang parameter and store in session
+        String lang = httpRequest.getParameter("lang");
+        if (lang != null && (lang.equals("vi") || lang.equals("en"))) {
+            httpRequest.getSession().setAttribute("lang", lang);
+        }
 
         chain.doFilter(request, response);
     }

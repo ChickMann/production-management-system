@@ -4,6 +4,11 @@
     UserDTO user = (UserDTO) session.getAttribute("user");
     String msg = (String) request.getAttribute("msg");
 
+    if (workOrders == null && request.getAttribute("WORKORDER_CALENDAR_REDIRECT") == null) {
+        request.setAttribute("WORKORDER_CALENDAR_REDIRECT", Boolean.TRUE);
+        response.sendRedirect("WorkOrderController?action=calendar");
+        return;
+    }
     if (workOrders == null) workOrders = new ArrayList<>();
 
     String userName = user != null ? user.getUsername() : "User";
@@ -149,8 +154,8 @@
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Xem lịch sản xuất theo ngày hoặc theo tháng để theo dõi kế hoạch tổng thể.</p>
                     </div>
                     <div class="flex gap-2">
-                        <a href="production-calendar.jsp" class="rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-teal-500/30 transition-colors hover:bg-teal-700">Lịch</a>
-                        <a href="production-gantt.jsp" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Gantt</a>
+                        <a href="WorkOrderController?action=calendar" class="rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-teal-500/30 transition-colors hover:bg-teal-700">Lịch</a>
+                        <a href="WorkOrderController?action=gantt" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Gantt</a>
                     </div>
                 </div>
 

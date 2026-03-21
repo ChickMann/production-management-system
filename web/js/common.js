@@ -1,17 +1,6 @@
 // PMS Common JavaScript Utilities
 // ===============================
 
-// ============ CRITICAL: Prevent Dark Mode Flash (FOUC) ============
-// This MUST run synchronously before body renders.
-// Since common.js is loaded via <script> in <head>, this executes
-// before any body content is painted to screen.
-(function() {
-    var saved = localStorage.getItem('pms_dark_mode');
-    if (saved === '1') {
-        document.documentElement.classList.add('dark');
-    }
-})();
-
 // ============ Mobile Bottom Navigation ============
 function initMobileNavigation() {
     const currentPath = window.location.pathname;
@@ -353,51 +342,7 @@ function sortTable(tableId, columnIndex) {
     rows.forEach(row => tbody.appendChild(row));
 }
 
-// ============ Sidebar User Menu ============
-function toggleSidebarUserMenu() {
-    const menu = document.getElementById('sidebarUserMenu');
-    if (menu) menu.classList.toggle('hidden');
-}
-
-// Close sidebar user menu when clicking outside
-document.addEventListener('click', function(e) {
-    const menu = document.getElementById('sidebarUserMenu');
-    const btn = e.target.closest('[onclick*="toggleSidebarUserMenu"]');
-    if (menu && !menu.contains(e.target) && !btn) {
-        menu.classList.add('hidden');
-    }
-});
-
-// ============ Sidebar Scroll Position Preservation ============
-// Save sidebar nav scroll position before navigating away
-function saveSidebarScroll() {
-    const nav = document.querySelector('.sidebar-nav');
-    if (nav) {
-        sessionStorage.setItem('pms_sidebar_scroll', nav.scrollTop);
-    }
-}
-
-function restoreSidebarScroll() {
-    const nav = document.querySelector('.sidebar-nav');
-    const saved = sessionStorage.getItem('pms_sidebar_scroll');
-    if (nav && saved !== null) {
-        nav.scrollTop = parseInt(saved, 10);
-    }
-}
-
-// Intercept all sidebar link clicks to save scroll position
-document.addEventListener('click', function(e) {
-    const link = e.target.closest('.sidebar-nav a[href]');
-    if (link) {
-        saveSidebarScroll();
-    }
-});
-
-// Also save on beforeunload for any navigation
-window.addEventListener('beforeunload', saveSidebarScroll);
-
 // ============ Initialize on Page Load ============
 document.addEventListener('DOMContentLoaded', function() {
     initMobileNavigation();
-    restoreSidebarScroll();
 });

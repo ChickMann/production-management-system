@@ -27,7 +27,7 @@
                 <div class="text-center py-3 border-bottom">
                     <h5>PMS</h5>
                 </div>
-                <a href="DashboardController"><i class="fas fa-home me-2"></i> Trang chủ</a>
+                <a href="BangDieuKien.jsp"><i class="fas fa-home me-2"></i> Trang chủ</a>
                 <a href="UserController?action=list" class="active"><i class="fas fa-users me-2"></i> Người dùng</a>
                 <a href="ItemController?action=list"><i class="fas fa-box me-2"></i> Vật phẩm</a>
                 <a href="BOMController?action=list"><i class="fas fa-clipboard-list me-2"></i> BOM</a>

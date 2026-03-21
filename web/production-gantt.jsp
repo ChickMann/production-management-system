@@ -4,6 +4,11 @@
     UserDTO user = (UserDTO) session.getAttribute("user");
     String msg = (String) request.getAttribute("msg");
 
+    if (workOrders == null && request.getAttribute("WORKORDER_GANTT_REDIRECT") == null) {
+        request.setAttribute("WORKORDER_GANTT_REDIRECT", Boolean.TRUE);
+        response.sendRedirect("WorkOrderController?action=gantt");
+        return;
+    }
     if (workOrders == null) workOrders = new ArrayList<>();
 
     String userName = user != null ? user.getUsername() : "User";
@@ -159,8 +164,8 @@
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Theo dõi tiến độ lệnh sản xuất theo trục thời gian và trạng thái thực hiện</p>
                     </div>
                     <div class="flex gap-2">
-                        <a href="production-calendar.jsp" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Lịch</a>
-                        <a href="production-gantt.jsp" class="rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-teal-500/30 transition-colors hover:bg-teal-700">Gantt</a>
+                        <a href="WorkOrderController?action=calendar" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Lịch</a>
+                        <a href="WorkOrderController?action=gantt" class="rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-teal-500/30 transition-colors hover:bg-teal-700">Gantt</a>
                     </div>
                 </div>
 
@@ -343,25 +348,6 @@
                                 <% } %>
                             </tbody>
                         </table>
-                    </div>
-
-                    <div class="grid gap-4 border-t border-slate-200 bg-slate-50 px-6 py-5 dark:border-slate-700 dark:bg-slate-800/80 sm:grid-cols-2 xl:grid-cols-4">
-                        <div class="rounded-2xl bg-white px-4 py-4 text-center shadow-sm dark:bg-slate-900/60">
-                            <p class="text-2xl font-bold text-blue-600 dark:text-blue-300"><%= newCount %></p>
-                            <p class="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Mới</p>
-                        </div>
-                        <div class="rounded-2xl bg-white px-4 py-4 text-center shadow-sm dark:bg-slate-900/60">
-                            <p class="text-2xl font-bold text-amber-600 dark:text-amber-300"><%= progressCount %></p>
-                            <p class="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Đang SX</p>
-                        </div>
-                        <div class="rounded-2xl bg-white px-4 py-4 text-center shadow-sm dark:bg-slate-900/60">
-                            <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-300"><%= doneCount %></p>
-                            <p class="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Hoàn thành</p>
-                        </div>
-                        <div class="rounded-2xl bg-white px-4 py-4 text-center shadow-sm dark:bg-slate-900/60">
-                            <p class="text-2xl font-bold text-red-600 dark:text-red-300"><%= cancelledCount %></p>
-                            <p class="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Đã hủy</p>
-                        </div>
                     </div>
                     <% } %>
                 </div>

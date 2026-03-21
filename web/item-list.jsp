@@ -162,7 +162,14 @@
                             <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">Theo dõi danh mục vật tư, sản phẩm và cảnh báo tồn kho ngay trên một màn hình. Bạn có thể thêm nhanh vật tư mới mà không cần rời khỏi trang danh sách.</p>
                         </div>
                         <div class="flex flex-wrap gap-3">
-
+                            <% if (lowStockCount > 0) { %>
+                            <a href="ItemController?action=lowStock" class="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-red-500/30 transition-all hover:-translate-y-0.5 hover:bg-red-700">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                Tồn kho thấp (<%= lowStockCount %>)
+                            </a>
+                            <% } %>
                             <button type="button" onclick="openAddItemModal()" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:-translate-y-0.5 hover:bg-teal-700">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -276,14 +283,16 @@
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tên vật tư</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Loại</th>
                                     <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tồn kho</th>
-
+                                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tối thiểu</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Đơn vị</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trạng thái</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% if (items.isEmpty()) { %>
                                 <tr>
-                                    <td colspan="5" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
+                                    <td colspan="8" class="px-4 py-14 text-center text-slate-400 dark:text-slate-500">
                                         <div class="mx-auto flex max-w-md flex-col items-center gap-3">
                                             <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                                                 <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,7 +334,22 @@
                                         <td class="px-4 py-3 text-right">
                                             <span class="font-bold <%= item.isLowStock() ? "text-red-600 dark:text-red-300" : "text-slate-700 dark:text-slate-200" %>"><%= item.getStockQuantity() %></span>
                                         </td>
-
+                                        <td class="px-4 py-3 text-right text-slate-500 dark:text-slate-400"><%= item.getMinStockLevel() %></td>
+                                        <td class="px-4 py-3 text-center text-slate-500 dark:text-slate-400"><%= item.getUnit() != null ? item.getUnit() : "-" %></td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <%= getStockStatusClass(item) %>">
+                                                <% if (item.isLowStock()) { %>
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                                </svg>
+                                                <% } else { %>
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                <% } %>
+                                                <%= getStockStatusText(item) %>
+                                            </span>
+                                        </td>
                                         <td class="px-4 py-3 text-center">
                                             <div class="flex items-center justify-center gap-2">
                                                 <a href="ItemController?action=editItem&id=<%= item.getItemID() %>" 
@@ -388,13 +412,22 @@
                             <option value="VatTu">Vật tư</option>
                         </select>
                     </div>
-
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Đơn vị tính</label>
+                        <input type="text" name="unit" class="form-input w-full rounded-2xl border px-4 py-3" placeholder="Ví dụ: cái, kg, m">
+                    </div>
                     <div>
                         <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Số lượng tồn kho</label>
                         <input type="number" name="stockQuantity" min="0" value="0" class="form-input w-full rounded-2xl border px-4 py-3">
                     </div>
-
-
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Tồn kho tối thiểu</label>
+                        <input type="number" name="minStockLevel" min="0" value="0" class="form-input w-full rounded-2xl border px-4 py-3">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Mô tả</label>
+                        <textarea name="description" rows="4" class="form-input w-full rounded-2xl border px-4 py-3" placeholder="Mô tả ngắn về vật tư hoặc sản phẩm"></textarea>
+                    </div>
                 </div>
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end dark:border-slate-700">
                     <button type="button" onclick="closeAddItemModal()" class="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Hủy</button>

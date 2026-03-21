@@ -34,6 +34,7 @@ public class WorkOrderController extends HttpServlet {
         if (action == null || action.trim().isEmpty()) {
             action = "listWorkOrder";
         }
+        action = action.trim();
 
         WorkOrderDAO dao = new WorkOrderDAO();
 
@@ -84,7 +85,8 @@ public class WorkOrderController extends HttpServlet {
                 request.getRequestDispatcher("workorder.jsp").forward(request, response);
                 return;
 
-            } else if ("listWorkOrder".equals(action) || "list".equals(action) || "loadUpdate".equals(action)) {
+            } else if ("listWorkOrder".equals(action) || "list".equals(action) || "loadUpdate".equals(action)
+                    || "calendar".equals(action) || "gantt".equals(action)) {
                 String searchKeyword = request.getParameter("keyword");
                 String filterStatus = request.getParameter("status");
                 String searchId = request.getParameter("search");
@@ -112,19 +114,29 @@ public class WorkOrderController extends HttpServlet {
                     request.setAttribute("workOrders", filterWorkOrders((List<WorkOrderDTO>) request.getAttribute("workOrders"), null, filterStatus));
                 }
 
-                request.getRequestDispatcher("workorder.jsp").forward(request, response);
+                request.getRequestDispatcher(resolveView(action)).forward(request, response);
                 return;
             }
 
             loadWorkOrderPageData(request, dao);
-            request.getRequestDispatcher("workorder.jsp").forward(request, response);
+            request.getRequestDispatcher(resolveView(action)).forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", e.getMessage());
             loadWorkOrderPageData(request, dao);
-            request.getRequestDispatcher("workorder.jsp").forward(request, response);
+            request.getRequestDispatcher(resolveView(action)).forward(request, response);
         }
+    }
+
+    private String resolveView(String action) {
+        if ("calendar".equals(action)) {
+            return "production-calendar.jsp";
+        }
+        if ("gantt".equals(action)) {
+            return "production-gantt.jsp";
+        }
+        return "workorder.jsp";
     }
 
     private void loadWorkOrderPageData(HttpServletRequest request, WorkOrderDAO dao) {

@@ -116,10 +116,12 @@ public class PaymentService {
 
         boolean success = paymentDAO.insertPayment(payment);
         if (!success) {
-            return null;
+            payment.setPaymentId(0);
+            return payment;
         }
 
-        return paymentDAO.getLatestPaymentByBillId(billId);
+        PaymentDTO persistedPayment = paymentDAO.getLatestPaymentByBillId(billId);
+        return persistedPayment != null ? persistedPayment : payment;
     }
 
     public boolean refreshQrCode(int paymentId, int expireMinutes) {
@@ -138,7 +140,7 @@ public class PaymentService {
         }
 
         PaymentDTO payment = paymentDAO.getPaymentById(paymentId);
-        if (payment == null) {
+        if (payment == null || paymentId <= 0) {
             return false;
         }
 

@@ -106,6 +106,10 @@
         <servlet-class>pms.controllers.SupplierController</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>RoutingController</servlet-name>
+        <servlet-class>pms.controllers.RoutingController</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>RoutingStepController</servlet-name>
         <servlet-class>pms.controllers.RoutingStepController</servlet-class>
     </servlet>
@@ -198,6 +202,10 @@
     <servlet-mapping>
         <servlet-name>SupplierController</servlet-name>
         <url-pattern>/SupplierController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RoutingController</servlet-name>
+        <url-pattern>/RoutingController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>RoutingStepController</servlet-name>

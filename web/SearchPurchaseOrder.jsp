@@ -18,7 +18,10 @@
         if ("Received".equals(status)) {
             return "Đã nhập kho";
         }
-        return "Đang nhập";
+        if ("Ordered".equals(status)) {
+            return "Đã duyệt";
+        }
+        return "Chờ duyệt";
     }
 %>
 <%
@@ -51,10 +54,12 @@
     int receivedCount = 0;
     for (PurchaseOrderDTO po : listPO) {
         String status = po.getStatus();
-        if ("Received".equals(status)) {
-            receivedCount++;
-        } else {
+        if ("Pending".equals(status)) {
             pendingCount++;
+        } else if ("Ordered".equals(status)) {
+            orderedCount++;
+        } else if ("Received".equals(status)) {
+            receivedCount++;
         }
     }
 %>
@@ -209,11 +214,21 @@
                     <div class="kpi-card rounded-2xl border border-slate-200 border-t-4 border-t-amber-500 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                         <div class="flex items-start justify-between gap-4">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Đang nhập</p>
+                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Chờ duyệt</p>
                                 <p class="mt-3 text-3xl font-bold text-amber-600 dark:text-amber-300"><%= pendingCount %></p>
-                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Các đề nghị đang xử lý nhập kho</p>
+                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Các đề nghị đang chờ xử lý</p>
                             </div>
                             <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-2xl text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">&#9203;</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card rounded-2xl border border-slate-200 border-t-4 border-t-blue-500 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Đã duyệt</p>
+                                <p class="mt-3 text-3xl font-bold text-blue-600 dark:text-blue-300"><%= orderedCount %></p>
+                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Đề nghị đã chuyển sang đặt hàng</p>
+                            </div>
+                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-2xl text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">&#128230;</div>
                         </div>
                     </div>
                     <div class="kpi-card rounded-2xl border border-slate-200 border-t-4 border-t-emerald-500 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
@@ -310,7 +325,8 @@
                                                     <input type="hidden" name="poId" value="<%= po.getPoId() %>">
                                                     <select name="status" onchange="if(confirm('Cập nhật trạng thái đề nghị này?')){this.form.submit();}else{location.reload();}"
                                                             class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-                                                        <option value="Pending" <%= !"Received".equals(po.getStatus()) ? "selected" : "" %>>Đang nhập</option>
+                                                        <option value="Pending" <%= "Pending".equals(po.getStatus()) ? "selected" : "" %>>Chờ duyệt</option>
+                                                        <option value="Ordered" <%= "Ordered".equals(po.getStatus()) ? "selected" : "" %>>Đã duyệt</option>
                                                         <option value="Received" <%= "Received".equals(po.getStatus()) ? "selected" : "" %>>Đã nhập kho</option>
                                                     </select>
                                                 </form>

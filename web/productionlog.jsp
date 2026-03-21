@@ -14,7 +14,6 @@
     UserDTO user = (UserDTO) session.getAttribute("user");
     String msg = (String) request.getAttribute("msg");
     String error = (String) request.getAttribute("error");
-    String searchWoId = (String) request.getAttribute("searchWoId");
     
     if (listLogs == null) listLogs = new java.util.ArrayList<>();
     if (listWO == null) listWO = new java.util.ArrayList<>();
@@ -154,14 +153,12 @@
                         <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Nhật ký sản xuất</h1>
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Ghi nhận sản lượng hoàn thành, lỗi phát sinh và theo dõi tiến độ thực tế theo từng công đoạn</p>
                     </div>
-                    <% if (!isAdmin) { %>
                     <button type="button" onclick="openLogModal()" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition-all hover:bg-amber-600 sm:w-auto sm:self-start xl:flex-shrink-0">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                         Tạo báo cáo
                     </button>
-                    <% } %>
                 </div>
 
                 <!-- Alerts -->
@@ -220,20 +217,6 @@
                             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300 text-2xl">&#128203;</div>
                         </div>
                     </div>
-                </div>
-
-                <div class="section-card mb-6 rounded-3xl border border-slate-200 p-5 shadow-sm dark:border-slate-700">
-                    <form action="MainController" method="get" class="flex flex-col sm:flex-row gap-4 sm:items-center">
-                        <input type="hidden" name="action" value="listLog">
-                        <div class="relative flex-1">
-                            <input type="text" name="searchWoId" value="<%= searchWoId != null ? searchWoId : "" %>" placeholder="Nhập ID Lệnh sản xuất (VD: 1)..." class="w-full pl-11 form-input rounded-2xl py-3 text-sm">
-                            <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </div>
-                        <button type="submit" class="rounded-2xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700 whitespace-nowrap">Lọc theo Lệnh</button>
-                        <a href="MainController?action=listLog" class="rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition-all hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 whitespace-nowrap text-center">Tất cả</a>
-                    </form>
                 </div>
 
                 <div class="section-card rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">

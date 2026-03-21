@@ -5,14 +5,22 @@
 package pms.controllers;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import pms.model.BillDAO;
 import pms.model.BillDTO;
+import pms.model.CustomerDAO;
+import pms.model.CustomerDTO;
+import pms.model.PaymentDAO;
+import pms.model.PaymentDTO;
+import pms.model.WorkOrderDAO;
+import pms.model.WorkOrderDTO;
 
 /**
  *
@@ -68,45 +76,39 @@ public class BillController extends HttpServlet {
 
     private void ListBill(HttpServletRequest request) {
         BillDAO dao = new BillDAO();
-        String keyword = request.getParameter("keyword");
-        String filterStatus = request.getParameter("filter");
-        
-        ArrayList<BillDTO> allList;
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            allList = dao.searchBill(keyword.trim());
-        } else {
-            allList = dao.getAllBill();
-        }
-        
-        if (filterStatus != null && !filterStatus.equals("all")) {
-            ArrayList<BillDTO> filteredList = new ArrayList<>();
-            for (BillDTO b : allList) {
-                if (filterStatus.equalsIgnoreCase(b.getStatus())) {
-                    filteredList.add(b);
-                }
-            }
-            request.setAttribute("billList", filteredList);
-        } else {
-            request.setAttribute("billList", allList);
-        }
-        
-        request.setAttribute("keyword", keyword);
-        url = "bill.jsp";
+        ArrayList<BillDTO> list = dao.getAllBill();
+        list = getFilteredBills(list, request.getParameter("filter"), request.getParameter("keyword"));
+        populateBillPageData(request, list);
     }
 
     private void AddBill(HttpServletRequest request) {
+        try {
+            int wo_id = Integer.parseInt(request.getParameter("wo_id"));
+            int customer_id = Integer.parseInt(request.getParameter("customer_id"));
+            double total_amount = Double.parseDouble(request.getParameter("total_amount"));
 
-        int wo_id = Integer.parseInt(request.getParameter("wo_id"));
-        int customer_id = Integer.parseInt(request.getParameter("customer_id"));
-        double total_amount = Double.parseDouble(request.getParameter("total_amount"));
-        BillDAO dao = new BillDAO();
-        java.sql.Date curDate = new java.sql.Date(System.currentTimeMillis());
-        BillDTO bill = new BillDTO(0, wo_id, customer_id, total_amount, curDate);
-        boolean result = dao.InsertBill(bill);
-        if (result) {
-            request.setAttribute("msg", "Add Bill Success");
-        } else {
-            request.setAttribute("msg", "Add Bill Failed");
+            if (wo_id <= 0) {
+                request.setAttribute("error", "Vui lòng chọn lệnh sản xuất hợp lệ.");
+                ListBill(request);
+                return;
+            }
+
+            if (total_amount <= 0) {
+                request.setAttribute("error", "Tổng tiền phải lớn hơn 0.");
+                ListBill(request);
+                return;
+            }
+
+            BillDAO dao = new BillDAO();
+            BillDTO bill = new BillDTO(0, wo_id, customer_id, total_amount, new java.sql.Date(System.currentTimeMillis()));
+            boolean result = dao.InsertBill(bill);
+            if (result) {
+                request.setAttribute("msg", "Tạo hóa đơn thành công.");
+            } else {
+                request.setAttribute("error", "Tạo hóa đơn thất bại.");
+            }
+        } catch (Exception e) {
+            request.setAttribute("error", "Không thể tạo hóa đơn: " + e.getMessage());
         }
 
         ListBill(request);
@@ -125,19 +127,36 @@ public class BillController extends HttpServlet {
     }
 
     private void UpdateBill(HttpServletRequest request) {
+        try {
+            int bill_id = Integer.parseInt(request.getParameter("bill_id"));
+            int wo_id = Integer.parseInt(request.getParameter("wo_id"));
+            int customer_id = Integer.parseInt(request.getParameter("customer_id"));
+            double total_amount = Double.parseDouble(request.getParameter("total_amount"));
+            BillDAO dao = new BillDAO();
+            BillDTO currentBill = dao.SearchByBillID(String.valueOf(bill_id));
 
-        int bill_id = Integer.parseInt(request.getParameter("bill_id"));
-        int wo_id = Integer.parseInt(request.getParameter("wo_id"));
-        int customer_id = Integer.parseInt(request.getParameter("customer_id"));
-        double total_amount = Double.parseDouble(request.getParameter("total_amount"));
-        java.sql.Date curDate = new java.sql.Date(System.currentTimeMillis());
-        BillDAO dao = new BillDAO();
-        BillDTO bill = new BillDTO(bill_id, wo_id, customer_id, total_amount, curDate);
-        boolean result = dao.UpdateBill(bill);
-        if (result) {
-            request.setAttribute("msg", "Update Bill Success");
-        } else {
-            request.setAttribute("msg", "Update Bill Failed");
+            if (currentBill == null) {
+                request.setAttribute("error", "Không tìm thấy hóa đơn cần cập nhật.");
+                ListBill(request);
+                return;
+            }
+
+            BillDTO bill = new BillDTO(
+                    bill_id,
+                    wo_id,
+                    customer_id,
+                    total_amount,
+                    currentBill.getBill_date() != null ? currentBill.getBill_date() : new java.sql.Date(System.currentTimeMillis()),
+                    currentBill.getStatus()
+            );
+            boolean result = dao.UpdateBill(bill);
+            if (result) {
+                request.setAttribute("msg", "Cập nhật hóa đơn thành công.");
+            } else {
+                request.setAttribute("error", "Cập nhật hóa đơn thất bại.");
+            }
+        } catch (Exception e) {
+            request.setAttribute("error", "Không thể cập nhật hóa đơn: " + e.getMessage());
         }
 
         ListBill(request);
@@ -147,8 +166,63 @@ public class BillController extends HttpServlet {
         String keyword = request.getParameter("keyword");
         BillDAO dao = new BillDAO();
         ArrayList<BillDTO> list = dao.searchBill(keyword);
-        request.setAttribute("billList", list);
+        list = getFilteredBills(list, request.getParameter("filter"), keyword);
+        populateBillPageData(request, list);
+        request.setAttribute("keyword", keyword);
+    }
+
+    private void populateBillPageData(HttpServletRequest request, ArrayList<BillDTO> billList) {
+        WorkOrderDAO workOrderDAO = new WorkOrderDAO();
+        CustomerDAO customerDAO = new CustomerDAO();
+        PaymentDAO paymentDAO = new PaymentDAO();
+
+        List<WorkOrderDTO> workOrders = workOrderDAO.getAllWorkOrders();
+        List<CustomerDTO> customers = customerDAO.getAllCustomers();
+        Map<Integer, WorkOrderDTO> workOrderMap = new HashMap<>();
+        Map<Integer, CustomerDTO> customerMap = new HashMap<>();
+        Map<Integer, PaymentDTO> latestPaymentMap = new HashMap<>();
+
+        for (WorkOrderDTO workOrder : workOrders) {
+            workOrderMap.put(workOrder.getWo_id(), workOrder);
+        }
+
+        for (CustomerDTO customer : customers) {
+            customerMap.put(customer.getCustomer_id(), customer);
+        }
+
+        for (BillDTO bill : billList) {
+            latestPaymentMap.put(bill.getBill_id(), paymentDAO.getLatestPaymentByBillId(bill.getBill_id()));
+        }
+
+        request.setAttribute("billList", billList);
+        request.setAttribute("workOrders", new ArrayList<>(workOrders));
+        request.setAttribute("customers", new ArrayList<>(customers));
+        request.setAttribute("workOrderMap", workOrderMap);
+        request.setAttribute("customerMap", customerMap);
+        request.setAttribute("latestPaymentMap", latestPaymentMap);
         url = "bill.jsp";
+    }
+
+    private ArrayList<BillDTO> getFilteredBills(ArrayList<BillDTO> source, String filter, String keyword) {
+        ArrayList<BillDTO> filtered = new ArrayList<>();
+        String normalizedFilter = filter == null ? "all" : filter.trim().toLowerCase();
+        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+
+        for (BillDTO bill : source) {
+            boolean matchesFilter = "all".equals(normalizedFilter)
+                    || normalizedFilter.equalsIgnoreCase(String.valueOf(bill.getStatus()));
+
+            boolean matchesKeyword = normalizedKeyword.isEmpty()
+                    || String.valueOf(bill.getBill_id()).contains(normalizedKeyword)
+                    || String.valueOf(bill.getWo_id()).contains(normalizedKeyword)
+                    || String.valueOf(bill.getCustomer_id()).contains(normalizedKeyword);
+
+            if (matchesFilter && matchesKeyword) {
+                filtered.add(bill);
+            }
+        }
+
+        return filtered;
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

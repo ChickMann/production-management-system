@@ -12,8 +12,15 @@
     boolean isEditMode = (defectEdit != null);
     String msg = (String) request.getAttribute("msg");
     String error = (String) request.getAttribute("error");
-    
+    String keyword = request.getAttribute("keyword") != null ? (String) request.getAttribute("keyword") : request.getParameter("keyword");
+
+    if (listD == null && request.getAttribute("DEFECT_REASON_REDIRECT") == null) {
+        request.setAttribute("DEFECT_REASON_REDIRECT", Boolean.TRUE);
+        response.sendRedirect("DefectController?action=listDefectReason");
+        return;
+    }
     if (listD == null) listD = new java.util.ArrayList<>();
+    if (keyword == null) keyword = "";
     
     String userName = user != null ? user.getUsername() : "User";
     String userRole = user != null ? user.getRole() : "user";
@@ -130,24 +137,19 @@
             <jsp:include page="components/shared-header.jsp" />
             
             <main class="flex-1 overflow-y-auto bg-slate-100 p-4 dark:bg-slate-900 sm:p-6 lg:p-8">
-                <div class="mb-6 rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-rose-50/70 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-rose-950/40">
-                    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                        <div class="max-w-3xl">
-                            <div class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
-                                Kiểm soát chất lượng
-                            </div>
-                            <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">Danh mục nguyên nhân lỗi</h1>
-                            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
-                                Quản lý danh sách nguyên nhân lỗi phổ biến để chuẩn hóa dữ liệu kiểm tra, theo dõi và xử lý lỗi trong sản xuất.
-                            </p>
-                        </div>
-                        <button type="button" onclick="openDefectReasonModal()" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition-all hover:-translate-y-0.5 hover:bg-rose-700">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Thêm nguyên nhân lỗi
-                        </button>
+                <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="max-w-3xl">
+                        <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">Danh mục nguyên nhân lỗi</h1>
+                        <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                            Danh sách này luôn lấy dữ liệu mới từ controller để đồng bộ với các thao tác thêm, sửa và xóa ở những trang khác.
+                        </p>
                     </div>
+                    <button type="button" onclick="openDefectReasonModal()" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition-all hover:-translate-y-0.5 hover:bg-rose-700">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Thêm nguyên nhân lỗi
+                    </button>
                 </div>
 
                 <% if (msg != null && !msg.trim().isEmpty()) { %>
@@ -167,50 +169,33 @@
                 </div>
                 <% } %>
 
-                <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    <div class="kpi-card rounded-2xl border border-slate-200 border-t-4 border-t-red-500 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Tổng nguyên nhân lỗi</p>
-                                <p class="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100"><%= totalDefects %></p>
-                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Danh sách nguyên nhân lỗi đang được quản lý</p>
-                            </div>
-                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-2xl text-red-600 dark:bg-red-500/10 dark:text-red-300">&#9888;</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Search box -->
-                <div class="section-card mb-6 rounded-3xl border border-slate-200 p-4 shadow-sm dark:border-slate-700 sm:p-5">
-                    <form method="get" action="MainController" class="flex flex-col gap-4 xl:flex-row">
-                        <input type="hidden" name="action" value="searchDefectReason">
-                        <div class="flex-1 relative">
-                            <input type="text" name="keyword" value="<%= request.getParameter("keyword") != null ? request.getParameter("keyword") : "" %>"
-                                   placeholder="Tìm theo tên nguyên nhân lỗi..."
-                                   class="w-full rounded-2xl border border-slate-200 py-3 pl-10 pr-4 transition-all form-input dark:border-slate-700">
-                            <svg class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </div>
-                        <div class="flex gap-3">
-                            <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-rose-600 px-6 py-3 font-semibold text-white shadow-sm shadow-rose-500/30 transition-all hover:bg-rose-700">
-                                Tìm kiếm
-                            </button>
-                            <a href="MainController?action=listDefectReason" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                                Xóa lọc
-                            </a>
-                        </div>
-                    </form>
-                </div>
-
                 <div class="section-card overflow-hidden rounded-3xl border border-slate-200 shadow-sm dark:border-slate-700">
-                    <div class="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-700 lg:flex-row lg:items-center lg:justify-between">
                         <div>
                             <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Danh sách nguyên nhân lỗi</h2>
-                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tổng hợp mã lỗi và tên nguyên nhân phục vụ theo dõi chất lượng sản xuất</p>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tìm kiếm theo tên nguyên nhân và theo dõi danh mục đang được sử dụng.</p>
                         </div>
-                        <div class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 dark:bg-slate-700/70 dark:text-slate-300">
-                            Tổng cộng: <span class="font-semibold text-slate-900 dark:text-slate-100"><%= listD.size() %></span>
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <form action="DefectController" method="get" class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+                                <input type="hidden" name="action" value="listDefectReason">
+                                <div class="relative min-w-[260px]">
+                                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 dark:text-slate-500">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>
+                                        </svg>
+                                    </span>
+                                    <input type="text" name="keyword" value="<%= keyword %>" placeholder="Tìm theo tên nguyên nhân lỗi" class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-500/15 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-rose-400">
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="submit" class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">Tìm kiếm</button>
+                                    <% if (keyword != null && !keyword.trim().isEmpty()) { %>
+                                    <a href="DefectController?action=listDefectReason" class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Xóa lọc</a>
+                                    <% } %>
+                                </div>
+                            </form>
+                            <div class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 dark:bg-slate-700/70 dark:text-slate-300">
+                                Hiển thị: <span class="font-semibold text-slate-900 dark:text-slate-100"><%= listD.size() %></span>
+                            </div>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -233,15 +218,19 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p class="font-medium text-slate-700 dark:text-slate-200">Chưa có nguyên nhân lỗi nào</p>
-                                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Bắt đầu tạo danh mục để chuẩn hóa việc ghi nhận và phân tích lỗi</p>
-                                                <div class="mt-4">
+                                                <p class="font-medium text-slate-700 dark:text-slate-200"><%= keyword != null && !keyword.trim().isEmpty() ? "Không tìm thấy kết quả phù hợp" : "Chưa có nguyên nhân lỗi nào" %></p>
+                                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"><%= keyword != null && !keyword.trim().isEmpty() ? "Thử đổi từ khóa tìm kiếm hoặc xóa bộ lọc để xem toàn bộ danh sách." : "Bắt đầu tạo danh mục để chuẩn hóa việc ghi nhận và phân tích lỗi" %></p>
+                                                <div class="mt-4 flex items-center justify-center gap-2">
+                                                    <% if (keyword != null && !keyword.trim().isEmpty()) { %>
+                                                    <a href="DefectController?action=listDefectReason" class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Xóa bộ lọc</a>
+                                                    <% } else { %>
                                                     <button type="button" onclick="openDefectReasonModal()" class="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-rose-500/30 transition-all hover:bg-rose-700">
                                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                                         </svg>
                                                         Thêm nguyên nhân lỗi đầu tiên
                                                     </button>
+                                                    <% } %>
                                                 </div>
                                             </div>
                                         </div>
@@ -263,13 +252,13 @@
                                         </td>
                                         <td class="px-6 py-4 text-center align-middle">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="MainController?action=loadUpdateDefectReason&defectId=<%= d.getDefectId() %>"
+                                                <a href="DefectController?action=loadUpdateDefectReason&defectId=<%= d.getDefectId() %>"
                                                    class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-amber-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-amber-500/10 dark:hover:text-amber-300" title="Chỉnh sửa">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </a>
-                                                <a href="MainController?action=deleteDefectReason&defectId=<%= d.getDefectId() %>"
+                                                <a href="DefectController?action=deleteDefectReason&defectId=<%= d.getDefectId() %>"
                                                    onclick="return confirm('Bạn có chắc chắn muốn xóa nguyên nhân lỗi này?')"
                                                    class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300" title="Xóa">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,7 +275,9 @@
                     </div>
                     <% if (!listD.isEmpty()) { %>
                     <div class="border-t border-slate-200 bg-slate-50 px-6 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400">
-                        Tổng cộng: <span class="font-semibold text-slate-700 dark:text-slate-200"><%= listD.size() %></span> nguyên nhân lỗi
+                        <%= keyword != null && !keyword.trim().isEmpty() ? "Kết quả tìm được:" : "Tổng cộng:" %>
+                        <span class="font-semibold text-slate-700 dark:text-slate-200"><%= listD.size() %></span>
+                        nguyên nhân lỗi
                     </div>
                     <% } %>
                 </div>
@@ -308,7 +299,7 @@
                     </svg>
                 </button>
             </div>
-            <form action="MainController" method="post" class="space-y-5 px-6 py-6">
+            <form action="DefectController" method="post" class="space-y-5 px-6 py-6">
                 <input type="hidden" name="action" value="addDefectReason">
                 <div class="space-y-2">
                     <label for="reasonName" class="text-sm font-semibold text-slate-700 dark:text-slate-200">Tên nguyên nhân lỗi</label>
@@ -337,11 +328,60 @@
         </div>
     </div>
 
+    <div id="editDefectReasonModal" class="fixed inset-0 z-50 <%= isEditMode ? "flex" : "hidden" %> items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40">
+            <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">Chỉnh sửa</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Cập nhật nguyên nhân lỗi</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Điều chỉnh trực tiếp trên trang danh sách để thao tác sửa hoạt động thống nhất.</p>
+                </div>
+                <a href="DefectController?action=listDefectReason<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>" class="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200" aria-label="Đóng">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </a>
+            </div>
+            <% if (defectEdit != null) { %>
+            <form action="DefectController" method="post" class="space-y-5 px-6 py-6">
+                <input type="hidden" name="action" value="saveUpdateDefectReason">
+                <input type="hidden" name="defectId" value="<%= defectEdit.getDefectId() %>">
+                <div class="space-y-2">
+                    <label for="editReasonName" class="text-sm font-semibold text-slate-700 dark:text-slate-200">Tên nguyên nhân lỗi</label>
+                    <input
+                        id="editReasonName"
+                        name="reasonName"
+                        type="text"
+                        maxlength="100"
+                        required
+                        value="<%= defectEdit.getReasonName() %>"
+                        class="form-input"
+                        placeholder="Ví dụ: Sai thông số máy, lỗi vật tư đầu vào"
+                    >
+                </div>
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-700 sm:flex-row sm:justify-end">
+                    <a href="DefectController?action=listDefectReason<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                        Hủy
+                    </a>
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition hover:bg-amber-600">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Lưu cập nhật
+                    </button>
+                </div>
+            </form>
+            <% } %>
+        </div>
+    </div>
+
     <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" onclick="toggleSidebar()"></div>
 
     <script>
         const defectReasonModal = document.getElementById('defectReasonModal');
+        const editDefectReasonModal = document.getElementById('editDefectReasonModal');
         const reasonNameInput = document.getElementById('reasonName');
+        const editReasonNameInput = document.getElementById('editReasonName');
 
         function openDefectReasonModal() {
             if (!defectReasonModal) return;
@@ -357,7 +397,18 @@
             if (!defectReasonModal) return;
             defectReasonModal.classList.add('hidden');
             defectReasonModal.classList.remove('flex');
-            document.body.classList.remove('overflow-hidden');
+            if (!editDefectReasonModal || editDefectReasonModal.classList.contains('hidden')) {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function closeEditDefectReasonModal() {
+            if (!editDefectReasonModal) return;
+            editDefectReasonModal.classList.add('hidden');
+            editDefectReasonModal.classList.remove('flex');
+            if (!defectReasonModal || defectReasonModal.classList.contains('hidden')) {
+                document.body.classList.remove('overflow-hidden');
+            }
         }
 
         if (defectReasonModal) {
@@ -368,11 +419,31 @@
             });
         }
 
+        if (editDefectReasonModal) {
+            editDefectReasonModal.addEventListener('click', function (event) {
+                if (event.target === editDefectReasonModal) {
+                    closeEditDefectReasonModal();
+                }
+            });
+        }
+
         document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape' && defectReasonModal && defectReasonModal.classList.contains('flex')) {
-                closeDefectReasonModal();
+            if (event.key === 'Escape') {
+                if (defectReasonModal && defectReasonModal.classList.contains('flex')) {
+                    closeDefectReasonModal();
+                }
+                if (editDefectReasonModal && editDefectReasonModal.classList.contains('flex')) {
+                    closeEditDefectReasonModal();
+                }
             }
         });
+
+        if (editDefectReasonModal && editDefectReasonModal.classList.contains('flex')) {
+            document.body.classList.add('overflow-hidden');
+            if (editReasonNameInput) {
+                setTimeout(() => editReasonNameInput.focus(), 50);
+            }
+        }
     </script>
 </body>
 </html>

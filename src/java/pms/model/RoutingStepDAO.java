@@ -73,10 +73,10 @@ public class RoutingStepDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new RoutingStepDTO(
-                        rs.getInt("step_id"), 
+                        rs.getInt("step_id"),
                         rs.getInt("routing_id"),
-                        rs.getString("step_name"), 
-                        rs.getInt("estimated_time"), 
+                        rs.getString("step_name"),
+                        rs.getInt("estimated_time"),
                         rs.getBoolean("is_inspected")
                     );
                 }
@@ -86,4 +86,27 @@ public class RoutingStepDAO {
         }
         return null;
     }
-}
+
+    public List<RoutingStepDTO> getRoutingStepsByRoutingId(int routingId) {
+        List<RoutingStepDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM [dbo].[Routing_Step] WHERE routing_id = ? ORDER BY step_id";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, routingId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new RoutingStepDTO(
+                        rs.getInt("step_id"),
+                        rs.getInt("routing_id"),
+                        rs.getString("step_name"),
+                        rs.getInt("estimated_time"),
+                        rs.getBoolean("is_inspected")
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+}

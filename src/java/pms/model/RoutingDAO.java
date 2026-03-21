@@ -22,23 +22,6 @@ public class RoutingDAO {
         return list;
     }
 
-    public List<RoutingDTO> searchRouting(String keyword) {
-        List<RoutingDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM [dbo].[Routing] WHERE routing_name LIKE ?";
-        try (Connection conn = DBUtils.getConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, "%" + keyword + "%");
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new RoutingDTO(rs.getInt("routing_id"), rs.getString("routing_name")));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
     public boolean insertRouting(RoutingDTO routing) {
         String sql = "INSERT INTO [dbo].[Routing] ([routing_name]) VALUES(?)";
         try (Connection conn = DBUtils.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {

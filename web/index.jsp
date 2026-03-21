@@ -40,7 +40,10 @@
                             <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/20 text-sm">&#128200;</span>
                             <span class="nav-label">Dashboard</span>
                         </a>
-
+                        <a href="BangDieuKien.jsp" class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium bg-teal-500/20 text-white shadow-sm">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/20 text-sm">&#9881;</span>
+                            <span class="nav-label">Man hinh chinh</span>
+                        </a>
                     </div>
                 </section>
                 <section class="space-y-3">
@@ -167,7 +170,7 @@
                     </a>
 
                     <!-- Kanban -->
-                    <a href="kanban.jsp" class="module-card bg-white rounded-2xl p-6 shadow-sm border border-slate-100 block">
+                    <a href="KanbanController" class="module-card bg-white rounded-2xl p-6 shadow-sm border border-slate-100 block">
                         <div class="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center text-2xl mb-4">&#128200;</div>
                         <h3 class="text-lg font-semibold text-slate-900">Kanban Board</h3>
                         <p class="text-sm text-slate-500 mt-1">Quan ly trang thai Lenh SX</p>

@@ -9,6 +9,12 @@ import pms.utils.DBUtils;
 
 public class PaymentDAO {
 
+    private boolean isMissingPaymentTable(Exception e) {
+        return e != null
+                && e.getMessage() != null
+                && e.getMessage().toLowerCase().contains("invalid object name 'payment'");
+    }
+
     public boolean insertPayment(PaymentDTO payment) {
         String sql = "INSERT INTO Payment (bill_id, amount, payment_method, status, "
                 + "transaction_id, qr_code_data, created_at, expires_at, bank_bin, "
@@ -31,7 +37,9 @@ public class PaymentDAO {
             ps.setString(13, payment.getCustomerEmail());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
@@ -52,7 +60,9 @@ public class PaymentDAO {
             }
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
@@ -66,7 +76,9 @@ public class PaymentDAO {
             ps.setInt(3, paymentId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
@@ -77,7 +89,9 @@ public class PaymentDAO {
                 PreparedStatement ps = con.prepareStatement(sql)) {
             return ps.executeUpdate() >= 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
@@ -101,7 +115,9 @@ public class PaymentDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -117,7 +133,9 @@ public class PaymentDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -133,7 +151,9 @@ public class PaymentDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -150,7 +170,9 @@ public class PaymentDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return list;
     }
@@ -165,7 +187,9 @@ public class PaymentDAO {
                 list.add(mapResultSet(rs));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return list;
     }
@@ -191,7 +215,9 @@ public class PaymentDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingPaymentTable(e)) {
+                e.printStackTrace();
+            }
         }
         return list;
     }

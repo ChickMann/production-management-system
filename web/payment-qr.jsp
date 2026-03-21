@@ -58,7 +58,7 @@
                 </a>
                 <% } %>
                 <a href="PaymentController?action=list" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">Danh Sach</a>
-                <a href="DashboardController" class="px-4 py-2 rounded-xl bg-teal-600 text-white text-sm font-medium hover:bg-teal-700">Trang Chu</a>
+                <a href="BangDieuKien.jsp" class="px-4 py-2 rounded-xl bg-teal-600 text-white text-sm font-medium hover:bg-teal-700">Trang Chu</a>
             </div>
         </div>
     </header>

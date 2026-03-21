@@ -30,6 +30,7 @@ public class UserController extends HttpServlet {
                 DoLogin(request);
                 break;
             case "logoutUser":
+            case "logout":
                 DoLogout(request);
                 break;
             case "list":
@@ -38,6 +39,10 @@ public class UserController extends HttpServlet {
             case "search":
                 searchUsers(request);
                 break;
+            case "add":
+                request.setAttribute("mode", "add");
+                url = "user-form.jsp";
+                break;
             case "addUser":
             case "saveAddUser":
                 AddUser(request);
@@ -45,10 +50,12 @@ public class UserController extends HttpServlet {
             case "removeUser":
                 RemoveUser(request);
                 break;
+            case "edit":
             case "updateUser":
             case "saveUpdateUser":
                 UpdateUser(request);
                 break;
+            case "view":
             case "viewUser":
                 viewUser(request);
                 break;
@@ -128,7 +135,16 @@ public class UserController extends HttpServlet {
 
     private void listUsers(HttpServletRequest request) {
         UserDAO udao = new UserDAO();
-        ArrayList<UserDTO> users = udao.getAllUsers();
+        String roleFilter = request.getParameter("role");
+        
+        ArrayList<UserDTO> users;
+        if (roleFilter != null && !roleFilter.isEmpty() && !"all".equals(roleFilter)) {
+            users = udao.getUsersByRole(roleFilter);
+            request.setAttribute("role", roleFilter);
+        } else {
+            users = udao.getAllUsers();
+        }
+        
         request.setAttribute("users", users);
         url = "user-list.jsp";
     }
@@ -137,25 +153,28 @@ public class UserController extends HttpServlet {
         UserDAO udao = new UserDAO();
         String keyword = request.getParameter("keyword");
         String role = request.getParameter("role");
-        String status = request.getParameter("status");
 
-        ArrayList<UserDTO> users = udao.getAllUsers();
+        ArrayList<UserDTO> users;
+        if (role != null && !role.isEmpty() && !role.equals("all")) {
+            users = udao.getUsersByRole(role);
+        } else {
+            users = udao.getAllUsers();
+        }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            users.removeIf(u -> !u.getUsername().toLowerCase().contains(keyword.toLowerCase())
-                    && (u.getFullName() == null || !u.getFullName().toLowerCase().contains(keyword.toLowerCase())));
-        }
-        if (role != null && !role.isEmpty() && !role.equals("all")) {
-            users.removeIf(u -> !u.getRole().equals(role));
-        }
-        if (status != null && !status.isEmpty() && !status.equals("all")) {
-            users.removeIf(u -> !u.getStatus().equals(status));
+            final String kw = keyword.toLowerCase();
+            users.removeIf(u -> {
+                boolean matchUsername = u.getUsername() != null && u.getUsername().toLowerCase().contains(kw);
+                boolean matchFullName = u.getFullName() != null && u.getFullName().toLowerCase().contains(kw);
+                boolean matchEmail = u.getEmail() != null && u.getEmail().toLowerCase().contains(kw);
+                boolean matchPhone = u.getPhone() != null && u.getPhone().toLowerCase().contains(kw);
+                return !matchUsername && !matchFullName && !matchEmail && !matchPhone;
+            });
         }
 
         request.setAttribute("users", users);
         request.setAttribute("keyword", keyword);
-        request.setAttribute("roleFilter", role);
-        request.setAttribute("statusFilter", status);
+        request.setAttribute("role", role);
         url = "user-list.jsp";
     }
 
@@ -311,7 +330,6 @@ public class UserController extends HttpServlet {
 
         UserDAO udao = new UserDAO();
         String action = request.getParameter("action");
-        request.setAttribute("mode", "add");
 
         if (action.equals("saveAddUser")) {
             String username = request.getParameter("username");
@@ -324,6 +342,12 @@ public class UserController extends HttpServlet {
 
             if (udao.isUsernameExists(username, null)) {
                 error = "Username already exists";
+                // Reload user list and show modal with error
+                request.setAttribute("users", udao.getAllUsers());
+                request.setAttribute("showModal", true);
+                request.setAttribute("error", error);
+                url = "user-list.jsp";
+                return;
             } else {
                 UserDTO u = new UserDTO();
                 u.setUsername(username);
@@ -335,16 +359,19 @@ public class UserController extends HttpServlet {
                 u.setStatus(status);
 
                 if (udao.Add(u)) {
-                    msg = "User added successfully!";
+                    msg = "Thêm người dùng thành công!";
+                    url = "redirect:UserController?action=list";
+                    return;
                 } else {
                     error = "Failed to add user";
                     udao.ReseedSQL();
+                    request.setAttribute("users", udao.getAllUsers());
+                    request.setAttribute("showModal", true);
+                    request.setAttribute("error", error);
+                    url = "user-list.jsp";
+                    return;
                 }
             }
-
-            request.setAttribute("user", request.getParameter("username"));
-            request.setAttribute("msg", msg);
-            request.setAttribute("error", error);
         }
 
         url = "user-form.jsp";
@@ -355,19 +382,18 @@ public class UserController extends HttpServlet {
         String error = "";
 
         UserDAO udao = new UserDAO();
-
         String action = request.getParameter("action");
         String s_id = request.getParameter("id");
         int id = 0;
         try {
-            id = Integer.parseInt(s_id);
+            if (s_id != null && !s_id.isEmpty()) {
+                id = Integer.parseInt(s_id);
+            }
         } catch (Exception e) {
             error += "ID must be a number";
         }
 
         UserDTO existingUser = udao.SearchByID(id);
-        request.setAttribute("mode", "update");
-        request.setAttribute("u", existingUser);
 
         if (action.equals("saveUpdateUser")) {
             String username = request.getParameter("username");
@@ -380,6 +406,13 @@ public class UserController extends HttpServlet {
 
             if (udao.isUsernameExists(username, id)) {
                 error = "Username already exists";
+                // Reload user list and show edit modal with error
+                request.setAttribute("users", udao.getAllUsers());
+                request.setAttribute("showEditModal", true);
+                request.setAttribute("editUser", existingUser);
+                request.setAttribute("error", error);
+                url = "user-list.jsp";
+                return;
             } else {
                 UserDTO u = new UserDTO();
                 u.setId(id);
@@ -392,19 +425,22 @@ public class UserController extends HttpServlet {
                 u.setStatus(status);
 
                 if (udao.Update(u)) {
-                    msg = "User updated successfully!";
+                    msg = "Cập nhật người dùng thành công!";
+                    url = "redirect:UserController?action=list";
+                    return;
                 } else {
                     error = "Failed to update user";
+                    request.setAttribute("users", udao.getAllUsers());
+                    request.setAttribute("showEditModal", true);
+                    request.setAttribute("editUser", existingUser);
+                    request.setAttribute("error", error);
+                    url = "user-list.jsp";
+                    return;
                 }
             }
-
-            request.setAttribute("msg", msg);
-            request.setAttribute("error", error);
-            UserDTO u = new UserDTO();
-            u.setUsername(username);
-            request.setAttribute("u", u);
         }
 
+        request.setAttribute("editUser", existingUser);
         url = "user-form.jsp";
     }
 

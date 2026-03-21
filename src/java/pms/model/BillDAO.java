@@ -17,7 +17,7 @@ import pms.utils.DBUtils;
 public class BillDAO {
 
     private BillDTO SearchByColumn(String column, String value) {
-        String sql = "SELECT * FROM [Bill] WHERE " + column + " = ?";
+        String sql = "SELECT bill_id, wo_id, customer_id, total_amount, bill_date FROM [Bill] WHERE " + column + " = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, value);
@@ -28,8 +28,7 @@ public class BillDAO {
                             rs.getInt("wo_id"),
                             rs.getInt("customer_id"),
                             rs.getDouble("total_amount"),
-                            rs.getDate("bill_date"),
-                            rs.getString("status")
+                            rs.getDate("bill_date")
                     );
                 }
             }
@@ -41,7 +40,7 @@ public class BillDAO {
 
     public ArrayList<BillDTO> getAllBill() {
         ArrayList<BillDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Bill";
+        String sql = "SELECT bill_id, wo_id, customer_id, total_amount, bill_date FROM Bill";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -51,8 +50,7 @@ public class BillDAO {
                         rs.getInt("wo_id"),
                         rs.getInt("customer_id"),
                         rs.getDouble("total_amount"),
-                        rs.getDate("bill_date"),
-                        rs.getString("status")
+                        rs.getDate("bill_date")
                 ));
             }
         } catch (Exception e) {
@@ -77,15 +75,14 @@ public class BillDAO {
     }
 
     public boolean UpdateBill(BillDTO bill) {
-        String sql = "UPDATE BILL SET wo_id = ?, customer_id = ?, total_amount = ?, bill_date = ?, status = ? WHERE bill_id = ?";
+        String sql = "UPDATE BILL SET wo_id = ?, customer_id = ?, total_amount = ?, bill_date = ? WHERE bill_id = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, bill.getWo_id());
             ps.setInt(2, bill.getCustomer_id());
             ps.setDouble(3, bill.getTotal_amount());
             ps.setDate(4, bill.getBill_date());
-            ps.setString(5, bill.getStatus());
-            ps.setInt(6, bill.getBill_id());
+            ps.setInt(5, bill.getBill_id());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -94,15 +91,6 @@ public class BillDAO {
     }
 
     public boolean UpdateBillStatus(int billId, String status) {
-        String sql = "UPDATE BILL SET status = ? WHERE bill_id = ?";
-        try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt(2, billId);
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
         return false;
     }
 
@@ -120,7 +108,7 @@ public class BillDAO {
 
     public ArrayList<BillDTO> searchBill(String keyword) {
         ArrayList<BillDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Bill WHERE bill_id LIKE ?";
+        String sql = "SELECT bill_id, wo_id, customer_id, total_amount, bill_date FROM Bill WHERE CAST(bill_id AS VARCHAR(20)) LIKE ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
@@ -131,8 +119,7 @@ public class BillDAO {
                             rs.getInt("wo_id"),
                             rs.getInt("customer_id"),
                             rs.getDouble("total_amount"),
-                            rs.getDate("bill_date"),
-                            rs.getString("status")
+                            rs.getDate("bill_date")
                     ));
                 }
             }

@@ -22,7 +22,7 @@
     
     Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
     boolean isDarkMode = sessionDark != null ? sessionDark : false;
-
+    String lang = session.getAttribute("lang") != null ? (String) session.getAttribute("lang") : "vi";
     String userName = headerUser != null ? headerUser.getUsername() : "User";
     String userRole = headerUser != null ? headerUser.getRole() : "";
 %>
@@ -71,7 +71,11 @@
 
     <!-- Right: Language + Dark Mode + Notifications + User -->
     <div class="flex items-center gap-2">
-
+        <!-- Language Toggle -->
+        <div class="flex items-center rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 h-10 bg-white dark:bg-slate-800">
+            <a href="?lang=vi" class="px-3 py-1.5 text-xs font-medium flex items-center <%= "vi".equals(lang) ? "bg-teal-500 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700" %>">VI</a>
+            <a href="?lang=en" class="px-3 py-1.5 text-xs font-medium flex items-center <%= "en".equals(lang) ? "bg-teal-500 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700" %>">EN</a>
+        </div>
         
         <!-- Dark Mode Toggle -->
         <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Chế độ tối">
@@ -141,7 +145,7 @@
         <a href="profile.jsp" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             <span class="text-sm text-slate-700 dark:text-slate-200">Hồ Sơ Cá Nhân</span>
         </a>
-        <a href="UserController?action=logoutUser" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+        <a href="UserController?action=logout" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
             <span class="text-sm text-red-600 font-medium">Đăng Xuất</span>
         </a>
     </div>

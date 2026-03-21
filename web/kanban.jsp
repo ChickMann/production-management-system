@@ -7,6 +7,10 @@
     List<WorkOrderDTO> inProgressList = (List<WorkOrderDTO>) request.getAttribute("inProgressList");
     List<WorkOrderDTO> doneList = (List<WorkOrderDTO>) request.getAttribute("doneList");
     List<WorkOrderDTO> cancelledList = (List<WorkOrderDTO>) request.getAttribute("cancelledList");
+    if (newList == null && inProgressList == null && doneList == null && cancelledList == null) {
+        response.sendRedirect("KanbanController");
+        return;
+    }
     UserDTO user = (UserDTO) session.getAttribute("user");
 
     if (newList == null) newList = new java.util.ArrayList<>();

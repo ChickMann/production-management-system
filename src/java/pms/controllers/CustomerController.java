@@ -27,9 +27,6 @@ public class CustomerController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
-        if (action == null || action.isEmpty()) {
-            action = "searchCustomer";
-        }
         switch (action) {
             case "addCustomer":
             case "saveAddCustomer":
@@ -43,7 +40,6 @@ public class CustomerController extends HttpServlet {
                 UpdateCustomer(request);
                 break;
             case "searchCustomer":
-            case "listCustomer":
                 SearchCustomer(request);
                 break;
         }
@@ -56,9 +52,9 @@ public class CustomerController extends HttpServlet {
     if (id != null && !id.isEmpty()) {
         boolean check = cdao.deleteCustomer(Integer.parseInt(id));
         if (check) {
-            request.setAttribute("msg", "Xóa khách hàng thành công!");
+            request.setAttribute("msg", "Deleted!");
         } else {
-            request.setAttribute("error", "Không thể xóa khách hàng " + id + " vì đang có Liên kết dữ liệu (ví dụ: Hóa đơn, Lệnh). Vui lòng kiểm tra lại dữ liệu liên quan.");
+            request.setAttribute("msg", "Error, can not delete: " + id);
         }
     }
     List<CustomerDTO> customerList = cdao.getAllCustomers();
@@ -105,12 +101,11 @@ public class CustomerController extends HttpServlet {
             int id = Integer.parseInt(s_id);
             c = new CustomerDTO(id, name, phone, email);
             if (cdao.updateCustomer(c)) {
-                // Redirect to list after successful update
-                response.sendRedirect("CustomerController?action=listCustomer");
-                return;
+                msg = "Update successfully";
             } else {
-                error = "Cập nhật thất bại";
+                error = "Update failed";
             }
+            request.setAttribute("msg", msg);
             request.setAttribute("error", error);
         }
         request.setAttribute("customer", c);
@@ -122,7 +117,10 @@ public class CustomerController extends HttpServlet {
         CustomerDAO cdao = new CustomerDAO();
         List<CustomerDTO> customerList = new ArrayList<>();
         if (keyword != null && keyword.trim().length() > 0) {
-            customerList = cdao.searchCustomers(keyword.trim());
+            CustomerDTO c = cdao.SearchByCustomerID(keyword);
+            if (c != null) {
+                customerList.add(c);
+            }
         } else {
             customerList = cdao.getAllCustomers();
         }

@@ -9,6 +9,12 @@ import java.util.Map;
 
 public class SystemConfigService implements Serializable {
 
+    private boolean isMissingSystemConfigTable(Exception e) {
+        return e != null
+                && e.getMessage() != null
+                && e.getMessage().toLowerCase().contains("invalid object name 'systemconfig'");
+    }
+
     private static final Map<String, String> DEFAULT_CONFIG = new HashMap<>();
     static {
         DEFAULT_CONFIG.put("SMTP_HOST", "smtp.gmail.com");
@@ -37,7 +43,9 @@ public class SystemConfigService implements Serializable {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingSystemConfigTable(e)) {
+                e.printStackTrace();
+            }
         }
         return DEFAULT_CONFIG.get(key);
     }
@@ -55,7 +63,9 @@ public class SystemConfigService implements Serializable {
             ps.setString(2, key);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingSystemConfigTable(e)) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
@@ -70,7 +80,9 @@ public class SystemConfigService implements Serializable {
                 configs.put(rs.getString("config_key"), rs.getString("config_value"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingSystemConfigTable(e)) {
+                e.printStackTrace();
+            }
         }
         return configs;
     }
@@ -94,7 +106,9 @@ public class SystemConfigService implements Serializable {
                 return true;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingSystemConfigTable(e)) {
+                e.printStackTrace();
+            }
         }
 
         String insertSql = "INSERT INTO SystemConfig (config_key, config_value, description) VALUES(?,?,?)";
@@ -111,7 +125,9 @@ public class SystemConfigService implements Serializable {
             }
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingSystemConfigTable(e)) {
+                e.printStackTrace();
+            }
         }
         return false;
     }

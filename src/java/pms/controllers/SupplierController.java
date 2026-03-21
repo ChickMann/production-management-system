@@ -3,12 +3,14 @@ package pms.controllers;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import pms.model.SupplierDAO;
 import pms.model.SupplierDTO;
 
+@WebServlet(name = "SupplierController", urlPatterns = {"/SupplierController"})
 public class SupplierController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -41,7 +43,7 @@ public class SupplierController extends HttpServlet {
                     }
 
                     request.setAttribute("supplierList", list);
-                    request.getRequestDispatcher("SearchSupplier.jsp").forward(request, response);
+                    request.getRequestDispatcher("supplier.jsp").forward(request, response);
                     break;
 
                 case "addSupplier":
@@ -57,7 +59,7 @@ public class SupplierController extends HttpServlet {
                 case "loadUpdateSupplier":
                     request.setAttribute("supplierEdit", sdao.SearchByID(Integer.parseInt(request.getParameter("id"))));
                     request.setAttribute("supplierList", sdao.SupplierList());
-                    request.getRequestDispatcher("SearchSupplier.jsp").forward(request, response);
+                    request.getRequestDispatcher("supplier.jsp").forward(request, response);
                     break;
 
                 case "saveUpdateSupplier":

@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.ArrayList, pms.model.BillDTO, pms.model.WorkOrderDTO, pms.model.CustomerDTO, pms.model.UserDTO, java.text.DecimalFormat, java.text.SimpleDateFormat"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.ArrayList, java.util.Map, java.util.HashMap, pms.model.BillDTO, pms.model.WorkOrderDTO, pms.model.CustomerDTO, pms.model.PaymentDTO, pms.model.UserDTO, java.text.DecimalFormat, java.text.SimpleDateFormat"%>
 <%
     request.setCharacterEncoding("UTF-8");
     response.setCharacterEncoding("UTF-8");
@@ -6,16 +6,22 @@
     ArrayList<BillDTO> billList = (ArrayList<BillDTO>) request.getAttribute("billList");
     ArrayList<WorkOrderDTO> workOrders = (ArrayList<WorkOrderDTO>) request.getAttribute("workOrders");
     ArrayList<CustomerDTO> customers = (ArrayList<CustomerDTO>) request.getAttribute("customers");
+    Map<Integer, WorkOrderDTO> workOrderMap = (Map<Integer, WorkOrderDTO>) request.getAttribute("workOrderMap");
+    Map<Integer, CustomerDTO> customerMap = (Map<Integer, CustomerDTO>) request.getAttribute("customerMap");
+    Map<Integer, PaymentDTO> latestPaymentMap = (Map<Integer, PaymentDTO>) request.getAttribute("latestPaymentMap");
     UserDTO user = (UserDTO) session.getAttribute("user");
     
-    String msg = (String) request.getAttribute("msg");
-    String error = (String) request.getAttribute("error");
+    String msg = request.getAttribute("msg") != null ? (String) request.getAttribute("msg") : request.getParameter("msg");
+    String error = request.getAttribute("error") != null ? (String) request.getAttribute("error") : request.getParameter("error");
     String filterStatus = request.getParameter("filter");
     String searchKeyword = request.getParameter("keyword");
     
     if (billList == null) billList = new ArrayList<>();
     if (workOrders == null) workOrders = new ArrayList<>();
     if (customers == null) customers = new ArrayList<>();
+    if (workOrderMap == null) workOrderMap = new HashMap<>();
+    if (customerMap == null) customerMap = new HashMap<>();
+    if (latestPaymentMap == null) latestPaymentMap = new HashMap<>();
     if (filterStatus == null) filterStatus = "all";
     
     DecimalFormat df = new DecimalFormat("#,###");
@@ -225,17 +231,18 @@
                                 <tr class="border-b border-slate-100 bg-slate-50 dark:bg-slate-700/50 dark:border-slate-700">
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Mã HD</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">WO</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Khách Hàng</th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tổng Tiền</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trạng Thái</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Ngày Lập</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành Động</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Khách hàng</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Tổng tiền</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hóa đơn</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Thanh toán</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Ngày lập</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% if (billList.isEmpty()) { %>
                                 <tr>
-                                    <td colspan="7" class="px-6 py-16 text-center text-slate-400">
+                                    <td colspan="8" class="px-6 py-16 text-center text-slate-400">
                                         <div class="mx-auto flex max-w-md flex-col items-center gap-3">
                                             <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-700/60 dark:text-slate-500">
                                                 <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,45 +264,84 @@
                                 </tr>
                                 <% } else { 
                                     for (BillDTO b : billList) {
-                                        String statusClass = "pending".equalsIgnoreCase(b.getStatus()) ? "status-pending" : 
+                                        WorkOrderDTO workOrder = workOrderMap.get(b.getWo_id());
+                                        CustomerDTO customer = customerMap.get(b.getCustomer_id());
+                                        PaymentDTO payment = latestPaymentMap.get(b.getBill_id());
+                                        String statusClass = "pending".equalsIgnoreCase(b.getStatus()) ? "status-pending" :
                                                             "paid".equalsIgnoreCase(b.getStatus()) ? "status-paid" : "status-cancelled";
-                                        String statusLabel = "pending".equalsIgnoreCase(b.getStatus()) ? "Chờ TT" : 
+                                        String statusLabel = "pending".equalsIgnoreCase(b.getStatus()) ? "Chờ TT" :
                                                             "paid".equalsIgnoreCase(b.getStatus()) ? "Đã TT" : "Đã Hủy";
+                                        String paymentClass = payment == null ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                                                : "PAID".equalsIgnoreCase(payment.getStatus()) ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+                                                : "PENDING".equalsIgnoreCase(payment.getStatus()) ? "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+                                                : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-300";
+                                        String paymentLabel = payment == null ? "Chưa tạo QR"
+                                                : "PAID".equalsIgnoreCase(payment.getStatus()) ? "Đã thanh toán"
+                                                : "PENDING".equalsIgnoreCase(payment.getStatus()) ? "Chờ thanh toán"
+                                                : "Đã hết hạn";
+                                        String customerName = customer != null ? customer.getCustomer_name() : (b.getCustomer_id() > 0 ? "KH-" + b.getCustomer_id() : "Khách lẻ");
+                                        String customerEmail = customer != null && customer.getEmail() != null ? customer.getEmail() : "";
                                 %>
                                 <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors dark:border-slate-700 dark:hover:bg-slate-700/50">
-                                    <td class="px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300">#<%= b.getBill_id() %></td>
-                                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                                        <a href="MainController?action=listWorkOrder" class="text-teal-600 hover:text-teal-800 font-semibold dark:text-teal-400">WO-<%= b.getWo_id() %></a>
+                                    <td class="px-4 py-3 align-top text-sm font-semibold text-slate-700 dark:text-slate-300">#<%= b.getBill_id() %></td>
+                                    <td class="px-4 py-3 align-top text-sm text-slate-600 dark:text-slate-400">
+                                        <div class="font-semibold text-teal-600 dark:text-teal-400">WO-<%= b.getWo_id() %></div>
+                                        <div class="mt-1 text-xs text-slate-400 dark:text-slate-500"><%= workOrder != null && workOrder.getProductName() != null ? workOrder.getProductName() : "Lệnh sản xuất" %></div>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400"><%= b.getCustomer_id() > 0 ? "KH-" + b.getCustomer_id() : "-" %></td>
-                                    <td class="px-4 py-3 text-sm text-right font-semibold text-teal-600 dark:text-teal-400"><%= df.format(b.getTotal_amount()) %> VND</td>
-                                    <td class="px-4 py-3">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold <%= statusClass %>">
-                                            <%= statusLabel %>
-                                        </span>
+                                    <td class="px-4 py-3 align-top text-sm text-slate-600 dark:text-slate-400">
+                                        <div class="font-medium text-slate-700 dark:text-slate-200"><%= customerName %></div>
+                                        <div class="mt-1 text-xs text-slate-400 dark:text-slate-500"><%= customerEmail != null && !customerEmail.isEmpty() ? customerEmail : "Chưa có email" %></div>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+                                    <td class="px-4 py-3 align-top text-sm text-right font-semibold text-teal-600 dark:text-teal-400"><%= df.format(b.getTotal_amount()) %> VND</td>
+                                    <td class="px-4 py-3 align-top">
+                                        <div class="flex flex-col gap-2">
+                                            <span class="inline-flex w-fit items-center px-2.5 py-1 rounded-full text-xs font-bold <%= statusClass %>">
+                                                <%= statusLabel %>
+                                            </span>
+                                            <span class="text-xs text-slate-400 dark:text-slate-500">WO liên kết: <%= b.getWo_id() %></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 align-top">
+                                        <div class="flex flex-col gap-2">
+                                            <span class="inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-bold <%= paymentClass %>"><%= paymentLabel %></span>
+                                            <% if (payment != null) { %>
+                                            <span class="text-xs text-slate-400 dark:text-slate-500">Mã TT #<%= payment.getPaymentId() %> • <%= payment.getPaymentMethod() != null ? payment.getPaymentMethod() : "QR" %></span>
+                                            <% } else { %>
+                                            <span class="text-xs text-slate-400 dark:text-slate-500">Chưa có giao dịch QR cho hóa đơn này</span>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 align-top text-sm text-slate-500 dark:text-slate-400">
                                         <%= b.getBill_date() != null ? sdf.format(b.getBill_date()) : "-" %>
                                     </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <% if (!"paid".equalsIgnoreCase(b.getStatus())) { %>
-                                            <a href="PaymentController?action=createQr&bill_id=<%= b.getBill_id() %>&amount=<%= b.getTotal_amount() %>" class="p-2 rounded-lg text-slate-500 hover:bg-emerald-100 hover:text-emerald-600 dark:hover:bg-emerald-900/30" title="Tạo QR Thanh toán">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                                </svg>
-                                            </a>
+                                    <td class="px-4 py-3 align-top text-center">
+                                        <div class="flex flex-wrap items-center justify-center gap-2">
+                                            <% if (payment != null) { %>
+                                            <button type="button"
+                                                    data-bill-id="<%= b.getBill_id() %>"
+                                                    data-amount="<%= b.getTotal_amount() %>"
+                                                    data-customer-name="<%= customerName %>"
+                                                    data-customer-email="<%= customerEmail %>"
+                                                    onclick="openQrModal(this)"
+                                                    class="rounded-xl bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 shadow-sm shadow-blue-500/30">Xem QR</button>
                                             <% } %>
-                                            <button type="button" onclick="openEditModal('<%= b.getBill_id() %>', '<%= b.getWo_id() %>', '<%= b.getCustomer_id() %>', '<%= b.getTotal_amount() %>')" class="p-2 rounded-lg text-slate-500 hover:bg-amber-100 hover:text-amber-600 dark:hover:bg-amber-900/30" title="Sửa">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </button>
-                                            <a href="MainController?action=deleteBill&bill_id=<%= b.getBill_id() %>" onclick="return confirm('Bạn có chắc xoá hóa đơn này?');" class="p-2 rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30" title="Xóa">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </a>
+                                            <% if (payment != null && "PENDING".equalsIgnoreCase(payment.getStatus())) { %>
+                                            <form action="PaymentController" method="post" style="display:inline;" onsubmit="return confirm('Xác nhận khách hàng đã thanh toán?')">
+                                                <input type="hidden" name="action" value="confirmPayment"/>
+                                                <input type="hidden" name="payment_id" value="<%= payment.getPaymentId() %>"/>
+                                                <input type="hidden" name="source" value="bill"/>
+                                                <button type="submit" class="rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-emerald-700 shadow-sm shadow-emerald-500/30">Xác nhận</button>
+                                            </form>
+                                            <% } %>
+                                            <% if (payment == null || !"PAID".equalsIgnoreCase(payment.getStatus())) { %>
+                                            <button type="button"
+                                                    data-bill-id="<%= b.getBill_id() %>"
+                                                    data-amount="<%= b.getTotal_amount() %>"
+                                                    data-customer-name="<%= customerName %>"
+                                                    data-customer-email="<%= customerEmail %>"
+                                                    onclick="openQrModal(this)"
+                                                    class="rounded-xl bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-teal-700 shadow-sm shadow-teal-500/30"><%= payment == null ? "Tạo QR" : "Tạo lại QR" %></button>
+                                            <% } %>
                                         </div>
                                     </td>
                                 </tr>
@@ -322,33 +368,36 @@
                     </svg>
                 </button>
             </div>
-            <form action="MainController" method="post" class="p-6 space-y-4">
+            <form action="BillController" method="post" class="p-6 space-y-4">
                 <input type="hidden" name="action" value="addBill"/>
                 
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Lệnh Sản Xuất (WO)</label>
-                    <select name="wo_id" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                    <select id="billWoSelect" name="wo_id" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                         <option value="">-- Chọn lệnh sản xuất --</option>
                         <% for (WorkOrderDTO wo : workOrders) { %>
-                        <option value="<%= wo.getWo_id() %>">WO-<%= wo.getWo_id() %> | <%= wo.getProductName() != null ? wo.getProductName() : "SP#" + wo.getProduct_item_id() %></option>
+                        <option value="<%= wo.getWo_id() %>" data-customer-id="<%= wo.getCustomerId() %>">WO-<%= wo.getWo_id() %> | <%= wo.getProductName() != null ? wo.getProductName() : "SP#" + wo.getProduct_item_id() %></option>
                         <% } %>
                     </select>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Chọn lệnh sản xuất để liên kết hóa đơn với đơn hàng tương ứng.</p>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Khách Hàng</label>
-                    <select name="customer_id" class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                        <option value="0">-- Khách hàng văn phòng --</option>
+                    <select id="billCustomerSelect" name="customer_id" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                        <option value="">-- Chọn khách hàng --</option>
                         <% for (CustomerDTO c : customers) { %>
                         <option value="<%= c.getCustomer_id() %>"><%= c.getCustomer_name() %></option>
                         <% } %>
                     </select>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Nếu WO không tự điền khách hàng, hệ thống sẽ giữ sẵn khách hàng đầu tiên để bạn có thể tạo hóa đơn ngay.</p>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Tổng Tiền (VND)</label>
-                    <input type="number" name="total_amount" required min="0" step="1000" placeholder="VD: 5000000"
+                    <input id="billTotalAmount" type="number" name="total_amount" required min="1000" step="1000" placeholder="VD: 5000000"
                            class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Nhập số tiền lớn hơn 0 để có thể tạo hóa đơn.</p>
                 </div>
                 
                 <div class="flex gap-3 pt-4">
@@ -363,141 +412,301 @@
         </div>
     </div>
 
-    <!-- Edit Bill Modal -->
-    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
-        <div class="w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-            <div class="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-800">
+    <div id="qrModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex items-start justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Sửa hóa đơn</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Từ đây bạn có thể cập nhật thông tin hóa đơn.</p>
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Tạo mã QR thanh toán</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tạo giao dịch QR trực tiếp ngay trong quản lý hóa đơn.</p>
                 </div>
-                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="button" onclick="closeQrModal()" class="rounded-2xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
-            <form action="MainController" method="post" class="p-6 space-y-4">
-                <input type="hidden" name="action" value="updateBill"/>
-                <input type="hidden" name="bill_id" id="edit_bill_id"/>
-                
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Lệnh Sản Xuất (WO)</label>
-                    <select name="wo_id" id="edit_wo_id" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                        <option value="">-- Chọn lệnh sản xuất --</option>
-                        <% for (WorkOrderDTO wo : workOrders) { %>
-                        <option value="<%= wo.getWo_id() %>">WO-<%= wo.getWo_id() %> | <%= wo.getProductName() != null ? wo.getProductName() : "SP#" + wo.getProduct_item_id() %></option>
-                        <% } %>
-                    </select>
+            <form id="qrCreateForm" action="PaymentController" method="post" class="space-y-5 px-6 py-6">
+                <input type="hidden" name="action" value="createQr"/>
+                <input type="hidden" name="source" value="bill"/>
+                <input type="hidden" name="ajax" value="1"/>
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Mã hóa đơn *</label>
+                        <input id="qrBillId" type="number" name="bill_id" required readonly class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 dark:text-white"/>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Số tiền (VND) *</label>
+                        <input id="qrAmount" type="number" name="amount" step="1000" min="1000" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"/>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Thời gian hiệu lực</label>
+                        <select name="expire_minutes" class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                            <option value="5">5 phút</option>
+                            <option value="10">10 phút</option>
+                            <option value="15" selected>15 phút</option>
+                            <option value="30">30 phút</option>
+                            <option value="60">60 phút</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Tên khách hàng</label>
+                        <input id="qrCustomerName" type="text" name="customer_name" class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"/>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Email khách hàng</label>
+                        <input id="qrCustomerEmail" type="email" name="customer_email" class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"/>
+                    </div>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Khách Hàng</label>
-                    <select name="customer_id" id="edit_customer_id" class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                        <option value="0">-- Khách hàng văn phòng --</option>
-                        <% for (CustomerDTO c : customers) { %>
-                        <option value="<%= c.getCustomer_id() %>"><%= c.getCustomer_name() %></option>
-                        <% } %>
-                    </select>
+                <div id="qrResult" class="hidden rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/70">
+                    <div class="space-y-5">
+                        <div class="rounded-3xl border border-slate-200 bg-white p-4 text-center dark:border-slate-700 dark:bg-slate-900">
+                            <div id="qrImageWrap" class="flex min-h-[280px] items-center justify-center rounded-2xl bg-slate-100 p-3 dark:bg-slate-800"></div>
+                        </div>
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Ngân hàng</div>
+                                <div id="qrResultBankName" class="mt-2 text-base font-semibold text-slate-900 dark:text-white">--</div>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Số tài khoản</div>
+                                <div id="qrResultBankAccount" class="mt-2 text-base font-semibold text-slate-900 dark:text-white">--</div>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Chủ tài khoản</div>
+                                <div id="qrResultBankAccountName" class="mt-2 text-base font-semibold text-slate-900 dark:text-white">PMS Company</div>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Hết hạn</div>
+                                <div id="qrResultExpiresAt" class="mt-2 text-base font-semibold text-amber-600 dark:text-amber-300">--</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2 dark:text-slate-300">Tổng Tiền (VND)</label>
-                    <input type="number" name="total_amount" id="edit_total_amount" required min="0" step="1000" placeholder="VD: 5000000"
-                           class="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                </div>
-                
-                <div class="flex gap-3 pt-4">
-                    <button type="submit" class="flex-1 py-3 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700">
-                        Cập Nhật
-                    </button>
-                    <button type="button" onclick="closeEditModal()" class="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700">
-                        Hủy
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end">
+                    <button type="button" onclick="closeQrModal()" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Hủy</button>
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tạo mã QR
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
+ 
     <script>
-        // Sidebar toggle
-        let sidebarOpen = window.innerWidth >= 1024;
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebarOpen = !sidebarOpen;
-            if (sidebarOpen) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.add('hidden');
+        const billWoSelect = document.getElementById('billWoSelect');
+        const billCustomerSelect = document.getElementById('billCustomerSelect');
+        const billTotalAmount = document.getElementById('billTotalAmount');
+        const addBillForm = document.querySelector('#addModal form');
+        const addModal = document.getElementById('addModal');
+        const qrModal = document.getElementById('qrModal');
+        const qrCreateForm = document.getElementById('qrCreateForm');
+        const qrResult = document.getElementById('qrResult');
+        const qrImageWrap = document.getElementById('qrImageWrap');
+        const qrResultBankName = document.getElementById('qrResultBankName');
+        const qrResultBankAccount = document.getElementById('qrResultBankAccount');
+        const qrResultBankAccountName = document.getElementById('qrResultBankAccountName');
+        const qrResultExpiresAt = document.getElementById('qrResultExpiresAt');
+
+        function ensureBillCustomerSelected() {
+            if (!billCustomerSelect) return;
+            if (!billCustomerSelect.value && billCustomerSelect.options.length > 1) {
+                billCustomerSelect.selectedIndex = 1;
+            }
+        }
+
+        function syncBillCustomerFromWo() {
+            if (!billWoSelect || !billCustomerSelect) return;
+            const selectedOption = billWoSelect.options[billWoSelect.selectedIndex];
+            const customerId = selectedOption ? selectedOption.getAttribute('data-customer-id') : '';
+            if (customerId && customerId !== '0') {
+                billCustomerSelect.value = customerId;
             } else {
-                sidebar.classList.add('-translate-x-full');
-                if (window.innerWidth < 1024) overlay.classList.remove('hidden');
+                ensureBillCustomerSelected();
             }
-            localStorage.setItem('sidebar_open', sidebarOpen ? '1' : '0');
         }
-        document.addEventListener('DOMContentLoaded', function() {
-            const saved = localStorage.getItem('sidebar_open');
-            if (saved === '0') toggleSidebar();
-        });
 
-        // Modal functions
         function openAddModal() {
-            document.getElementById('addModal').classList.remove('hidden');
-            document.getElementById('addModal').classList.add('flex');
+            if (!addModal) return;
+            addModal.classList.remove('hidden');
+            addModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+            ensureBillCustomerSelected();
+            if (billWoSelect) billWoSelect.focus();
         }
+
         function closeAddModal() {
-            document.getElementById('addModal').classList.add('hidden');
-            document.getElementById('addModal').classList.remove('flex');
+            if (!addModal) return;
+            addModal.classList.add('hidden');
+            addModal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
         }
-        document.getElementById('addModal').addEventListener('click', function(e) {
-            if (e.target === this) closeAddModal();
-        });
 
-        function openEditModal(billId, woId, customerId, amount) {
-            document.getElementById('edit_bill_id').value = billId;
-            document.getElementById('edit_wo_id').value = woId;
-            document.getElementById('edit_customer_id').value = customerId;
-            document.getElementById('edit_total_amount').value = parseFloat(amount);
-            document.getElementById('editModal').classList.remove('hidden');
-            document.getElementById('editModal').classList.add('flex');
-        }
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-            document.getElementById('editModal').classList.remove('flex');
-        }
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) closeEditModal();
-        });
-
-        // User dropdown
-        function toggleUserDropdown() {
-            const dd = document.getElementById('userDropdown');
-            const notif = document.getElementById('notifPanel');
-            if (notif) notif.classList.add('hidden');
-            dd.classList.toggle('hidden');
-        }
-        function toggleNotificationPanel() {
-            const notif = document.getElementById('notifPanel');
-            const dd = document.getElementById('userDropdown');
-            if (dd) dd.classList.add('hidden');
-            notif.classList.toggle('hidden');
-        }
-        document.addEventListener('click', function(e) {
-            const notif = document.getElementById('notifPanel');
-            const notifBtn = e.target.closest('[onclick*="toggleNotificationPanel"]');
-            const dd = document.getElementById('userDropdown');
-            const ddBtn = e.target.closest('[onclick*="toggleUserDropdown"]');
-            if (notif && !notif.contains(e.target) && !notifBtn) notif.classList.add('hidden');
-            if (dd && !dd.contains(e.target) && !ddBtn) dd.classList.add('hidden');
-        });
-
-        // Global search
-        function handleGlobalSearch(event) {
-            if (event.key === 'Enter') {
-                const q = event.target.value.trim();
-                if (q) window.location.href = 'AutoCompleteSearchServlet?action=search&q=' + encodeURIComponent(q);
+        function resetQrResult() {
+            if (!qrResult) return;
+            qrResult.classList.add('hidden');
+            if (qrImageWrap) {
+                qrImageWrap.innerHTML = '<div class="flex h-[280px] w-[280px] items-center justify-center rounded-2xl bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-300">Chưa có dữ liệu QR</div>';
             }
+            if (qrResultBankName) qrResultBankName.textContent = '--';
+            if (qrResultBankAccount) qrResultBankAccount.textContent = '--';
+            if (qrResultBankAccountName) qrResultBankAccountName.textContent = 'PMS Company';
+            if (qrResultExpiresAt) qrResultExpiresAt.textContent = '--';
         }
+
+        function renderQrResult(result) {
+            if (!qrResult) return;
+            const bankCode = result.bankBin || '--';
+            const bankAccount = result.bankAccount || '--';
+            const bankAccountName = result.bankAccountName || 'PMS Company';
+            const expiresAt = result.expiresAt || '--';
+            const qrImageBase64 = result.qrImageBase64 || '';
+
+            if (qrImageWrap) {
+                qrImageWrap.innerHTML = qrImageBase64
+                    ? '<img src="data:image/png;base64,' + qrImageBase64 + '" alt="QR Code" class="mx-auto max-w-[280px] rounded-2xl border border-slate-200 bg-white p-2" />'
+                    : '<div class="flex h-[280px] w-[280px] items-center justify-center rounded-2xl bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-300">Không có dữ liệu QR</div>';
+            }
+
+            if (qrResultBankName) qrResultBankName.textContent = bankCode;
+            if (qrResultBankAccount) qrResultBankAccount.textContent = bankAccount;
+            if (qrResultBankAccountName) qrResultBankAccountName.textContent = bankAccountName;
+            if (qrResultExpiresAt) qrResultExpiresAt.textContent = expiresAt;
+
+            qrResult.classList.remove('hidden');
+        }
+
+        function openQrModal(trigger) {
+            if (!qrModal) return;
+            const billId = trigger ? trigger.getAttribute('data-bill-id') : '';
+            const amount = trigger ? trigger.getAttribute('data-amount') : '';
+            const customerName = trigger ? trigger.getAttribute('data-customer-name') : '';
+            const customerEmail = trigger ? trigger.getAttribute('data-customer-email') : '';
+            document.getElementById('qrBillId').value = billId || '';
+            document.getElementById('qrAmount').value = amount || '';
+            document.getElementById('qrCustomerName').value = customerName || '';
+            document.getElementById('qrCustomerEmail').value = customerEmail || '';
+            resetQrResult();
+            qrModal.classList.remove('hidden');
+            qrModal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+ 
+        function closeQrModal() {
+            if (!qrModal) return;
+            qrModal.classList.add('hidden');
+            qrModal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+            resetQrResult();
+        }
+
+        if (addModal) {
+            addModal.addEventListener('click', function(e) {
+                if (e.target === this) closeAddModal();
+            });
+        }
+
+        if (qrModal) {
+            qrModal.addEventListener('click', function(e) {
+                if (e.target === this) closeQrModal();
+            });
+        }
+
+        if (qrCreateForm) {
+            qrCreateForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+ 
+                const submitButton = qrCreateForm.querySelector('button[type="submit"]');
+                const originalButtonHtml = submitButton ? submitButton.innerHTML : '';
+ 
+                try {
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.classList.add('opacity-60', 'cursor-not-allowed');
+                        submitButton.innerHTML = 'Đang tạo QR...';
+                    }
+ 
+                    const response = await fetch('PaymentController', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: new FormData(qrCreateForm)
+                    });
+
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (parseError) {
+                        throw new Error('Phản hồi tạo QR không hợp lệ.');
+                    }
+ 
+                    if (!response.ok || !result.success) {
+                        alert((result && result.message) || 'Không thể tạo mã QR.');
+                        return;
+                    }
+
+                    renderQrResult(result);
+                } catch (error) {
+                    alert(error.message || 'Không thể tạo mã QR ngay trên trang.');
+                } finally {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.classList.remove('opacity-60', 'cursor-not-allowed');
+                        submitButton.innerHTML = originalButtonHtml;
+                    }
+                }
+            });
+        }
+
+        if (billWoSelect) {
+            billWoSelect.addEventListener('change', syncBillCustomerFromWo);
+        }
+
+        if (billTotalAmount) {
+            billTotalAmount.addEventListener('blur', function() {
+                const numericValue = Number(this.value || 0);
+                if (numericValue > 0 && numericValue < 1000) {
+                    this.value = 1000;
+                }
+            });
+        }
+
+        if (addBillForm) {
+            addBillForm.addEventListener('submit', function(event) {
+                ensureBillCustomerSelected();
+                if (!billWoSelect || !billWoSelect.value) {
+                    event.preventDefault();
+                    alert('Vui lòng chọn lệnh sản xuất trước khi tạo hóa đơn.');
+                    if (billWoSelect) billWoSelect.focus();
+                    return;
+                }
+                if (!billCustomerSelect || !billCustomerSelect.value) {
+                    event.preventDefault();
+                    alert('Vui lòng chọn khách hàng hợp lệ trước khi tạo hóa đơn.');
+                    if (billCustomerSelect) billCustomerSelect.focus();
+                    return;
+                }
+                if (!billTotalAmount || Number(billTotalAmount.value || 0) <= 0) {
+                    event.preventDefault();
+                    alert('Vui lòng nhập tổng tiền lớn hơn 0.');
+                    if (billTotalAmount) billTotalAmount.focus();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                if (qrModal && !qrModal.classList.contains('hidden')) {
+                    closeQrModal();
+                }
+                if (addModal && !addModal.classList.contains('hidden')) {
+                    closeAddModal();
+                }
+            }
+        });
     </script>
 </body>
 </html>

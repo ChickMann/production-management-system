@@ -23,7 +23,7 @@
     request.setAttribute("pageTitle", pageTitle);
 %>
 <!DOCTYPE html>
-<html lang="<%= lang %>" class="<%= isDarkMode ? "dark" : "" %>">
+<html lang="<%= lang %>">
     <head>
         <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,7 +112,7 @@
     </style>
     <script src="js/common.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen antialiased <%= isDarkMode ? "dark dark-mode-init" : "" %>">
+<body class="bg-slate-100 text-slate-900 antialiased dark:bg-slate-900 dark:text-slate-100">
     <div class="min-h-screen flex">
         <jsp:include page="components/shared-sidebar.jsp" />
         
@@ -413,7 +413,6 @@
         </div>
     </div>
 
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" onclick="toggleSidebar()"></div>
     <script src="js/common.js"></script>
     <script>
         const customerModal = document.getElementById('customerModal');

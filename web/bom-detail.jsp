@@ -1,4 +1,3 @@
-<%-- bom-detail.jsp - Chi tiết BOM --%>
 <%@page import="pms.model.BOMDTO"%>
 <%@page import="pms.model.BOMDetailDTO"%>
 <%@page import="java.util.List"%>
@@ -6,207 +5,233 @@
 <%
     BOMDTO bom = (BOMDTO) request.getAttribute("bom");
     List<BOMDetailDTO> details = bom != null ? bom.getDetails() : null;
+
+    Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
+    boolean isDarkMode = sessionDark != null ? sessionDark : false;
+    String activePage = "bom";
+    String pageTitle = bom != null ? "Chi tiết BOM #" + bom.getBomId() : "Chi tiết BOM";
+    String lang = session.getAttribute("lang") != null ? (String) session.getAttribute("lang") : "vi";
+
+    request.setAttribute("activePage", activePage);
+    request.setAttribute("pageTitle", pageTitle);
+
+    int totalDetails = details != null ? details.size() : 0;
+    String status = bom != null && bom.getStatus() != null ? bom.getStatus() : "pending";
+    String statusLabel = "Chờ duyệt";
+    String statusBadgeClass = "bg-amber-100 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/30";
+
+    if ("active".equalsIgnoreCase(status)) {
+        statusLabel = "Đang dùng";
+        statusBadgeClass = "bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/30";
+    } else if ("inactive".equalsIgnoreCase(status)) {
+        statusLabel = "Ngưng dùng";
+        statusBadgeClass = "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-400/30";
+    }
 %>
 <!DOCTYPE html>
-<html>
+<html lang="<%= lang %>" class="<%= isDarkMode ? "dark" : "" %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi tiết BOM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title><%= pageTitle %> - PMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        };
+    </script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <style>
-        body { background-color: #f5f6fa; }
-        .sidebar { min-height: 100vh; background: #2c3e50; color: white; }
-        .sidebar a { color: white; text-decoration: none; padding: 12px 20px; display: block; }
-        .sidebar a:hover { background: #34495e; }
-        .detail-card { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        * { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; }
+        body { overflow-x: hidden; }
+
+        .sidebar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 40;
+        }
+
+        .sidebar-header {
+            position: sticky;
+            top: 0;
+            background: #0f172a;
+            z-index: 10;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
+        }
+
+        .sidebar-footer {
+            position: sticky;
+            bottom: 0;
+            background: #0f172a;
+            z-index: 10;
+        }
+
+        .main-wrapper {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+        @media (min-width: 1024px) {
+            .main-wrapper {
+                margin-left: 280px;
+            }
+        }
+
+        .dark .sidebar-fixed,
+        .dark .sidebar-header,
+        .dark .sidebar-footer {
+            background: #0f172a;
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(14px);
+        }
+        .dark .section-card {
+            background: rgba(15, 23, 42, 0.88);
+        }
     </style>
+    <script src="js/common.js"></script>
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2 sidebar p-0">
-                <div class="text-center py-3 border-bottom">
-                    <h5>PMS</h5>
-                </div>
-                <a href="DashboardController"><i class="fas fa-home me-2"></i> Trang chủ</a>
-                <a href="UserController?action=list"><i class="fas fa-users me-2"></i> Người dùng</a>
-                <a href="ItemController?action=list"><i class="fas fa-box me-2"></i> Vật phẩm</a>
-                <a href="BOMController?action=list" class="active"><i class="fas fa-clipboard-list me-2"></i> BOM</a>
-                <a href="RoutingController?action=list"><i class="fas fa-route me-2"></i> Quy trình</a>
-                <a href="WorkOrderController?action=list"><i class="fas fa-industry me-2"></i> Lệnh sản xuất</a>
-                <a href="SupplierController?action=list"><i class="fas fa-truck me-2"></i> Nhà cung cấp</a>
-                <a href="CustomerController?action=list"><i class="fas fa-user-tie me-2"></i> Khách hàng</a>
-            </div>
+<body class="bg-slate-100 text-slate-900 min-h-screen antialiased dark:bg-slate-900 dark:text-slate-100 <%= isDarkMode ? "dark dark-mode-init" : "" %>">
+    <div class="min-h-screen flex">
+        <jsp:include page="components/shared-sidebar.jsp" />
 
-            <div class="col-md-10 p-4">
-                <div class="mb-3">
-                    <a href="BOMController?action=list" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Quay lại
-                    </a>
-                </div>
+        <div id="mainWrapper" class="main-wrapper flex-1 flex flex-col min-h-screen min-w-0">
+            <jsp:include page="components/shared-header.jsp" />
 
-                <div class="detail-card mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2><i class="fas fa-clipboard-list me-2"></i>Chi tiết BOM</h2>
-                        <div>
-                            <a href="MainController?action=listRouting" class="btn btn-info text-white">
-                                <i class="fas fa-route me-2"></i>Xem quy trình
-                            </a>
-                            <a href="BOMController?action=editBOM&id=<%= bom.getBomId() %>" class="btn btn-warning">
-                                <i class="fas fa-edit me-2"></i>Sửa thông tin
-                            </a>
-                            <a href="BOMController?action=deleteBOM&id=<%= bom.getBomId() %>" class="btn btn-danger"
-                               onclick="return confirm('Bạn có chắc chắn muốn xóa BOM này?')">
-                                <i class="fas fa-trash me-2"></i>Xóa BOM
-                            </a>
-                        </div>
+            <main class="flex-1 overflow-y-auto bg-slate-100 p-4 dark:bg-slate-900 sm:p-6 lg:p-8">
+                <% if (bom == null) { %>
+                <div class="section-card rounded-3xl border border-slate-200/70 px-6 py-14 text-center shadow-sm dark:border-slate-700/60">
+                    <h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Không tìm thấy BOM</h1>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Bản ghi bạn đang truy cập không tồn tại hoặc đã bị xóa.</p>
+                    <div class="mt-6">
+                        <a href="BOMController?action=list" class="rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal-700">Quay lại danh sách</a>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <th width="40%">Mã BOM:</th>
-                                    <td><strong>BOM-<%= bom.getBomId() %></strong></td>
-                                </tr>
-                                <tr>
-                                    <th>Sản phẩm:</th>
-                                    <td><%= bom.getProductName() != null ? bom.getProductName() : "ID: " + bom.getProductItemId() %></td>
-                                </tr>
-
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <table class="table table-borderless">
-
-                                <tr>
-                                    <th>Ngày tạo:</th>
-                                    <td><%= bom.getCreatedDate() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(bom.getCreatedDate()) : "Chưa có" %></td>
-                                </tr>
-                                <tr>
-                                    <th>Ghi chú:</th>
-                                    <td><%= bom.getNotes() != null ? bom.getNotes() : "Không có" %></td>
-                                </tr>
-                            </table>
-                        </div>
+                </div>
+                <% } else { %>
+                <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Chi tiết BOM</h1>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Trang này chỉ hiển thị thông tin BOM và danh sách nguyên liệu.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="BOMController?action=list" class="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">← Danh sách BOM</a>
+                        <a href="BOMController?action=editBOM&id=<%= bom.getBomId() %>" class="rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-teal-500/30 transition-colors hover:bg-teal-700">Sửa BOM</a>
                     </div>
                 </div>
 
-                <!-- Danh sách nguyên liệu -->
-                <div class="detail-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4><i class="fas fa-list me-2"></i>Danh sách nguyên liệu</h4>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
-                            <i class="fas fa-plus me-2"></i>Thêm nguyên liệu
-                        </button>
+                <div class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <div class="section-card rounded-3xl border border-slate-200/70 p-5 shadow-sm dark:border-slate-700/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Mã BOM</p>
+                        <p class="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100">#<%= bom.getBomId() %></p>
                     </div>
+                    <div class="section-card rounded-3xl border border-slate-200/70 p-5 shadow-sm dark:border-slate-700/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Phiên bản</p>
+                        <p class="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100"><%= bom.getBomVersion() != null ? bom.getBomVersion() : "v1.0" %></p>
+                    </div>
+                    <div class="section-card rounded-3xl border border-slate-200/70 p-5 shadow-sm dark:border-slate-700/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Trạng thái</p>
+                        <div class="mt-3">
+                            <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ring-1 <%= statusBadgeClass %>"><%= statusLabel %></span>
+                        </div>
+                    </div>
+                    <div class="section-card rounded-3xl border border-slate-200/70 p-5 shadow-sm dark:border-slate-700/60">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Số nguyên liệu</p>
+                        <p class="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100"><%= totalDetails %></p>
+                    </div>
+                </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Nguyên liệu</th>
-                                    <th>Số lượng</th>
-                                    <th>Đơn vị tính</th>
-                                    <th>Hao hụt (%)</th>
-                                    <th>Ghi chú</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <%
-                                    if (details != null && !details.isEmpty()) {
+                <div class="grid gap-6 xl:grid-cols-[1fr_1.6fr]">
+                    <section class="section-card rounded-3xl border border-slate-200/70 p-6 shadow-sm dark:border-slate-700/60">
+                        <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Thông tin BOM</h2>
+                        <dl class="mt-4 space-y-4 text-sm">
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                                <dt class="text-slate-500 dark:text-slate-400">Sản phẩm áp dụng</dt>
+                                <dd class="mt-1 font-semibold text-slate-900 dark:text-slate-100"><%= bom.getProductName() != null ? bom.getProductName() : "ID: " + bom.getProductItemId() %></dd>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                                <dt class="text-slate-500 dark:text-slate-400">Product Item ID</dt>
+                                <dd class="mt-1 font-semibold text-slate-900 dark:text-slate-100"><%= bom.getProductItemId() %></dd>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                                <dt class="text-slate-500 dark:text-slate-400">Ngày tạo</dt>
+                                <dd class="mt-1 font-semibold text-slate-900 dark:text-slate-100"><%= bom.getCreatedDate() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(bom.getCreatedDate()) : "Chưa có" %></dd>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                                <dt class="text-slate-500 dark:text-slate-400">Ghi chú</dt>
+                                <dd class="mt-1 leading-6 text-slate-700 dark:text-slate-300"><%= bom.getNotes() != null && !bom.getNotes().trim().isEmpty() ? bom.getNotes() : "Không có ghi chú." %></dd>
+                            </div>
+                        </dl>
+                    </section>
+
+                    <section class="section-card overflow-hidden rounded-3xl border border-slate-200/70 shadow-sm dark:border-slate-700/60">
+                        <div class="border-b border-slate-200/70 px-6 py-5 dark:border-slate-700/60">
+                            <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Danh sách nguyên liệu</h2>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Bảng chỉ xem, không chỉnh sửa trực tiếp tại trang chi tiết.</p>
+                        </div>
+
+                        <% if (details != null && !details.isEmpty()) { %>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                                <thead class="bg-slate-50 dark:bg-slate-800/80">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">#</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Nguyên liệu</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Số lượng</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Đơn vị</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Hao hụt</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-transparent">
+                                    <%
                                         int stt = 1;
                                         for (BOMDetailDTO detail : details) {
-                                %>
-                                <tr>
-                                    <td><%= stt++ %></td>
-                                    <td><%= detail.getMaterialName() != null ? detail.getMaterialName() : "ID: " + detail.getMaterialItemId() %></td>
-                                    <td><%= detail.getQuantityRequired() %></td>
-                                    <td><%= detail.getUnit() != null ? detail.getUnit() : "" %></td>
-                                    <td><%= detail.getWastePercent() %>%</td>
-                                    <td><%= detail.getNotes() != null ? detail.getNotes() : "" %></td>
-                                    <td>
-                                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" 
-                                                data-bs-target="#editMaterialModal<%= detail.getBomDetailId() %>">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <a href="BOMController?action=deleteDetail&id=<%= detail.getBomDetailId() %>&bomId=<%= bom.getBomId() %>" 
-                                           class="btn btn-danger btn-sm" onclick="return confirm('Xóa nguyên liệu này?')">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <% 
-                                        }
-                                    } else {
-                                %>
-                                <tr>
-                                    <td colspan="7" class="text-center text-muted">Chưa có nguyên liệu nào</td>
-                                </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
-                    </div>
+                                    %>
+                                    <tr class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/50">
+                                        <td class="px-6 py-4 text-sm font-medium text-slate-500 dark:text-slate-400"><%= stt++ %></td>
+                                        <td class="px-6 py-4">
+                                            <div class="font-semibold text-slate-900 dark:text-slate-100"><%= detail.getMaterialName() != null ? detail.getMaterialName() : "ID: " + detail.getMaterialItemId() %></div>
+                                            <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Material ID: <%= detail.getMaterialItemId() %></div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100"><%= detail.getQuantityRequired() %></td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"><%= detail.getUnit() != null && !detail.getUnit().trim().isEmpty() ? detail.getUnit() : "-" %></td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"><%= detail.getWastePercent() %>%</td>
+                                        <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300"><%= detail.getNotes() != null && !detail.getNotes().trim().isEmpty() ? detail.getNotes() : "-" %></td>
+                                    </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } else { %>
+                        <div class="px-6 py-14 text-center">
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Chưa có nguyên liệu nào</h3>
+                            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">BOM này hiện chưa có dòng nguyên liệu.</p>
+                        </div>
+                        <% } %>
+                    </section>
                 </div>
-            </div>
+                <% } %>
+            </main>
         </div>
     </div>
-
-    <!-- Modal Thêm nguyên liệu -->
-    <div class="modal fade" id="addMaterialModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form method="post" action="BOMController">
-                    <input type="hidden" name="action" value="addDetail">
-                    <input type="hidden" name="bomId" value="<%= bom.getBomId() %>">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Thêm nguyên liệu vào BOM</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Nguyên liệu <span class="text-danger">*</span></label>
-                            <select name="materialItemId" class="form-select" required>
-                                <option value="">-- Chọn nguyên liệu --</option>
-                                <jsp:include page="item-options.jsp">
-                                    <jsp:param name="type" value="VatTu"/>
-                                </jsp:include>
-                            </select>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Số lượng <span class="text-danger">*</span></label>
-                                <input type="number" name="quantity" class="form-control" step="0.01" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Đơn vị tính</label>
-                                <input type="text" name="unit" class="form-control" placeholder="VD: cái, kg, m...">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Hao hụt (%)</label>
-                                <input type="number" name="wastePercent" class="form-control" step="0.01" value="0">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Ghi chú</label>
-                                <input type="text" name="notes" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary">Thêm</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

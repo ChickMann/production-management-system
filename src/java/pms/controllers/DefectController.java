@@ -1,6 +1,7 @@
 package pms.controllers;
 
 import java.io.IOException;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,7 +18,8 @@ public class DefectController extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
-        if (action == null) action = "listDefectReason";
+        if (action == null || action.trim().isEmpty()) action = "listDefectReason";
+        action = action.trim();
 
         DefectReasonDAO dao = new DefectReasonDAO();
 
@@ -25,43 +27,93 @@ public class DefectController extends HttpServlet {
             switch (action) {
                 case "listDefectReason":
                 case "listDefect":
-                case "searchDefectReason":
-                    String keyword = request.getParameter("keyword");
-                    java.util.List<DefectReasonDTO> allDefects = dao.getAllDefectReasons();
-                    if (keyword != null && !keyword.trim().isEmpty()) {
-                        java.util.List<DefectReasonDTO> filtered = new java.util.ArrayList<>();
-                        for (DefectReasonDTO d : allDefects) {
-                            if (d.getReasonName() != null && d.getReasonName().toLowerCase().contains(keyword.toLowerCase())) {
-                                filtered.add(d);
-                            }
-                        }
-                        allDefects = filtered;
+                case "list": {
+                    String keyword = normalize(request.getParameter("keyword"));
+                    List<DefectReasonDTO> list = dao.getAllDefectReasons();
+                    if (!keyword.isEmpty()) {
+                        String normalizedKeyword = keyword.toLowerCase();
+                        list.removeIf(d -> d == null
+                                || d.getReasonName() == null
+                                || !d.getReasonName().toLowerCase().contains(normalizedKeyword));
                     }
-                    request.setAttribute("listD", allDefects);
+                    request.setAttribute("keyword", keyword);
+                    request.setAttribute("listD", list);
+                    request.setAttribute("msg", consumeFlash(request, "defectReasonMsg"));
+                    request.setAttribute("error", consumeFlash(request, "defectReasonError"));
                     request.getRequestDispatcher("listDefectReason.jsp").forward(request, response);
                     break;
-                case "addDefectReason":
-                    dao.insertDefectReasons(new DefectReasonDTO(0, request.getParameter("reasonName")));
-                    response.sendRedirect("MainController?action=listDefectReason");
+                }
+                case "searchDefectReason":
+                case "search":
+                    response.sendRedirect("DefectController?action=listDefectReason&keyword="
+                            + java.net.URLEncoder.encode(normalize(request.getParameter("keyword")), "UTF-8"));
                     break;
-                case "deleteDefectReason":
+                case "addDefectReason": {
+                    String reasonName = normalize(request.getParameter("reasonName"));
+                    if (reasonName.isEmpty()) {
+                        setFlash(request, "defectReasonError", "Tên nguyên nhân lỗi không được để trống.");
+                    } else if (dao.insertDefectReasons(new DefectReasonDTO(0, reasonName))) {
+                        setFlash(request, "defectReasonMsg", "Đã thêm nguyên nhân lỗi thành công.");
+                    } else {
+                        setFlash(request, "defectReasonError", "Không thể thêm nguyên nhân lỗi.");
+                    }
+                    response.sendRedirect("DefectController?action=listDefectReason");
+                    break;
+                }
+                case "deleteDefectReason": {
                     int delId = Integer.parseInt(request.getParameter("defectId"));
-                    dao.deleteDefectReasons(new DefectReasonDTO(delId, null));
-                    response.sendRedirect("MainController?action=listDefectReason");
+                    if (dao.deleteDefectReasons(new DefectReasonDTO(delId, null))) {
+                        setFlash(request, "defectReasonMsg", "Đã xóa nguyên nhân lỗi thành công.");
+                    } else {
+                        setFlash(request, "defectReasonError", "Không thể xóa nguyên nhân lỗi này. Dữ liệu có thể đang được sử dụng ở màn hình khác.");
+                    }
+                    response.sendRedirect("DefectController?action=listDefectReason");
                     break;
-                case "loadUpdateDefectReason":
-                    request.setAttribute("defectEdit", dao.getDefectReasonById(Integer.parseInt(request.getParameter("defectId"))));
-                    request.setAttribute("listD", dao.getAllDefectReasons());
+                }
+                case "loadUpdateDefectReason": {
+                    String keyword = normalize(request.getParameter("keyword"));
+                    DefectReasonDTO defectEdit = dao.getDefectReasonById(Integer.parseInt(request.getParameter("defectId")));
+                    if (defectEdit == null) {
+                        setFlash(request, "defectReasonError", "Không tìm thấy nguyên nhân lỗi cần sửa.");
+                        response.sendRedirect("DefectController?action=listDefectReason");
+                        break;
+                    }
+                    List<DefectReasonDTO> list = dao.getAllDefectReasons();
+                    if (!keyword.isEmpty()) {
+                        String normalizedKeyword = keyword.toLowerCase();
+                        list.removeIf(d -> d == null
+                                || d.getReasonName() == null
+                                || !d.getReasonName().toLowerCase().contains(normalizedKeyword));
+                    }
+                    request.setAttribute("defectEdit", defectEdit);
+                    request.setAttribute("listD", list);
+                    request.setAttribute("keyword", keyword);
+                    request.setAttribute("msg", consumeFlash(request, "defectReasonMsg"));
+                    request.setAttribute("error", consumeFlash(request, "defectReasonError"));
                     request.getRequestDispatcher("listDefectReason.jsp").forward(request, response);
                     break;
-                case "saveUpdateDefectReason":
+                }
+                case "saveUpdateDefectReason": {
                     int uId = Integer.parseInt(request.getParameter("defectId"));
-                    dao.updateDefectReasons(new DefectReasonDTO(uId, request.getParameter("reasonName")));
-                    response.sendRedirect("MainController?action=listDefectReason");
+                    String reasonName = normalize(request.getParameter("reasonName"));
+                    if (reasonName.isEmpty()) {
+                        setFlash(request, "defectReasonError", "Tên nguyên nhân lỗi không được để trống.");
+                    } else if (dao.updateDefectReasons(new DefectReasonDTO(uId, reasonName))) {
+                        setFlash(request, "defectReasonMsg", "Đã cập nhật nguyên nhân lỗi thành công.");
+                    } else {
+                        setFlash(request, "defectReasonError", "Không thể cập nhật nguyên nhân lỗi.");
+                    }
+                    response.sendRedirect("DefectController?action=listDefectReason");
+                    break;
+                }
+                default:
+                    response.sendRedirect("DefectController?action=listDefectReason");
                     break;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            setFlash(request, "defectReasonError", "Đã xảy ra lỗi khi xử lý nguyên nhân lỗi.");
+            response.sendRedirect("DefectController?action=listDefectReason");
         }
     }
 
@@ -73,5 +125,21 @@ public class DefectController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         processRequest(req, resp);
+    }
+    private String normalize(String value) {
+        return value != null ? value.trim() : "";
+    }
+
+    private void setFlash(HttpServletRequest request, String key, String value) {
+        request.getSession().setAttribute(key, value);
+    }
+
+    private String consumeFlash(HttpServletRequest request, String key) {
+        Object value = request.getSession().getAttribute(key);
+        if (value != null) {
+            request.getSession().removeAttribute(key);
+            return value.toString();
+        }
+        return null;
     }
 }

@@ -170,3 +170,23 @@ CREATE TABLE Bill (
     FOREIGN KEY (wo_id) REFERENCES Work_Order(wo_id),
     FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
 );
+
+-- 11. Bảng Thanh toán QR/Chuyển khoản (Phụ thuộc Bill)
+CREATE TABLE Payment (
+    payment_id INT PRIMARY KEY IDENTITY(1,1),
+    bill_id INT NOT NULL,
+    amount DECIMAL(18,2) NOT NULL,
+    payment_method VARCHAR(30) NOT NULL DEFAULT 'QR',
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PAID', 'EXPIRED', 'CANCELLED')),
+    transaction_id VARCHAR(100) NULL,
+    qr_code_data VARCHAR(MAX) NULL,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    expires_at DATETIME NULL,
+    paid_at DATETIME NULL,
+    bank_bin VARCHAR(20) NULL,
+    bank_account VARCHAR(50) NULL,
+    bank_account_name NVARCHAR(150) NULL,
+    customer_name NVARCHAR(150) NULL,
+    customer_email VARCHAR(100) NULL,
+    FOREIGN KEY (bill_id) REFERENCES Bill(bill_id)
+);

@@ -119,29 +119,4 @@ public class CustomerDAO {
     public CustomerDTO SearchByCustomerName(String id) {
         return SearchByColumn("customer_name", id);
     }
-    
-    public List<CustomerDTO> searchCustomers(String keyword) {
-        List<CustomerDTO> list = new ArrayList<>();
-        try {
-            Connection conn = DBUtils.getConnection();
-            String sql = "SELECT * FROM Customer WHERE customer_name LIKE ? OR phone LIKE ?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            String searchPattern = "%" + keyword + "%";
-            ps.setString(1, searchPattern);
-            ps.setString(2, searchPattern);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                CustomerDTO c = new CustomerDTO(
-                        rs.getInt("customer_id"),
-                        rs.getString("customer_name"),
-                        rs.getString("phone"),
-                        rs.getString("email")
-                );
-                list.add(c);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
 }

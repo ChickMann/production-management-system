@@ -1,141 +1,272 @@
 <%-- user-form.jsp - Thêm/Sửa người dùng --%>
-<%@page import="pms.model.UserDTO"%>
+<%@page import="pms.model.UserDTO, pms.utils.NotificationService.Notification"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
     String mode = (String) request.getAttribute("mode");
     UserDTO u = (UserDTO) request.getAttribute("u");
+    UserDTO currentUser = (UserDTO) session.getAttribute("user");
+    List<Notification> notifications = (List<Notification>) session.getAttribute("notifications");
     boolean isAdd = "add".equals(mode);
+    
+    if (notifications == null) notifications = new java.util.ArrayList<>();
+    
+    int unreadCount = 0;
+    for (Notification n : notifications) {
+        if (!n.isRead()) unreadCount++;
+    }
+    
+    String userName = currentUser != null ? currentUser.getUsername() : "User";
+    String userRole = currentUser != null ? currentUser.getRole() : "user";
+    String pageTitle = isAdd ? "Thêm Người Dùng" : "Sửa Người Dùng";
+    String pageSubtitle = isAdd ? "Tạo tài khoản mới" : "Cập nhật thông tin";
+    request.setAttribute("activePage", "user");
+    
+    Boolean sessionDark = (Boolean) session.getAttribute("darkMode");
+    boolean isDarkMode = sessionDark != null ? sessionDark : false;
+    String lang = session.getAttribute("lang") != null ? (String) session.getAttribute("lang") : "vi";
 %>
 <!DOCTYPE html>
-<html>
+<html lang="<%= lang %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= isAdd ? "Thêm" : "Sửa" %> người dùng</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title><%= pageTitle %> - PMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'Arial', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        body { background-color: #f5f6fa; }
-        .sidebar { min-height: 100vh; background: #2c3e50; color: white; }
-        .sidebar a { color: white; text-decoration: none; padding: 12px 20px; display: block; }
-        .sidebar a:hover { background: #34495e; }
-        .form-card { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        * { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; }
+        body { overflow-x: hidden; }
+        
+        .sidebar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 40;
+        }
+        
+        .sidebar-header {
+            position: sticky;
+            top: 0;
+            background: #0f172a;
+            z-index: 10;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 2px;
+        }
+        
+        .sidebar-footer {
+            position: sticky;
+            bottom: 0;
+            background: #0f172a;
+            z-index: 10;
+        }
+        
+        .main-wrapper {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+        @media (min-width: 1024px) {
+            .main-wrapper {
+                margin-left: 280px;
+            }
+        }
+        
+        .notif-badge { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .form-card {
+            transition: all 0.2s ease;
+        }
+        .form-card:focus-within {
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+        }
     </style>
+    <script src="js/common.js"></script>
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2 sidebar p-0">
-                <div class="text-center py-3 border-bottom">
-                    <h5>PMS</h5>
-                </div>
-                <a href="DashboardController"><i class="fas fa-home me-2"></i> Trang chủ</a>
-                <a href="UserController?action=list" class="active"><i class="fas fa-users me-2"></i> Người dùng</a>
-                <a href="ItemController?action=list"><i class="fas fa-box me-2"></i> Vật phẩm</a>
-                <a href="BOMController?action=list"><i class="fas fa-clipboard-list me-2"></i> BOM</a>
-                <a href="RoutingController?action=list"><i class="fas fa-route me-2"></i> Quy trình</a>
-                <a href="WorkOrderController?action=list"><i class="fas fa-industry me-2"></i> Lệnh sản xuất</a>
-                <a href="SupplierController?action=list"><i class="fas fa-truck me-2"></i> Nhà cung cấp</a>
-                <a href="CustomerController?action=list"><i class="fas fa-user-tie me-2"></i> Khách hàng</a>
-            </div>
-
-            <div class="col-md-10 p-4">
-                <div class="mb-3">
-                    <a href="UserController?action=list" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Quay lại
-                    </a>
+<body class="bg-slate-100 text-slate-900 antialiased dark:bg-slate-900 dark:text-slate-100">
+    <div class="min-h-screen flex">
+        <jsp:include page="components/shared-sidebar.jsp" />
+        
+        <!-- Main Content -->
+        <div id="mainWrapper" class="main-wrapper flex-1 flex flex-col min-h-screen min-w-0">
+            <jsp:include page="components/shared-header.jsp" />
+            
+            <main class="flex-1 overflow-y-auto p-4 lg:p-6 bg-slate-100 dark:bg-slate-900">
+                <!-- Page Header -->
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-2">
+                        <a href="UserController?action=list" class="hover:text-teal-600 dark:hover:text-teal-400 transition-colors">Người dùng</a>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                        <span class="text-slate-700 dark:text-slate-200"><%= pageTitle %></span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100"><%= pageTitle %></h1>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1"><%= pageSubtitle %></p>
                 </div>
 
-                <div class="form-card" style="max-width: 700px; margin: 0 auto;">
-                    <h2 class="mb-4">
-                        <i class="fas fa-user<%= isAdd ? "-plus" : "-edit" %> me-2"></i>
-                        <%= isAdd ? "Thêm" : "Sửa" %> người dùng
-                    </h2>
+                <!-- Alerts -->
+                <% if (request.getAttribute("msg") != null) { %>
+                <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 flex items-center gap-3">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <%= request.getAttribute("msg") %>
+                </div>
+                <% } %>
+                <% if (request.getAttribute("error") != null) { %>
+                <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 dark:bg-red-900/30 dark:border-red-800 text-red-700 dark:text-red-300 flex items-center gap-3">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <%= request.getAttribute("error") %>
+                </div>
+                <% } %>
 
-                    <!-- Messages -->
-                    <% if (request.getAttribute("msg") != null) { %>
-                        <div class="alert alert-success alert-dismissible fade show">
-                            <%= request.getAttribute("msg") %>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <!-- Form Card -->
+                <div class="max-w-2xl">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="bg-gradient-to-r from-teal-500 to-teal-600 p-5 text-white">
+                            <h2 class="text-lg font-semibold flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M<%= isAdd ? "16 13v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" : "user-edit me-2"/>
+                                </svg>
+                                <%= isAdd ? "Tạo tài khoản mới" : "Cập nhật thông tin" %>
+                            </h2>
                         </div>
-                    <% } %>
-                    <% if (request.getAttribute("error") != null) { %>
-                        <div class="alert alert-danger alert-dismissible fade show">
-                            <%= request.getAttribute("error") %>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    <% } %>
+                        
+                        <form method="post" action="UserController" class="p-6 space-y-5">
+                            <input type="hidden" name="action" value="<%= isAdd ? "saveAddUser" : "saveUpdateUser" %>">
+                            <% if (!isAdd) { %>
+                                <input type="hidden" name="id" value="<%= u.getId() %>">
+                            <% } %>
 
-                    <form method="post" action="UserController">
-                        <input type="hidden" name="action" value="<%= isAdd ? "saveAddUser" : "saveUpdateUser" %>">
-                        <% if (!isAdd) { %>
-                            <input type="hidden" name="id" value="<%= u.getId() %>">
-                        <% } %>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- Username -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                        Username <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="username" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all" required
+                                           value="<%= u != null ? u.getUsername() : "" %>"
+                                           <%= !isAdd ? "readonly" : "" %>>
+                                    <% if (!isAdd) { %>
+                                    <p class="text-xs text-slate-400 mt-1">Không thể thay đổi username</p>
+                                    <% } %>
+                                </div>
+                                
+                                <!-- Password -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                        Mật khẩu <%= isAdd ? "<span class='text-red-500'>*</span>" : "" %>
+                                    </label>
+                                    <input type="password" name="password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all"
+                                           <%= isAdd ? "required" : "" %> 
+                                           placeholder="<%= isAdd ? "Nhập mật khẩu" : "Để trống nếu không đổi" %>">
+                                </div>
+                            </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Username <span class="text-danger">*</span></label>
-                                <input type="text" name="username" class="form-control" required
-                                       value="<%= u != null ? u.getUsername() : "" %>">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- Full Name -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                        Họ tên
+                                    </label>
+                                    <input type="text" name="fullName" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all"
+                                           value="<%= u != null ? (u.getFullName() != null ? u.getFullName() : "") : "" %>">
+                                </div>
+                                
+                                <!-- Role -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                        Vai trò <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="role" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all" required>
+                                        <option value="">-- Chọn vai trò --</option>
+                                        <option value="admin" <%= u != null && "admin".equals(u.getRole()) ? "selected" : "" %>>Admin</option>
+                                        <option value="employee" <%= u != null && "employee".equals(u.getRole()) ? "selected" : "" %>>Công nhân</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" 
-                                       <%= isAdd ? "required" : "" %> 
-                                       placeholder="<%= isAdd ? "Nhập mật khẩu" : "Để trống nếu không đổi" %>">
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Họ tên</label>
-                                <input type="text" name="fullName" class="form-control"
-                                       value="<%= u != null ? (u.getFullName() != null ? u.getFullName() : "") : "" %>">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <!-- Email -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                        Email
+                                    </label>
+                                    <input type="email" name="email" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all"
+                                           value="<%= u != null ? (u.getEmail() != null ? u.getEmail() : "") : "" %>">
+                                </div>
+                                
+                                <!-- Phone -->
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                        Điện thoại
+                                    </label>
+                                    <input type="text" name="phone" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all"
+                                           value="<%= u != null ? (u.getPhone() != null ? u.getPhone() : "") : "" %>">
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Vai trò <span class="text-danger">*</span></label>
-                                <select name="role" class="form-select" required>
-                                    <option value="">-- Chọn vai trò --</option>
-                                    <option value="admin" <%= u != null && "admin".equals(u.getRole()) ? "selected" : "" %>>Admin</option>
-                                    <option value="employee" <%= u != null && "employee".equals(u.getRole()) ? "selected" : "" %>>Công nhân</option>
+
+                            <% if (!isAdd) { %>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                    Trạng thái <span class="text-red-500">*</span>
+                                </label>
+                                <select name="status" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-800 transition-all" required>
+                                    <option value="active" <%= u != null && "active".equals(u.getStatus()) ? "selected" : "" %>>Hoạt động</option>
+                                    <option value="inactive" <%= u != null && "inactive".equals(u.getStatus()) ? "selected" : "" %>>Khóa</option>
                                 </select>
                             </div>
-                        </div>
+                            <% } %>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="email" class="form-control"
-                                       value="<%= u != null ? (u.getEmail() != null ? u.getEmail() : "") : "" %>">
+                            <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors flex items-center gap-2 shadow-lg shadow-teal-600/30">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Lưu
+                                </button>
+                                <a href="UserController?action=list" class="px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                    Hủy
+                                </a>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Điện thoại</label>
-                                <input type="text" name="phone" class="form-control"
-                                       value="<%= u != null ? (u.getPhone() != null ? u.getPhone() : "") : "" %>">
-                            </div>
-                        </div>
-
-                        <% if (!isAdd) { %>
-                        <div class="mb-3">
-                            <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
-                            <select name="status" class="form-select" required>
-                                <option value="active" <%= u != null && "active".equals(u.getStatus()) ? "selected" : "" %>>Hoạt động</option>
-                                <option value="inactive" <%= u != null && "inactive".equals(u.getStatus()) ? "selected" : "" %>>Khóa</option>
-                            </select>
-                        </div>
-                        <% } %>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Lưu
-                            </button>
-                            <a href="UserController?action=list" class="btn btn-secondary">Hủy</a>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

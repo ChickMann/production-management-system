@@ -1,3 +1,4 @@
+<%@page import="pms.model.RoutingStepDTO"%>
 <%@page import="pms.model.RoutingDTO"%>
 <%@page import="java.util.List"%>
 <%@page import="pms.model.UserDTO"%>
@@ -7,9 +8,20 @@
     UserDTO user = (UserDTO) session.getAttribute("user");
     String msg = (String) request.getAttribute("msg");
     String error = (String) request.getAttribute("error");
-    
+    String keyword = request.getAttribute("keyword") != null ? (String) request.getAttribute("keyword") : request.getParameter("keyword");
+
+    if (list == null && request.getAttribute("ROUTING_REDIRECT") == null) {
+        request.setAttribute("ROUTING_REDIRECT", Boolean.TRUE);
+        response.sendRedirect("RoutingController?action=listRouting");
+        return;
+    }
     if (list == null) list = new java.util.ArrayList<>();
+    if (keyword == null) keyword = "";
     
+    RoutingDTO routingDetail = (RoutingDTO) request.getAttribute("routingDetail");
+    List<RoutingStepDTO> routingSteps = (List<RoutingStepDTO>) request.getAttribute("routingSteps");
+    if (routingSteps == null) routingSteps = new java.util.ArrayList<>();
+
     String userName = user != null ? user.getUsername() : "User";
     String userRole = user != null ? user.getRole() : "user";
     String userInitial = userName.substring(0, 1).toUpperCase();
@@ -125,24 +137,19 @@
             <jsp:include page="components/shared-header.jsp" />
             
             <main class="flex-1 overflow-y-auto bg-slate-100 p-4 dark:bg-slate-900 sm:p-6 lg:p-8">
-                <div class="mb-6 rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-teal-50/70 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-teal-950/40">
-                    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                        <div class="max-w-3xl">
-                            <div class="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-teal-700 dark:border-teal-500/30 dark:bg-teal-500/10 dark:text-teal-300">
-                                Điều phối sản xuất
-                            </div>
-                            <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">Quản lý quy trình sản xuất</h1>
-                            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
-                                Theo dõi danh sách quy trình, truy cập nhanh các công đoạn và quản lý vòng đời quy trình sản xuất trên cùng một màn hình.
-                            </p>
-                        </div>
-                        <button type="button" onclick="openRoutingModal()" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:-translate-y-0.5 hover:bg-teal-700">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Thêm quy trình mới
-                        </button>
+                <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="max-w-3xl">
+                        <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">Quản lý quy trình sản xuất</h1>
+                        <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                            Danh sách này luôn lấy dữ liệu mới từ controller để đồng bộ với các thao tác thêm, sửa và xóa ở những trang khác.
+                        </p>
                     </div>
+                    <button type="button" onclick="openRoutingModal()" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:-translate-y-0.5 hover:bg-teal-700">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Thêm quy trình mới
+                    </button>
                 </div>
 
                 <% if (msg != null && !msg.trim().isEmpty()) { %>
@@ -162,50 +169,33 @@
                 </div>
                 <% } %>
 
-                <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    <div class="kpi-card rounded-2xl border border-slate-200 border-t-4 border-t-blue-500 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Tổng quy trình</p>
-                                <p class="mt-3 text-3xl font-bold text-slate-900 dark:text-slate-100"><%= totalRouting %></p>
-                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Số lượng quy trình đang được quản lý</p>
-                            </div>
-                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-2xl text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">&#128260;</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Search box -->
-                <div class="section-card mb-6 rounded-3xl border border-slate-200 p-4 shadow-sm dark:border-slate-700 sm:p-5">
-                    <form method="get" action="MainController" class="flex flex-col gap-4 xl:flex-row">
-                        <input type="hidden" name="action" value="searchRouting">
-                        <div class="flex-1 relative">
-                            <input type="text" name="keyword" value="<%= request.getParameter("keyword") != null ? request.getParameter("keyword") : "" %>"
-                                   placeholder="Tìm theo tên quy trình..."
-                                   class="w-full rounded-2xl border border-slate-200 py-3 pl-10 pr-4 transition-all form-input dark:border-slate-700">
-                            <svg class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </div>
-                        <div class="flex gap-3">
-                            <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-teal-600 px-6 py-3 font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
-                                Tìm kiếm
-                            </button>
-                            <a href="MainController?action=listRouting" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                                Xóa lọc
-                            </a>
-                        </div>
-                    </form>
-                </div>
-
                 <div class="section-card overflow-hidden rounded-3xl border border-slate-200 shadow-sm dark:border-slate-700">
-                    <div class="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-700 lg:flex-row lg:items-center lg:justify-between">
                         <div>
                             <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Danh sách quy trình</h2>
-                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Theo dõi và quản lý các quy trình sản xuất hiện có</p>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tìm kiếm theo tên quy trình và theo dõi danh mục đang được sử dụng.</p>
                         </div>
-                        <div class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 dark:bg-slate-700/70 dark:text-slate-300">
-                            Tổng cộng: <span class="font-semibold text-slate-900 dark:text-slate-100"><%= list.size() %></span>
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <form action="RoutingController" method="get" class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+                                <input type="hidden" name="action" value="listRouting">
+                                <div class="relative min-w-[260px]">
+                                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 dark:text-slate-500">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"/>
+                                        </svg>
+                                    </span>
+                                    <input type="text" name="keyword" value="<%= keyword %>" placeholder="Tìm theo tên quy trình" class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-500/15 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-teal-400">
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="submit" class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">Tìm kiếm</button>
+                                    <% if (keyword != null && !keyword.trim().isEmpty()) { %>
+                                    <a href="RoutingController?action=listRouting" class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Xóa lọc</a>
+                                    <% } %>
+                                </div>
+                            </form>
+                            <div class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 dark:bg-slate-700/70 dark:text-slate-300">
+                                Hiển thị: <span class="font-semibold text-slate-900 dark:text-slate-100"><%= list.size() %></span>
+                            </div>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -228,15 +218,19 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p class="font-medium text-slate-700 dark:text-slate-200">Chưa có quy trình nào</p>
-                                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tạo quy trình mới để bắt đầu tổ chức luồng sản xuất</p>
+                                                <p class="font-medium text-slate-700 dark:text-slate-200"><%= keyword != null && !keyword.trim().isEmpty() ? "Không tìm thấy kết quả phù hợp" : "Chưa có quy trình nào" %></p>
+                                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"><%= keyword != null && !keyword.trim().isEmpty() ? "Thử đổi từ khóa tìm kiếm hoặc xóa bộ lọc để xem toàn bộ danh sách." : "Tạo quy trình mới để bắt đầu tổ chức luồng sản xuất" %></p>
                                                 <div class="mt-4">
+                                                    <% if (keyword != null && !keyword.trim().isEmpty()) { %>
+                                                    <a href="RoutingController?action=listRouting" class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">Xóa bộ lọc</a>
+                                                    <% } else { %>
                                                     <button type="button" onclick="openRoutingModal()" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-500/30 transition-all hover:bg-teal-700">
                                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                                         </svg>
                                                         Thêm quy trình đầu tiên
                                                     </button>
+                                                    <% } %>
                                                 </div>
                                             </div>
                                         </div>
@@ -261,20 +255,20 @@
                                         </td>
                                         <td class="px-6 py-4 text-center align-middle">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="MainController?action=listRoutingStep&searchRoutingId=<%= r.getRoutingId() %>"
-                                                   class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300" title="Xem công đoạn">
+                                                <a href="RoutingController?action=viewRoutingDetail&routingId=<%= r.getRoutingId() %><%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>"
+                                                   class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300" title="Xem chi tiết quy trình">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                     </svg>
                                                 </a>
-                                                <a href="MainController?action=loadUpdateRouting&routingId=<%= r.getRoutingId() %>"
+                                                <a href="RoutingController?action=loadUpdateRouting&routingId=<%= r.getRoutingId() %>"
                                                    class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-amber-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-amber-500/10 dark:hover:text-amber-300" title="Chỉnh sửa">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </a>
-                                                <a href="MainController?action=deleteRouting&routingId=<%= r.getRoutingId() %>"
+                                                <a href="RoutingController?action=deleteRouting&routingId=<%= r.getRoutingId() %>"
                                                    onclick="return confirm('Bạn có chắc chắn muốn xóa quy trình này?')"
                                                    class="rounded-xl p-2.5 text-slate-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300" title="Xóa">
                                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,7 +285,7 @@
                     </div>
                     <% if (!list.isEmpty()) { %>
                     <div class="border-t border-slate-200 bg-slate-50 px-6 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400">
-                        Tổng cộng: <span class="font-semibold text-slate-700 dark:text-slate-200"><%= list.size() %></span> quy trình
+                        <%= keyword != null && !keyword.trim().isEmpty() ? "Kết quả tìm được:" : "Tổng cộng:" %> <span class="font-semibold text-slate-700 dark:text-slate-200"><%= list.size() %></span> quy trình
                     </div>
                     <% } %>
                 </div>
@@ -313,7 +307,7 @@
                     </svg>
                 </button>
             </div>
-            <form action="MainController" method="post" class="space-y-5 px-6 py-6">
+            <form action="RoutingController" method="post" class="space-y-5 px-6 py-6">
                 <input type="hidden" name="action" value="addRouting">
                 <div class="space-y-2">
                     <label for="routingName" class="text-sm font-semibold text-slate-700 dark:text-slate-200">Tên quy trình</label>
@@ -342,11 +336,163 @@
         </div>
     </div>
 
+    <div id="editRoutingModal" class="fixed inset-0 z-50 <%= request.getAttribute("routingEdit") != null ? "flex" : "hidden" %> items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40">
+            <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">Cập nhật</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Sửa quy trình sản xuất</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Cập nhật trực tiếp trên màn hình danh sách để thao tác nhanh và đồng bộ hơn.</p>
+                </div>
+                <a href="RoutingController?action=listRouting<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>" class="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200" aria-label="Đóng">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </a>
+            </div>
+            <% RoutingDTO routingEdit = (RoutingDTO) request.getAttribute("routingEdit"); %>
+            <% if (routingEdit != null) { %>
+            <form action="RoutingController" method="post" class="space-y-5 px-6 py-6">
+                <input type="hidden" name="action" value="saveUpdateRouting">
+                <input type="hidden" name="routingId" value="<%= routingEdit.getRoutingId() %>">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="space-y-2">
+                        <label for="routingIdDisplay" class="text-sm font-semibold text-slate-700 dark:text-slate-200">Mã quy trình</label>
+                        <input id="routingIdDisplay" type="text" value="#QT-<%= routingEdit.getRoutingId() %>" readonly class="form-input bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="editRoutingName" class="text-sm font-semibold text-slate-700 dark:text-slate-200">Tên quy trình</label>
+                        <input id="editRoutingName" name="routingName" type="text" maxlength="100" required value="<%= routingEdit.getRoutingName() %>" class="form-input" placeholder="Ví dụ: Quy trình lắp ráp tiêu chuẩn">
+                    </div>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
+                    Mẹo: dùng nút <span class="font-semibold">Xem chi tiết</span> để mở nhanh danh sách công đoạn ngay trên trang hiện tại.
+                </div>
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-700 sm:flex-row sm:justify-end">
+                    <a href="RoutingController?action=listRouting<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                        Hủy
+                    </a>
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-500/30 transition hover:bg-amber-600">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Lưu cập nhật
+                    </button>
+                </div>
+            </form>
+            <% } %>
+        </div>
+    </div>
+
+    <div id="viewRoutingDetailModal" class="fixed inset-0 z-50 <%= routingDetail != null ? "flex" : "hidden" %> items-start justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm sm:p-6">
+        <div class="my-6 flex w-full max-w-4xl max-h-[calc(100vh-3rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 sm:my-8 sm:max-h-[calc(100vh-4rem)]">
+            <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-700">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600 dark:text-blue-300">Chi tiết</p>
+                    <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Chi tiết quy trình sản xuất</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Xem danh sách công đoạn của quy trình.</p>
+                </div>
+                <a href="RoutingController?action=listRouting<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>" class="rounded-2xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200" aria-label="Đóng">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </a>
+            </div>
+            <% if (routingDetail != null) { %>
+            <div class="space-y-6 overflow-y-auto px-6 py-6">
+                <div class="grid gap-4 lg:grid-cols-3">
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Mã quy trình</p>
+                        <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">#QT-<%= routingDetail.getRoutingId() %></p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70 lg:col-span-2">
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Tên quy trình</p>
+                        <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100"><%= routingDetail.getRoutingName() != null ? routingDetail.getRoutingName() : "-" %></p>
+                    </div>
+                </div>
+
+                <div class="rounded-3xl border border-slate-200 dark:border-slate-700">
+                    <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h4 class="text-base font-semibold text-slate-900 dark:text-slate-100">Danh sách công đoạn</h4>
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Theo dõi các công đoạn thuộc quy trình này mà không cần chuyển trang.</p>
+                        </div>
+                        <div class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            Tổng công đoạn: <span class="font-semibold text-slate-900 dark:text-slate-100"><%= routingSteps.size() %></span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/80">
+                                    <th class="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Mã CĐ</th>
+                                    <th class="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Tên công đoạn</th>
+                                    <th class="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Thời gian</th>
+                                    <th class="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Kiểm tra</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <% if (routingSteps.isEmpty()) { %>
+                                <tr>
+                                    <td colspan="4" class="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
+                                        <div class="mx-auto max-w-md">
+                                            <p class="font-medium text-slate-700 dark:text-slate-200">Quy trình này chưa có công đoạn nào</p>
+                                            <p class="mt-2 text-sm">Bạn có thể thêm công đoạn ở trang quản lý công đoạn khi cần mở rộng quy trình.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% } else { %>
+                                    <% for (RoutingStepDTO step : routingSteps) { %>
+                                    <tr class="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                                        <td class="px-5 py-4 align-middle">
+                                            <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">#CD-<%= step.getStepId() %></span>
+                                        </td>
+                                        <td class="px-5 py-4 align-middle">
+                                            <div>
+                                                <p class="font-semibold text-slate-700 dark:text-slate-100"><%= step.getStepName() != null ? step.getStepName() : "-" %></p>
+                                                <p class="text-sm text-slate-500 dark:text-slate-400">Thuộc quy trình #QT-<%= step.getRoutingId() %></p>
+                                            </div>
+                                        </td>
+                                        <td class="px-5 py-4 align-middle text-sm text-slate-600 dark:text-slate-300"><%= step.getEstimatedTime() %> phút</td>
+                                        <td class="px-5 py-4 align-middle">
+                                            <% if (step.isIsInspected()) { %>
+                                            <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">Có kiểm tra</span>
+                                            <% } else { %>
+                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">Không kiểm tra</span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-700 sm:flex-row sm:justify-end">
+                    <a href="RoutingController?action=listRouting<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                        Đóng
+                    </a>
+                    <a href="MainController?action=listRoutingStep&searchRoutingId=<%= routingDetail.getRoutingId() %>" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-500/30 transition hover:bg-blue-700">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h6m0 0v6m0-6L10 16l-5-5"/>
+                        </svg>
+                        Mở trang công đoạn đầy đủ
+                    </a>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
     <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden" onclick="toggleSidebar()"></div>
 
     <script>
         const routingModal = document.getElementById('routingModal');
+        const editRoutingModal = document.getElementById('editRoutingModal');
+        const viewRoutingDetailModal = document.getElementById('viewRoutingDetailModal');
         const routingNameInput = document.getElementById('routingName');
+        const editRoutingNameInput = document.getElementById('editRoutingName');
 
         function openRoutingModal() {
             if (!routingModal) return;
@@ -362,7 +508,20 @@
             if (!routingModal) return;
             routingModal.classList.add('hidden');
             routingModal.classList.remove('flex');
-            document.body.classList.remove('overflow-hidden');
+            if ((!editRoutingModal || editRoutingModal.classList.contains('hidden'))
+                    && (!viewRoutingDetailModal || viewRoutingDetailModal.classList.contains('hidden'))) {
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        function closeEditRoutingModal() {
+            if (!editRoutingModal) return;
+            editRoutingModal.classList.add('hidden');
+            editRoutingModal.classList.remove('flex');
+            if ((!routingModal || routingModal.classList.contains('hidden'))
+                    && (!viewRoutingDetailModal || viewRoutingDetailModal.classList.contains('hidden'))) {
+                document.body.classList.remove('overflow-hidden');
+            }
         }
 
         if (routingModal) {
@@ -373,11 +532,44 @@
             });
         }
 
+        if (editRoutingModal) {
+            editRoutingModal.addEventListener('click', function (event) {
+                if (event.target === editRoutingModal) {
+                    closeEditRoutingModal();
+                }
+            });
+        }
+
+        if (viewRoutingDetailModal) {
+            viewRoutingDetailModal.addEventListener('click', function (event) {
+                if (event.target === viewRoutingDetailModal) {
+                    window.location.href = 'RoutingController?action=listRouting<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>';
+                }
+            });
+        }
+
         document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape' && routingModal && routingModal.classList.contains('flex')) {
-                closeRoutingModal();
+            if (event.key === 'Escape') {
+                if (routingModal && routingModal.classList.contains('flex')) {
+                    closeRoutingModal();
+                }
+                if (editRoutingModal && editRoutingModal.classList.contains('flex')) {
+                    closeEditRoutingModal();
+                }
+                if (viewRoutingDetailModal && viewRoutingDetailModal.classList.contains('flex')) {
+                    window.location.href = 'RoutingController?action=listRouting<%= keyword != null && !keyword.trim().isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>';
+                }
             }
         });
+
+        if ((editRoutingModal && editRoutingModal.classList.contains('flex'))
+                || (viewRoutingDetailModal && viewRoutingDetailModal.classList.contains('flex'))) {
+            document.body.classList.add('overflow-hidden');
+        }
+
+        if (editRoutingModal && editRoutingModal.classList.contains('flex') && editRoutingNameInput) {
+            setTimeout(() => editRoutingNameInput.focus(), 50);
+        }
     </script>
 </body>
 </html>

@@ -65,6 +65,7 @@ public class AuthenticationFilter implements Filter {
                "/login.jsp".equals(path) ||
                "/login".equals(path) ||
                "/Banned.jsp".equals(path) ||
+               "/BangDieuKien.jsp".equals(path) ||
                "/index.jsp".equals(path) ||
                path.startsWith("/css/") ||
                path.startsWith("/js/") ||

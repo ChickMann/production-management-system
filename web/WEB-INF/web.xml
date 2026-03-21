@@ -90,6 +90,10 @@
         <servlet-class>pms.controllers.PaymentController</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>FileController</servlet-name>
+        <servlet-class>pms.controllers.FileController</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>DefectController</servlet-name>
         <servlet-class>pms.controllers.DefectController</servlet-class>
     </servlet>
@@ -102,12 +106,12 @@
         <servlet-class>pms.controllers.SupplierController</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>RoutingStepController</servlet-name>
-        <servlet-class>pms.controllers.RoutingStepController</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>RoutingController</servlet-name>
         <servlet-class>pms.controllers.RoutingController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RoutingStepController</servlet-name>
+        <servlet-class>pms.controllers.RoutingStepController</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>DashboardController</servlet-name>
@@ -184,6 +188,10 @@
         <url-pattern>/PaymentController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
+        <servlet-name>FileController</servlet-name>
+        <url-pattern>/FileController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
         <servlet-name>DefectController</servlet-name>
         <url-pattern>/DefectController</url-pattern>
     </servlet-mapping>
@@ -196,12 +204,12 @@
         <url-pattern>/SupplierController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>RoutingStepController</servlet-name>
-        <url-pattern>/RoutingStepController</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>RoutingController</servlet-name>
         <url-pattern>/RoutingController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RoutingStepController</servlet-name>
+        <url-pattern>/RoutingStepController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>DashboardController</servlet-name>

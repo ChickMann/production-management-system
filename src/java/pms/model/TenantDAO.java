@@ -10,6 +10,12 @@ import pms.utils.DBUtils;
 
 public class TenantDAO {
 
+    private boolean isMissingTenantTable(Exception e) {
+        return e != null
+                && e.getMessage() != null
+                && e.getMessage().toLowerCase().contains("invalid object name 'tenant'");
+    }
+
     public List<TenantDTO> getAllTenants() {
         List<TenantDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM Tenant ORDER BY tenant_id DESC";
@@ -21,7 +27,9 @@ public class TenantDAO {
                 list.add(t);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingTenantTable(e)) {
+                e.printStackTrace();
+            }
         }
         return list;
     }
@@ -35,7 +43,9 @@ public class TenantDAO {
                 if (rs.next()) return mapTenant(rs);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isMissingTenantTable(e)) {
+                e.printStackTrace();
+            }
         }
         return null;
     }

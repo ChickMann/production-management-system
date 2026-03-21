@@ -29,7 +29,7 @@
                 <div class="text-center py-3 border-bottom">
                     <h5>PMS</h5>
                 </div>
-                <a href="DashboardController"><i class="fas fa-home me-2"></i> Trang chủ</a>
+                <a href="BangDieuKien.jsp"><i class="fas fa-home me-2"></i> Trang chủ</a>
                 <a href="UserController?action=list"><i class="fas fa-users me-2"></i> Người dùng</a>
                 <a href="ItemController?action=list" class="active"><i class="fas fa-box me-2"></i> Vật phẩm</a>
                 <a href="BOMController?action=list"><i class="fas fa-clipboard-list me-2"></i> BOM</a>
@@ -88,12 +88,29 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label">Đơn vị tính</label>
+                                <input type="text" name="unit" class="form-control" placeholder="VD: cái, kg, m..."
+                                       value="<%= item != null && item.getUnit() != null ? item.getUnit() : "" %>">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">Số lượng tồn kho</label>
                                 <input type="number" name="stockQuantity" class="form-control" min="0"
                                        value="<%= item != null ? item.getStockQuantity() : 0 %>">
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tồn kho tối thiểu</label>
+                                <input type="number" name="minStockLevel" class="form-control" min="0"
+                                       value="<%= item != null ? item.getMinStockLevel() : 0 %>">
+                            </div>
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả</label>
+                            <textarea name="description" class="form-control" rows="3"><%= item != null && item.getDescription() != null ? item.getDescription() : "" %></textarea>
+                        </div>
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
