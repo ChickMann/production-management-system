@@ -4,10 +4,8 @@ public class PurchaseOrderDTO {
     private int poId;
     private int itemId;
     private int quantityRequested;
-    private String status; // Pending, Ordered, Received
+    private String status;
     private String orderDate;
-    
-    // Trường hiển thị thêm
     private String itemName;
 
     public PurchaseOrderDTO() {}
@@ -20,7 +18,6 @@ public class PurchaseOrderDTO {
         this.orderDate = orderDate;
     }
 
-    // Getters và Setters
     public int getPoId() { return poId; }
     public void setPoId(int poId) { this.poId = poId; }
     public int getItemId() { return itemId; }

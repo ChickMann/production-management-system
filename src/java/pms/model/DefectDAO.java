@@ -9,11 +9,12 @@ import pms.utils.DBUtils;
 
 public class DefectDAO {
 
-    // Lấy toàn bộ danh sách lỗi
     public List<DefectDTO> getAllDefects() {
         List<DefectDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM Defect_Reason";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new DefectDTO(rs.getInt("defect_id"), rs.getString("reason_name")));
             }
@@ -23,10 +24,10 @@ public class DefectDAO {
         return list;
     }
 
-    // Thêm lỗi mới
     public boolean insertDefect(DefectDTO defect) {
         String sql = "INSERT INTO Defect_Reason (reason_name) VALUES(?)";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setNString(1, defect.getReasonName());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -35,10 +36,10 @@ public class DefectDAO {
         return false;
     }
 
-    // Cập nhật tên lỗi
     public boolean updateDefect(DefectDTO defect) {
         String sql = "UPDATE Defect_Reason SET reason_name = ? WHERE defect_id = ?";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setNString(1, defect.getReasonName());
             ps.setInt(2, defect.getDefectId());
             return ps.executeUpdate() > 0;
@@ -48,10 +49,10 @@ public class DefectDAO {
         return false;
     }
 
-    // Xóa lỗi
     public boolean deleteDefect(int defectId) {
         String sql = "DELETE FROM Defect_Reason WHERE defect_id = ?";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, defectId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -60,12 +61,12 @@ public class DefectDAO {
         return false;
     }
 
-    // Tìm lỗi theo ID
     public DefectDTO getDefectById(int defectId) {
         String sql = "SELECT * FROM Defect_Reason WHERE defect_id = ?";
-        try ( Connection conn = DBUtils.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, defectId);
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new DefectDTO(rs.getInt("defect_id"), rs.getString("reason_name"));
                 }

@@ -1,47 +1,60 @@
 package pms.model;
 
-public class ProductionLogDTO {
+import java.io.Serializable;
+import java.sql.Date;
+
+public class ProductionLogDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private int logId;
-    private int workOrderId;
+    private int woId;
     private int stepId;
-    private int quantityDone;
-    private int quantityDefective;
-    private int defectId;
-    private String logDate;
-    
-    // Hai trường này dùng để hiển thị Tên lên bảng cho Sếp xem
+    private int workerUserId;
+    private int producedQuantity;
+    private Integer defectId;
+    private Date logDate;
     private String stepName;
     private String defectName;
+    private String workerName;
+    private int quantityDone;
+    private int quantityDefective;
 
     public ProductionLogDTO() {}
 
-    public ProductionLogDTO(int logId, int workOrderId, int stepId, int quantityDone, int quantityDefective, int defectId, String logDate) {
-        this.logId = logId;
-        this.workOrderId = workOrderId;
-        this.stepId = stepId;
-        this.quantityDone = quantityDone;
-        this.quantityDefective = quantityDefective;
-        this.defectId = defectId;
-        this.logDate = logDate;
-    }
-
-    // Getters và Setters (Phải có đầy đủ)
     public int getLogId() { return logId; }
     public void setLogId(int logId) { this.logId = logId; }
-    public int getWorkOrderId() { return workOrderId; }
-    public void setWorkOrderId(int workOrderId) { this.workOrderId = workOrderId; }
+
+    public int getWoId() { return woId; }
+    public void setWoId(int woId) { this.woId = woId; }
+
     public int getStepId() { return stepId; }
     public void setStepId(int stepId) { this.stepId = stepId; }
-    public int getQuantityDone() { return quantityDone; }
-    public void setQuantityDone(int quantityDone) { this.quantityDone = quantityDone; }
-    public int getQuantityDefective() { return quantityDefective; }
-    public void setQuantityDefective(int quantityDefective) { this.quantityDefective = quantityDefective; }
-    public int getDefectId() { return defectId; }
-    public void setDefectId(int defectId) { this.defectId = defectId; }
-    public String getLogDate() { return logDate; }
-    public void setLogDate(String logDate) { this.logDate = logDate; }
+
+    public int getWorkerUserId() { return workerUserId; }
+    public void setWorkerUserId(int workerUserId) { this.workerUserId = workerUserId; }
+
+    public int getProducedQuantity() { return producedQuantity; }
+    public void setProducedQuantity(int producedQuantity) { this.producedQuantity = producedQuantity; }
+
+    public Integer getDefectId() { return defectId; }
+    public void setDefectId(Integer defectId) { this.defectId = defectId; }
+
+    public Date getLogDate() { return logDate; }
+    public void setLogDate(Date logDate) { this.logDate = logDate; }
+
     public String getStepName() { return stepName; }
     public void setStepName(String stepName) { this.stepName = stepName; }
+
     public String getDefectName() { return defectName; }
     public void setDefectName(String defectName) { this.defectName = defectName; }
+
+    public String getWorkerName() { return workerName; }
+    public void setWorkerName(String workerName) { this.workerName = workerName; }
+
+    public int getQuantityDone() { return quantityDone; }
+    public void setQuantityDone(int quantityDone) { this.quantityDone = quantityDone; }
+
+    public int getQuantityDefective() { return quantityDefective; }
+    public void setQuantityDefective(int quantityDefective) { this.quantityDefective = quantityDefective; }
 }

@@ -28,21 +28,22 @@ public class SupplierController extends HttpServlet {
                 case "searchSupplier":
                     String keyword = request.getParameter("keyword");
                     ArrayList<SupplierDTO> list = sdao.SupplierList();
-                    
-                    // Logic Tìm kiếm: Theo Tên hoặc Số điện thoại
+
                     if (keyword != null && !keyword.trim().isEmpty()) {
                         ArrayList<SupplierDTO> filtered = new ArrayList<>();
                         for (SupplierDTO s : list) {
-                            if (s.getSupplierName().toLowerCase().contains(keyword.toLowerCase()) || 
-                                s.getContactPhone().contains(keyword)) {
+                            String name = s.getSupplierName();
+                            String phone = s.getContactPhone();
+                            if ((name != null && name.toLowerCase().contains(keyword.toLowerCase()))
+                                    || (phone != null && phone.contains(keyword))) {
                                 filtered.add(s);
                             }
                         }
                         list = filtered;
                     }
-                    
+
                     request.setAttribute("supplierList", list);
-                    request.getRequestDispatcher("supplier.jsp").forward(request, response);
+                    request.getRequestDispatcher("SearchSupplier.jsp").forward(request, response);
                     break;
 
                 case "addSupplier":
@@ -58,7 +59,7 @@ public class SupplierController extends HttpServlet {
                 case "loadUpdateSupplier":
                     request.setAttribute("supplierEdit", sdao.SearchByID(Integer.parseInt(request.getParameter("id"))));
                     request.setAttribute("supplierList", sdao.SupplierList());
-                    request.getRequestDispatcher("supplier.jsp").forward(request, response);
+                    request.getRequestDispatcher("SearchSupplier.jsp").forward(request, response);
                     break;
 
                 case "saveUpdateSupplier":
@@ -66,9 +67,18 @@ public class SupplierController extends HttpServlet {
                     response.sendRedirect("MainController?action=listSupplier");
                     break;
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException { processRequest(req, resp); }
-    @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException { processRequest(req, resp); }
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        processRequest(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        processRequest(req, resp);
+    }
 }

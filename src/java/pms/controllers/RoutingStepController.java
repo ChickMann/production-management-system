@@ -25,31 +25,30 @@ public class RoutingStepController extends HttpServlet {
         }
 
         RoutingStepDAO dao = new RoutingStepDAO();
-        RoutingDAO rDao = new RoutingDAO(); 
+        RoutingDAO rDao = new RoutingDAO();
 
         try {
             switch (action) {
                 case "listRoutingStep":
-                case "searchRoutingStep":
-                    // Nhận tham số tìm kiếm và lọc
+                case "searchRoutingStep": {
                     String keyword = request.getParameter("keyword");
                     String searchRoutingId = request.getParameter("searchRoutingId");
-                    
+
                     List<RoutingStepDTO> listStep = dao.getAllRoutingStep();
-                    List<RoutingDTO> listRouting = rDao.getAllRouting(); 
-                    
-                    // Logic Lọc Kép: Theo Quy trình (Dropdown) VÀ Tên công đoạn (Textbox)
+                    List<RoutingDTO> listRouting = rDao.getAllRouting();
+
                     if ((keyword != null && !keyword.trim().isEmpty()) || (searchRoutingId != null && !searchRoutingId.isEmpty())) {
-                        String lowerKeyword = (keyword != null) ? keyword.toLowerCase() : "";
+                        String lowerKeyword = keyword != null ? keyword.toLowerCase() : "";
                         List<RoutingStepDTO> filtered = new ArrayList<>();
-                        
+
                         for (RoutingStepDTO s : listStep) {
-                            // Kiểm tra khớp Tên công đoạn
-                            boolean matchKeyword = lowerKeyword.isEmpty() || s.getStepName().toLowerCase().contains(lowerKeyword);
-                            
-                            // Kiểm tra khớp Quy trình được chọn
-                            boolean matchRouting = (searchRoutingId == null || searchRoutingId.isEmpty()) || String.valueOf(s.getRoutingId()).equals(searchRoutingId);
-                            
+                            String stepName = s.getStepName();
+                            // Sửa logic filter: chỉ match khi stepName không null và chứa keyword
+                            boolean matchKeyword = (keyword == null || keyword.trim().isEmpty())
+                                    || (stepName != null && stepName.toLowerCase().contains(lowerKeyword));
+                            boolean matchRouting = (searchRoutingId == null || searchRoutingId.isEmpty())
+                                    || String.valueOf(s.getRoutingId()).equals(searchRoutingId);
+
                             if (matchKeyword && matchRouting) {
                                 filtered.add(s);
                             }
@@ -58,44 +57,51 @@ public class RoutingStepController extends HttpServlet {
                     }
 
                     request.setAttribute("listStep", listStep);
-                    request.setAttribute("listRouting", listRouting); 
+                    request.setAttribute("listRouting", listRouting);
+                    request.setAttribute("keyword", keyword != null ? keyword : "");
+                    request.setAttribute("searchRoutingId", searchRoutingId != null ? searchRoutingId : "");
                     request.getRequestDispatcher("listRoutingStep.jsp").forward(request, response);
                     break;
+                }
 
-                case "addRoutingStep":
+                case "addRoutingStep": {
                     int rId = Integer.parseInt(request.getParameter("routingId"));
                     String sName = request.getParameter("stepName");
                     int time = Integer.parseInt(request.getParameter("estimatedTime"));
                     boolean isInsp = request.getParameter("isInspected") != null;
-                    
+
                     dao.insertRoutingStep(new RoutingStepDTO(0, rId, sName, time, isInsp));
                     response.sendRedirect("MainController?action=listRoutingStep");
                     break;
+                }
 
-                case "deleteRoutingStep":
+                case "deleteRoutingStep": {
                     int delId = Integer.parseInt(request.getParameter("stepId"));
                     dao.deleteRoutingStep(delId);
                     response.sendRedirect("MainController?action=listRoutingStep");
                     break;
+                }
 
-                case "loadUpdateRoutingStep":
+                case "loadUpdateRoutingStep": {
                     int updId = Integer.parseInt(request.getParameter("stepId"));
                     request.setAttribute("stepEdit", dao.getRoutingStepById(updId));
                     request.setAttribute("listStep", dao.getAllRoutingStep());
                     request.setAttribute("listRouting", rDao.getAllRouting());
                     request.getRequestDispatcher("listRoutingStep.jsp").forward(request, response);
                     break;
+                }
 
-                case "saveUpdateRoutingStep":
+                case "saveUpdateRoutingStep": {
                     int uId = Integer.parseInt(request.getParameter("stepId"));
                     int uRId = Integer.parseInt(request.getParameter("routingId"));
                     String uName = request.getParameter("stepName");
                     int uTime = Integer.parseInt(request.getParameter("estimatedTime"));
                     boolean uInsp = request.getParameter("isInspected") != null;
-                    
+
                     dao.updateRoutingStep(new RoutingStepDTO(uId, uRId, uName, uTime, uInsp));
                     response.sendRedirect("MainController?action=listRoutingStep");
                     break;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

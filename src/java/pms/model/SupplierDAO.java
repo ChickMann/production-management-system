@@ -8,6 +8,29 @@ import pms.utils.DBUtils;
 
 public class SupplierDAO {
 
+    public ArrayList<SupplierDTO> getAllSupplier() {
+        ArrayList<SupplierDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM Supplier ORDER BY supplier_id DESC";
+        try (Connection con = DBUtils.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                SupplierDTO s = new SupplierDTO();
+                s.setSupplierId(rs.getInt("supplier_id"));
+                s.setSupplierName(rs.getString("supplier_name"));
+                s.setContactPhone(rs.getString("contact_phone"));
+                try { s.setEmail(rs.getString("email")); } catch (Exception e) {}
+                try { s.setAddress(rs.getString("address")); } catch (Exception e) {}
+                try { s.setCity(rs.getString("city")); } catch (Exception e) {}
+                try { s.setStatus(rs.getString("status")); } catch (Exception e) {}
+                list.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public SupplierDTO SearchByID(int id) {
         String sql = "SELECT * FROM Supplier WHERE supplier_id = ?";
         try (Connection con = DBUtils.getConnection();
@@ -15,9 +38,15 @@ public class SupplierDAO {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new SupplierDTO(rs.getInt("supplier_id"),
-                            rs.getString("supplier_name"),
-                            rs.getString("contact_phone"));
+                    SupplierDTO s = new SupplierDTO();
+                    s.setSupplierId(rs.getInt("supplier_id"));
+                    s.setSupplierName(rs.getString("supplier_name"));
+                    s.setContactPhone(rs.getString("contact_phone"));
+                    try { s.setEmail(rs.getString("email")); } catch (Exception e) {}
+                    try { s.setAddress(rs.getString("address")); } catch (Exception e) {}
+                    try { s.setCity(rs.getString("city")); } catch (Exception e) {}
+                    try { s.setStatus(rs.getString("status")); } catch (Exception e) {}
+                    return s;
                 }
             }
         } catch (Exception e) {
@@ -27,28 +56,19 @@ public class SupplierDAO {
     }
 
     public ArrayList<SupplierDTO> SupplierList() {
-        ArrayList<SupplierDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Supplier";
-        try (Connection con = DBUtils.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                list.add(new SupplierDTO(rs.getInt("supplier_id"),
-                        rs.getString("supplier_name"),
-                        rs.getString("contact_phone")));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
+        return getAllSupplier();
     }
 
     public boolean Add(SupplierDTO s) {
-        String sql = "INSERT INTO Supplier (supplier_name, contact_phone) VALUES (?, ?)";
+        String sql = "INSERT INTO Supplier (supplier_name, contact_phone, email, address, city, status) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, s.getSupplierName());
             ps.setString(2, s.getContactPhone());
+            ps.setString(3, s.getEmail());
+            ps.setString(4, s.getAddress());
+            ps.setString(5, s.getCity());
+            ps.setString(6, s.getStatus() != null ? s.getStatus() : "active");
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,12 +77,16 @@ public class SupplierDAO {
     }
 
     public boolean Update(SupplierDTO s) {
-        String sql = "UPDATE Supplier SET supplier_name = ?, contact_phone = ? WHERE supplier_id = ?";
+        String sql = "UPDATE Supplier SET supplier_name = ?, contact_phone = ?, email = ?, address = ?, city = ?, status = ? WHERE supplier_id = ?";
         try (Connection con = DBUtils.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, s.getSupplierName());
             ps.setString(2, s.getContactPhone());
-            ps.setInt(3, s.getSupplierId());
+            ps.setString(3, s.getEmail());
+            ps.setString(4, s.getAddress());
+            ps.setString(5, s.getCity());
+            ps.setString(6, s.getStatus() != null ? s.getStatus() : "active");
+            ps.setInt(7, s.getSupplierId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();

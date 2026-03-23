@@ -1,23 +1,36 @@
 package pms.utils;
 
 import java.io.Serializable;
+import java.security.Security;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBUtils implements Serializable {
 
-    private static final String DB_NAME = "FactoryERD";
-    private static final String DB_USER_NAME = "SA";
-    private static final String DB_PASSWORD = "12345";
+    private static final long serialVersionUID = 1L;
 
+    /**
+     * Lay connection dua tren tenant hien tai trong TenantContext.
+     * Neu chua co tenant thi se su dung default (FactoryERD).
+     * Tat ca DAO chi can goi DBUtils.getConnection() nhu cu —
+     * khong can thay doi gi them.
+     */
     public static Connection getConnection() throws ClassNotFoundException, SQLException {
-        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=" + DB_NAME;
-        return DriverManager.getConnection(url, DB_USER_NAME, DB_PASSWORD);
+        return MultiTenantDBUtils.getInstance().getConnection();
     }
-    
-    public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        System.out.println(DBUtils.getConnection());
+
+    /**
+     * Lay connection cho tenant cu the (vien khi can override).
+     */
+    public static Connection getConnectionForTenant(String tenantId)
+            throws ClassNotFoundException, SQLException {
+        return MultiTenantDBUtils.getInstance().getConnectionForTenant(tenantId);
+    }
+
+    /**
+     * Lay default connection (System tenant).
+     */
+    public static Connection getDefaultConnection() throws ClassNotFoundException, SQLException {
+        return MultiTenantDBUtils.getInstance().getDefaultConnection();
     }
 }

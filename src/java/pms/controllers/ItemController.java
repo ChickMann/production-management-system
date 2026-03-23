@@ -1,6 +1,7 @@
 package pms.controllers;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,147 +21,195 @@ public class ItemController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
+        if (action == null) {
+            action = "list";
+        }
 
         switch (action) {
+            case "list":
+                listItems(request);
+                break;
+            case "search":
+                searchItems(request);
+                break;
             case "addItem":
+                showAddForm(request);
+                break;
             case "saveAddItem":
-                AddItem(request);
+                addItem(request);
                 break;
-            case "removeItem":
-                RemoveItem(request);
+            case "editItem":
+                showEditForm(request);
                 break;
-            case "updateItem":
             case "saveUpdateItem":
-                UpdateItem(request);
+                updateItem(request);
                 break;
-            case "searchItem":
-                SearchItem(request);
+            case "deleteItem":
+                deleteItem(request);
+                break;
+            case "lowStock":
+                listLowStock(request);
                 break;
         }
 
-        request.getRequestDispatcher(url).forward(request, response);
-    }
-
-    private void RemoveItem(HttpServletRequest request) {
-        String id = request.getParameter("id");
-        ItemDAO idao = new ItemDAO();
-
-        if (id != null && !id.isEmpty()) {
-            boolean check = idao.SoftDelete(id);
-            if (check) {
-                request.setAttribute("msg", "Deleted!");
-            } else {
-                request.setAttribute("msg", "Error, can not delete: " + id);
-            }
-        }
-        ArrayList<ItemDTO> itemList = idao.ItemList();
-        request.setAttribute("itemList", itemList);
-        url = "SearchItem.jsp";
-    }
-
-    private void AddItem(HttpServletRequest request) {
-        String msg = "";
-        String error = "";
-
-        ItemDAO idao = new ItemDAO();
-        String action = request.getParameter("action");
-        request.setAttribute("mode", "add");
-
-        if (action.equals("saveAddItem")) {
-            String name = request.getParameter("name");
-            String type = request.getParameter("type");
-            String s_stockQuantity = request.getParameter("stockQuantity");
-            int stockQuantity = 0;
-            try {
-                stockQuantity = Integer.parseInt(s_stockQuantity);
-            } catch (Exception e) {
-                error += "standard cost phải là số; ";
-            }
-
-            ItemDTO i = new ItemDTO(0, name, type, stockQuantity);
-            if (error.isEmpty()) {
-                if (idao.Add(i)) {
-                    msg = "Thêm thành công";
-                } else {
-                    error = "Thêm thất bại";
-                }
-            }
-            request.setAttribute("item", i);
-            request.setAttribute("msg", msg);
-            request.setAttribute("error", error);
-        }
-
-        int index = idao.GetCurrentID();
-        request.setAttribute("index", index);
-        // Load lại danh sách để hiện ở bảng bên phải
-        ArrayList<ItemDTO> itemList = idao.ItemList();
-        request.setAttribute("itemList", itemList);
-
-        url = "SearchItem.jsp"; // Chuyển từ item-form sang SearchItem
-    }
-
-    private void UpdateItem(HttpServletRequest request) {
-        String msg = "";
-        String error = "";
-
-        ItemDAO idao = new ItemDAO();
-        String action = request.getParameter("action");
-        String s_id = request.getParameter("id");
-
-        ItemDTO i = idao.SearchByID(s_id);
-        request.setAttribute("mode", "update");
-
-        if (action.equals("saveUpdateItem")) {
-            String name = request.getParameter("name");
-            String type = request.getParameter("type");
-            String s_stockQuantity = request.getParameter("stockQuantity");
-            int stockQuantity = 0;
-            try {
-                stockQuantity = Integer.parseInt(s_stockQuantity);
-            } catch (Exception e) {
-                error += "standard cost phải là số; ";
-            }
-            int id = Integer.parseInt(s_id);
-
-            i = new ItemDTO(id, name, type, stockQuantity);
-            if (error.isEmpty()) {
-                if (idao.Update(i)) {
-                    msg = "Cập nhật thành công";
-                } else {
-                    error = "Cập nhật thất bại";
-                    idao.ReseedSQL();
-                }
-            }
-            request.setAttribute("msg", msg);
-            request.setAttribute("error", error);
-        }
-
-        request.setAttribute("item", i);
-        // Load lại danh sách để hiện ở bảng bên phải
-        ArrayList<ItemDTO> itemList = idao.ItemList();
-        request.setAttribute("itemList", itemList);
-
-        request.setAttribute("item", i);
-        url = "SearchItem.jsp"; // Chuyển từ item-form sang SearchItem
-    }
-
-    private void SearchItem(HttpServletRequest request) {
-        String keyword = request.getParameter("keyword");
-        if (keyword == null) {
-            keyword = "";
-        }
-        ItemDAO idao = new ItemDAO();
-
-        ArrayList<ItemDTO> itemList = new ArrayList<>();
-        if (keyword.trim().length() > 0) {
-            itemList = idao.FilterByName(keyword);
+        if (url != null && url.startsWith("redirect:")) {
+            response.sendRedirect(url.substring(9));
         } else {
-            itemList = idao.ItemList();
+            request.getRequestDispatcher(url).forward(request, response);
+        }
+    }
+
+    private void listItems(HttpServletRequest request) {
+        ItemDAO dao = new ItemDAO();
+        ArrayList<ItemDTO> items = dao.getAllItems();
+        request.setAttribute("items", items);
+        url = "item-list.jsp";
+    }
+
+    private void searchItems(HttpServletRequest request) {
+        ItemDAO dao = new ItemDAO();
+        String keyword = request.getParameter("keyword");
+        String type = request.getParameter("type");
+
+        ArrayList<ItemDTO> items = dao.getAllItems();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            items.removeIf(i -> i.getItemName() == null || !i.getItemName().toLowerCase().contains(keyword.toLowerCase()));
+        }
+        if (type != null && !type.isEmpty() && !type.equals("all")) {
+            items.removeIf(i -> !i.getItemType().equals(type));
         }
 
-        request.setAttribute("itemList", itemList);
-        request.setAttribute("keyword", keyword);
-        url = "SearchItem.jsp";
+        request.setAttribute("items", items);
+        url = "item-list.jsp";
+    }
+
+    private void listLowStock(HttpServletRequest request) {
+        ItemDAO dao = new ItemDAO();
+        ArrayList<ItemDTO> items = dao.getLowStockItems();
+        request.setAttribute("items", items);
+        request.setAttribute("lowStockOnly", true);
+        url = "item-list.jsp";
+    }
+
+    private void showAddForm(HttpServletRequest request) {
+        request.setAttribute("mode", "add");
+        url = "item-form.jsp";
+    }
+
+    private void showEditForm(HttpServletRequest request) {
+        String s_id = request.getParameter("id");
+        int id = 0;
+        try {
+            id = Integer.parseInt(s_id);
+        } catch (Exception e) {
+            request.setAttribute("error", "Invalid item ID");
+            url = "redirect:ItemController?action=list";
+            return;
+        }
+
+        ItemDAO dao = new ItemDAO();
+        ItemDTO item = dao.SearchByID(id);
+        request.setAttribute("item", item);
+        request.setAttribute("mode", "update");
+        url = "item-form.jsp";
+    }
+
+    private void addItem(HttpServletRequest request) {
+        String error = "";
+
+        try {
+            String itemName = request.getParameter("itemName");
+            String itemType = request.getParameter("itemType");
+            int stockQuantity = 0;
+            try {
+                stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
+            } catch (Exception e) {
+            }
+            String unit = request.getParameter("unit");
+            String description = request.getParameter("description");
+            int minStockLevel = 0;
+            try {
+                minStockLevel = Integer.parseInt(request.getParameter("minStockLevel"));
+            } catch (Exception e) {
+            }
+
+            ItemDTO item = new ItemDTO();
+            item.setItemName(itemName);
+            item.setItemType(itemType);
+            item.setStockQuantity(stockQuantity);
+            item.setUnit(unit);
+            item.setDescription(description);
+            item.setMinStockLevel(minStockLevel);
+
+            ItemDAO dao = new ItemDAO();
+            if (dao.Add(item)) {
+                url = "redirect:ItemController?action=list&msg="
+                        + java.net.URLEncoder.encode("Thêm vật tư thành công", "UTF-8");
+                return;
+            } else {
+                error = "Không thể thêm vật tư";
+                dao.ReseedSQL();
+            }
+        } catch (Exception e) {
+            error = "Lỗi: " + e.getMessage();
+        }
+
+        request.setAttribute("error", error);
+        request.setAttribute("mode", "add");
+        url = "item-form.jsp";
+    }
+
+    private void updateItem(HttpServletRequest request) throws UnsupportedEncodingException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String itemName = request.getParameter("itemName");
+            String itemType = request.getParameter("itemType");
+            int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
+            String unit = request.getParameter("unit");
+            String description = request.getParameter("description");
+            int minStockLevel = Integer.parseInt(request.getParameter("minStockLevel"));
+
+            ItemDTO item = new ItemDTO();
+            item.setItemID(id);
+            item.setItemName(itemName);
+            item.setItemType(itemType);
+            item.setStockQuantity(stockQuantity);
+            item.setUnit(unit);
+            item.setDescription(description);
+            item.setMinStockLevel(minStockLevel);
+
+            ItemDAO dao = new ItemDAO();
+            if (dao.Update(item)) {
+                url = "redirect:ItemController?action=list&msg="
+                        + java.net.URLEncoder.encode("Cập nhật vật tư thành công", "UTF-8");
+            } else {
+                url = "redirect:ItemController?action=list&error="
+                        + java.net.URLEncoder.encode("Không thể cập nhật vật tư", "UTF-8");
+            }
+        } catch (Exception e) {
+            url = "redirect:ItemController?action=list&error="
+                    + java.net.URLEncoder.encode("Lỗi: " + e.getMessage(), "UTF-8");
+        }
+    }
+
+    private void deleteItem(HttpServletRequest request) throws UnsupportedEncodingException {
+        String s_id = request.getParameter("id");
+        try {
+            int id = Integer.parseInt(s_id);
+            ItemDAO dao = new ItemDAO();
+            boolean success = dao.Delete(id);
+            if (success) {
+                url = "redirect:ItemController?action=list&msg="
+                        + java.net.URLEncoder.encode("Xóa vật tư thành công", "UTF-8");
+            } else {
+                url = "redirect:ItemController?action=list&error="
+                        + java.net.URLEncoder.encode("Không thể xóa vật tư", "UTF-8");
+            }
+        } catch (Exception e) {
+            url = "redirect:ItemController?action=list&error="
+                    + java.net.URLEncoder.encode("Lỗi: " + e.getMessage(), "UTF-8");
+        }
     }
 
     @Override
@@ -179,5 +228,4 @@ public class ItemController extends HttpServlet {
     public String getServletInfo() {
         return "Item Controller";
     }
-
 }

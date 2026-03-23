@@ -9,51 +9,109 @@ import pms.utils.DBUtils;
 
 public class WorkOrderDAO {
 
-    // 1. Hàm lấy toàn bộ danh sách Lệnh sản xuất (getAllWorkOrders)
     public List<WorkOrderDTO> getAllWorkOrders() {
-        List<WorkOrderDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM Work_Order ORDER BY work_order_id DESC";
+        List<WorkOrderDTO> result = new ArrayList<>();
+        String sql = "SELECT wo.*, i.item_name, r.routing_name "
+                   + "FROM Work_Order wo "
+                   + "LEFT JOIN Item i ON wo.product_item_id = i.item_id "
+                   + "LEFT JOIN Routing r ON wo.routing_id = r.routing_id "
+                   + "ORDER BY wo.wo_id DESC";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(new WorkOrderDTO(
-                    rs.getInt("work_order_id"),
-                    rs.getInt("customer_id"),
-                    rs.getInt("product_item_id"),
-                    rs.getInt("routing_id"),
-                    rs.getInt("quantity"),
-                    rs.getString("status"),
-                    rs.getString("order_date")
-                ));
+                WorkOrderDTO wo = new WorkOrderDTO();
+                wo.setWo_id(rs.getInt("wo_id"));
+                wo.setProduct_item_id(rs.getInt("product_item_id"));
+                wo.setRouting_id(rs.getInt("routing_id"));
+                wo.setOrder_quantity(rs.getInt("order_quantity"));
+                wo.setStatus(rs.getString("status"));
+                wo.setProductName(rs.getString("item_name"));
+                wo.setRoutingName(rs.getString("routing_name"));
+                
+                try { wo.setNotes(rs.getString("notes")); } catch (Exception e) {}
+                try { wo.setCustomerName(rs.getString("customer_name")); } catch (Exception e) {}
+                try { wo.setCustomerId(rs.getInt("customer_id")); } catch (Exception e) {}
+                try { wo.setStart_date(rs.getString("start_date")); } catch (Exception e) {}
+                try { wo.setDue_date(rs.getString("due_date")); } catch (Exception e) {}
+                try { wo.setCompleted_date(rs.getString("completed_date")); } catch (Exception e) {}
+                try { wo.setCreated_date(rs.getString("created_date")); } catch (Exception e) {}
+                result.add(wo);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+        return result;
     }
 
-    // 2. Hàm thêm mới Lệnh sản xuất (insertWorkOrder)
-    public boolean insertWorkOrder(WorkOrderDTO wo) {
-        String sql = "INSERT INTO Work_Order (customer_id, product_item_id, routing_id, quantity, status, order_date) VALUES(?,?,?,?,?,?)";
+    public boolean updateWorkOrderStatusOnly(int woId, String status) {
+        String sql = "UPDATE Work_Order SET status = ?";
+        if ("Done".equals(status)) {
+            sql += ", completed_date = CAST(GETDATE() AS DATETIME)";
+        }
+        sql += " WHERE wo_id = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, wo.getCustomerID());
-            ps.setInt(2, wo.getProductItemID());
-            ps.setInt(3, wo.getRoutingID());
-            ps.setInt(4, wo.getQuantity());
-            ps.setString(5, wo.getStatus());
-            ps.setString(6, wo.getOrderDate());
+            ps.setString(1, status);
+            ps.setInt(2, woId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
-    
-    // 3. Hàm Xóa Lệnh (deleteWorkOrder)
+
+    public boolean updateStatusAndNotes(int woId, String status, String notes) {
+        String sql = "UPDATE Work_Order SET status = ?, notes = ? WHERE wo_id = ?";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setString(2, notes);
+            ps.setInt(3, woId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean insertWorkOrder(WorkOrderDTO wo) {
+        String sql = "INSERT INTO Work_Order(product_item_id, routing_id, order_quantity, status, start_date, due_date) VALUES(?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, wo.getProduct_item_id());
+            ps.setInt(2, wo.getRouting_id());
+            ps.setInt(3, wo.getOrder_quantity());
+            ps.setString(4, wo.getStatus());
+            ps.setString(5, wo.getStart_date());
+            ps.setString(6, wo.getDue_date());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateWorkOrder(WorkOrderDTO wo) {
+        String sql = "UPDATE Work_Order SET product_item_id = ?, routing_id = ?, order_quantity = ?, status = ?, start_date = ?, due_date = ? WHERE wo_id = ?";
+        try (Connection conn = DBUtils.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, wo.getProduct_item_id());
+            ps.setInt(2, wo.getRouting_id());
+            ps.setInt(3, wo.getOrder_quantity());
+            ps.setString(4, wo.getStatus());
+            ps.setString(5, wo.getStart_date());
+            ps.setString(6, wo.getDue_date());
+            ps.setInt(7, wo.getWo_id());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean deleteWorkOrder(int id) {
-        String sql = "DELETE FROM Work_Order WHERE work_order_id = ?";
+        String sql = "DELETE FROM Work_Order WHERE wo_id = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -64,42 +122,38 @@ public class WorkOrderDAO {
         return false;
     }
 
-    // 4. Lấy Lệnh theo ID để Sửa (getWorkOrderById)
-    public WorkOrderDTO getWorkOrderById(int id) {
-        String sql = "SELECT * FROM Work_Order WHERE work_order_id = ?";
+    public WorkOrderDTO searchById(int id) {
+        String sql = "SELECT wo.*, i.item_name, r.routing_name "
+                   + "FROM Work_Order wo "
+                   + "LEFT JOIN Item i ON wo.product_item_id = i.item_id "
+                   + "LEFT JOIN Routing r ON wo.routing_id = r.routing_id "
+                   + "WHERE wo.wo_id = ?";
         try (Connection conn = DBUtils.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new WorkOrderDTO(
-                        rs.getInt("work_order_id"), rs.getInt("customer_id"),
-                        rs.getInt("product_item_id"), rs.getInt("routing_id"),
-                        rs.getInt("quantity"), rs.getString("status"), rs.getString("order_date")
-                    );
+                    WorkOrderDTO wo = new WorkOrderDTO();
+                    wo.setWo_id(rs.getInt("wo_id"));
+                    wo.setProduct_item_id(rs.getInt("product_item_id"));
+                    wo.setRouting_id(rs.getInt("routing_id"));
+                    wo.setOrder_quantity(rs.getInt("order_quantity"));
+                    wo.setStatus(rs.getString("status"));
+                    wo.setProductName(rs.getString("item_name"));
+                    wo.setRoutingName(rs.getString("routing_name"));
+                    
+                    try { wo.setNotes(rs.getString("notes")); } catch (Exception e) {}
+                    try { wo.setCustomerName(rs.getString("customer_name")); } catch (Exception e) {}
+                    try { wo.setCustomerId(rs.getInt("customer_id")); } catch (Exception e) {}
+                    try { wo.setStart_date(rs.getString("start_date")); } catch (Exception e) {}
+                    try { wo.setDue_date(rs.getString("due_date")); } catch (Exception e) {}
+                    try { wo.setCreated_date(rs.getString("created_date")); } catch (Exception e) {}
+                    return wo;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    // 5. Hàm Cập nhật Lệnh (updateWorkOrder)
-    public boolean updateWorkOrder(WorkOrderDTO wo) {
-        String sql = "UPDATE Work_Order SET customer_id=?, product_item_id=?, routing_id=?, quantity=?, status=? WHERE work_order_id=?";
-        try (Connection conn = DBUtils.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, wo.getCustomerID());
-            ps.setInt(2, wo.getProductItemID());
-            ps.setInt(3, wo.getRoutingID());
-            ps.setInt(4, wo.getQuantity());
-            ps.setString(5, wo.getStatus());
-            ps.setInt(6, wo.getWorkOrderID());
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 }

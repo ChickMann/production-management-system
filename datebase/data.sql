@@ -1,4 +1,4 @@
-﻿USE FACTORYERD;
+USE FACTORYERD;
 GO
 
 -- ==========================================
@@ -6,17 +6,20 @@ GO
 -- ==========================================
 
 -- Thêm Users 👤
-INSERT INTO Users (username, password_hash, role) 
-VALUES ('admin', '123456', 'Sep'), 
-       ('congnhan1', '123456', 'CongNhan'),
-       ('congnhan2', '123456', 'CongNhan');
+INSERT INTO Users (username, password_hash, role, full_name) 
+VALUES ('admin', '123456', 'admin', N'Quản trị viên'), 
+       ('congnhan1', '123456', 'employee', N'Nguyễn Văn B'),
+       ('congnhan2', '123456', 'employee', N'Trần Văn C');
 
--- Thêm Item (2 Sản phẩm, 2 Vật tư) 📦
-INSERT INTO Item (item_name, item_type, stock_quantity) 
-VALUES (N'Bàn gỗ', 'SanPham', 10), 
-       (N'Ghế gỗ', 'SanPham', 20),
-       (N'Gỗ công nghiệp', 'VatTu', 100), 
-       (N'Ốc vít', 'VatTu', 500);
+-- 2. Thêm Item (2 Sản phẩm, 3 Vật tư) 📦
+INSERT INTO Item (item_name, item_type, stock_quantity, unit) 
+VALUES 
+(N'Bàn gỗ', 'SanPham', 10, N'Cái'), 
+(N'Ghế gỗ', 'SanPham', 20, N'Cái'),
+(N'Gỗ công nghiệp', 'VatTu', 100, N'Tấm'), 
+(N'Ốc vít', 'VatTu', 500, N'Hộp'),
+(N'Đinh', 'VatTu', 200, N'Kg');
+GO
 
 -- Thêm Nhà cung cấp 🏭
 INSERT INTO Supplier (supplier_name, contact_phone) 
